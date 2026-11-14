@@ -248,15 +248,15 @@ otp_expiry = 3600
 # Auth emails link to /auth/confirm with a token hash, verified server-side (no PKCE
 # verifier or URL-fragment tokens needed). Mirror these on hosted projects.
 [auth.email.template.invite]
-subject = "You have been invited to Consulting Ops"
+subject = "You have been invited to FirmSync"
 content_path = "./supabase/templates/invite.html"
 
 [auth.email.template.magic_link]
-subject = "Your Consulting Ops sign-in link"
+subject = "Your FirmSync sign-in link"
 content_path = "./supabase/templates/magic_link.html"
 
 [auth.email.template.recovery]
-subject = "Reset your Consulting Ops password"
+subject = "Reset your FirmSync password"
 content_path = "./supabase/templates/recovery.html"
 
 # Uncomment to customize notification email template

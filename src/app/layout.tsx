@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Consulting Ops",
+  title: "FirmSync",
   description: "Consulting operations for firms",
 };
 
