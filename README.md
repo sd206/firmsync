@@ -1,4 +1,4 @@
-# Consulting Ops
+# FirmSync
 
 A multi-tenant web app for consulting firms to run their operations: each firm manages its own members, vendors, consultants (with hourly cost rates), clients, projects and consultant assignments (with client rates), and sees margin per hour. A platform owner creates firms and their first Admin. Built with Next.js 15 (App Router) and Supabase (Postgres, Auth, Storage) with row-level security for tenant isolation.
 

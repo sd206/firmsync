@@ -74,7 +74,7 @@ export function LoginForm({ initialError, initialMessage = null }: { initialErro
         <CardTitle>
           <h1>Sign in</h1>
         </CardTitle>
-        <CardDescription>Consulting Ops</CardDescription>
+        <CardDescription>FirmSync</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={signIn} className="flex flex-col gap-4">

@@ -20,7 +20,7 @@ export default async function Home() {
 
   return (
     <main className="mx-auto max-w-2xl p-8">
-      <h1 className="text-2xl font-semibold">Consulting Ops</h1>
+      <h1 className="text-2xl font-semibold">FirmSync</h1>
       {isPlatformOwner && (
         <p className="mt-4">
           <Link href="/platform/firms" className="underline">
