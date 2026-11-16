@@ -3,7 +3,13 @@ import { NextResponse, type NextRequest } from 'next/server'
 import type { Database } from '@/lib/db-types'
 
 export function isPublicPath(pathname: string): boolean {
-  return pathname === '/login' || pathname === '/auth' || pathname.startsWith('/auth/')
+  return (
+    pathname === '/login' ||
+    pathname === '/auth' ||
+    pathname.startsWith('/auth/') ||
+    // Webhooks authenticate themselves (signed requests), never with a session.
+    pathname.startsWith('/api/inbound/')
+  )
 }
 
 export async function updateSession(request: NextRequest): Promise<NextResponse> {
