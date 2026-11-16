@@ -5,6 +5,7 @@
 import { readFileSync } from 'node:fs'
 import { createClient } from '@supabase/supabase-js'
 import { seedDemoBank } from './seed-demo-bank.mjs'
+import { seedDemoBills } from './seed-demo-bills.mjs'
 
 const env = Object.fromEntries(
   readFileSync(new URL('../.env.local', import.meta.url), 'utf8')
@@ -210,8 +211,13 @@ must(
 )
 
 // ---------------------------------------------------------------- bank statements
-await seedDemoBank(maya, firmId)
+const bank = await seedDemoBank(maya, firmId)
+
+// ---------------------------------------------------------------- vendor bills
+const owner = await signIn('owner@local.test', 'owner-password-123') // local seed user (supabase/seed.sql)
+await seedDemoBills({ maya, owner, firmId, vendorId: vendor.id, checkingId: bank.checking, categories: cats })
 
 console.log(`Demo Consulting ready (firm ${firmId}).`)
 console.log(`Invoices issued: ${i1.number} (paid), plus an overdue one and a part-paid one; one draft.`)
+console.log('Vendor bills: NW-1042 approved (its bank payment is waiting in Main checking review), NW-1051 awaiting approval.')
 console.log('Logins (password demo-password-123): maya@demo.test (Manager), dana@demo.test (Consultant). Owner: owner@local.test.')
