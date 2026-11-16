@@ -6,7 +6,7 @@ import { cleanDescription } from './clean'
 import { dedupeKeys } from './dedupe'
 import { parseStatement } from './parse'
 import type { AccountInput } from './schemas'
-import { rankInvoices, type InvoiceCandidate } from './suggest'
+import { rankBills, rankInvoices, type BillCandidate, type InvoiceCandidate } from './suggest'
 import type { CsvMapping, ParseError } from './types'
 
 export type BankAccount = {
@@ -29,7 +29,7 @@ export type BankLine = {
   bankRef: string | null
   status: LineStatus
   ignoreReason: string | null
-  linkKind: 'payment' | 'expense' | 'other_income' | null
+  linkKind: 'payment' | 'expense' | 'other_income' | 'vendor_payment' | null
   linkedLabel: string | null
   suggestedCategoryId: string | null
 }
@@ -38,6 +38,8 @@ export type Candidates = {
   invoices: InvoiceCandidate[]
   payments: { id: string; paid_on: string; amount: string; invoice_number: string; client_name: string }[]
   expenses: { id: string; spent_on: string; amount: string; payee: string }[]
+  bills: BillCandidate[]
+  vendor_payments: { id: string; paid_on: string; amount: string; bill_number: string; vendor_name: string }[]
 }
 
 export type ImportOutcome = { inserted: number; duplicates: number; errors: ParseError[] }
@@ -159,6 +161,7 @@ type LineDb = {
   payment_id: string | null
   expense_id: string | null
   other_income_id: string | null
+  vendor_payment_id: string | null
   linked_label: string | null
   suggested_category_id: string | null
 }
@@ -175,7 +178,15 @@ export async function listLines(db: SupabaseClient, accountId: string, status: L
       bankRef: r.bank_ref,
       status: r.status,
       ignoreReason: r.ignore_reason,
-      linkKind: r.payment_id ? 'payment' : r.expense_id ? 'expense' : r.other_income_id ? 'other_income' : null,
+      linkKind: r.payment_id
+        ? 'payment'
+        : r.expense_id
+          ? 'expense'
+          : r.other_income_id
+            ? 'other_income'
+            : r.vendor_payment_id
+              ? 'vendor_payment'
+              : null,
       linkedLabel: r.linked_label,
       suggestedCategoryId: r.suggested_category_id,
     })),
@@ -189,7 +200,13 @@ export async function getCandidates(
   const { data, error } = await db.rpc('bank_match_candidates', { p_line: line.id })
   if (error) return fail(mapDbError(error))
   const c = data as Candidates
-  return ok({ ...c, invoices: rankInvoices(line.description, c.invoices, line.amount) })
+  const bills = rankBills(line.description, c.bills ?? [], line.amount.replace(/^-/, ''))
+  return ok({
+    ...c,
+    invoices: rankInvoices(line.description, c.invoices, line.amount),
+    bills,
+    vendor_payments: c.vendor_payments ?? [],
+  })
 }
 
 async function rpcId(db: SupabaseClient, fn: string, args: Record<string, unknown>): Promise<Result<string>> {
@@ -230,15 +247,23 @@ export function confirmOtherIncome(
   })
 }
 
+export type LinkTarget = { paymentId: string } | { expenseId: string } | { vendorPaymentId: string }
+
+/** Records a payment on an approved bill from a money-out line and marks the line Done. */
+export function confirmVendorPayment(db: SupabaseClient, lineId: string, billId: string, notes: string | null) {
+  return rpcId(db, 'confirm_bank_line_vendor_payment', { p_line: lineId, p_bill: billId, p_notes: notes })
+}
+
 export async function linkLine(
   db: SupabaseClient,
   lineId: string,
-  target: { paymentId: string } | { expenseId: string },
+  target: LinkTarget,
 ): Promise<Result<void>> {
   const { error } = await db.rpc('link_bank_line', {
     p_line: lineId,
     p_payment: 'paymentId' in target ? target.paymentId : null,
     p_expense: 'expenseId' in target ? target.expenseId : null,
+    p_vendor_payment: 'vendorPaymentId' in target ? target.vendorPaymentId : null,
   })
   return error ? fail(mapDbError(error)) : ok(undefined)
 }

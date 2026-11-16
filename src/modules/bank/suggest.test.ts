@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { accountSchema, csvMappingSchema, expenseConfirmSchema, otherIncomeConfirmSchema } from './schemas'
-import { rankInvoices } from './suggest'
+import { rankBills, rankInvoices } from './suggest'
 
 const inv = (id: string, number: string, client_name: string, balance_due: string) => ({ id, number, client_name, balance_due })
 
@@ -56,5 +56,24 @@ describe('bank schemas', () => {
     })
     expect(expenseConfirmSchema.safeParse({ payee: '', categoryId: id, clientId: '', projectId: '', notes: '' }).success).toBe(false)
     expect(otherIncomeConfirmSchema.safeParse({ source: 'x'.repeat(121), categoryId: id, notes: '' }).success).toBe(false)
+  })
+})
+
+describe('rankBills', () => {
+  const bill = (id: string, bill_number: string, vendor_name: string, balance_due: string, due_date: string) => ({
+    id, bill_number, vendor_name, balance_due, due_date,
+  })
+  it('orders exact+named, exact, named, then the rest by due date', () => {
+    const list = [
+      bill('late', 'Z-9', 'Other Ltd', '10.00', '2026-12-30'),
+      bill('named', 'A-1', 'Acme Staffing', '99.00', '2026-12-01'),
+      bill('exact', 'B-2', 'Other Ltd', '500.00', '2026-11-20'),
+      bill('both', 'C-3', 'Acme Staffing', '500.00', '2026-11-25'),
+      bill('early', 'D-4', 'Third Co', '20.00', '2026-11-01'),
+      bill('num', 'TC-7', 'Talent Co', '500.00', '2026-11-28'),
+    ]
+    expect(rankBills('ACME STAFF PAYMENT TC-7', list, '500.00').map((b) => b.id)).toEqual([
+      'both', 'num', 'exact', 'named', 'early', 'late',
+    ])
   })
 })

@@ -16,13 +16,11 @@ describe('vendor bills and the bank', () => {
   let f: Firm
   let vendor: string
   let acct: string
-  let software: string
 
   beforeAll(async () => {
     f = await newFirm('Bills Bank Firm')
     vendor = await mkVendor(f, 'Acme Staffing')
     acct = await makeAccount(f, 'bank', 'Main checking')
-    software = await categoryId(f.firmId, 'Software')
   })
 
   const approved = async (number: string, amount: string, lines?: Parameters<typeof saveBill>[3]) => {
@@ -98,6 +96,25 @@ describe('vendor bills and the bank', () => {
     await g.manager.db.rpc('confirm_bank_line_vendor_payment', { p_line: l, p_bill: id, p_notes: null })
     const done = await g.manager.db.rpc('list_bank_lines', { p_account: ac, p_status: 'done' })
     expect((done.data as { linked_label: string }[])[0].linked_label).toBe('Bill #TC-7 – Talent Co')
+  })
+
+  it('lists money-out lines that could pay a bill, exact and named first', async () => {
+    const g = await newFirm('Bills Withdrawals Firm')
+    const v = await mkVendor(g, 'Northwind Staffing')
+    const ac = await makeAccount(g)
+    const id = await saveBill(g, v, 'NW-3', [{ kind: 'contractor', description: 'Hours', amount: '400.00' }])
+    await g.admin.db.rpc('approve_vendor_bill', { p_bill: id })
+    const today = new Date().toISOString().slice(0, 10)
+    const part = await oneLine(g, ac, { posted_on: today, amount: '-100.00', description: 'MISC' })
+    const exact = await oneLine(g, ac, { posted_on: today, amount: '-400.00', description: 'NORTHWIND STAFFING' })
+    await oneLine(g, ac, { posted_on: today, amount: '-401.00', description: 'TOO BIG' })
+    await oneLine(g, ac, { posted_on: today, amount: '400.00', description: 'MONEY IN' })
+    const r = await g.manager.db.rpc('bill_bank_withdrawals', { p_bill: id })
+    expect(r.error).toBeNull()
+    const rows = r.data as { line_id: string; amount: string; exact_match: boolean }[]
+    expect(rows.map((x) => x.line_id)).toEqual([exact, part])
+    expect(rows[0]).toMatchObject({ amount: '-400.00', exact_match: true })
+    expect((await g.consultant.db.rpc('bill_bank_withdrawals', { p_bill: id })).error?.code).toBe('42501')
   })
 
   it('reports the vendor payment once in the Transactions report, and the expense once in the P&L', async () => {

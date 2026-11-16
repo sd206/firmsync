@@ -29,3 +29,31 @@ export function rankInvoices<T extends InvoiceCandidate>(description: string, in
   }
   return [...invoices].sort((a, b) => tier(a) - tier(b) || a.number.localeCompare(b.number))
 }
+
+export type BillCandidate = { id: string; bill_number: string; vendor_name: string; balance_due: string; due_date: string }
+
+const compact = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, '')
+
+/** The bill number (3+ letters/digits once punctuation is dropped) appears in the description. */
+function mentionsNumber(description: string, billNumber: string): boolean {
+  const n = compact(billNumber)
+  return n.length >= 3 && compact(description).includes(n)
+}
+
+/**
+ * Orders payable bills for a money-out line: exact balance with the vendor or bill number in the
+ * description first, then exact balance, then vendor or number named, then the rest; ties by due date.
+ */
+export function rankBills<T extends BillCandidate>(description: string, bills: T[], amount: string): T[] {
+  const tier = (b: T) => {
+    const exact = Number(b.balance_due) === Number(amount)
+    const named = mentions(description, b.vendor_name) || mentionsNumber(description, b.bill_number)
+    if (exact && named) return 0
+    if (exact) return 1
+    if (named) return 2
+    return 3
+  }
+  return [...bills].sort(
+    (a, b) => tier(a) - tier(b) || a.due_date.localeCompare(b.due_date) || a.bill_number.localeCompare(b.bill_number),
+  )
+}

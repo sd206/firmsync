@@ -9,6 +9,7 @@ import {
   confirmExpense,
   confirmOtherIncome,
   confirmPayment,
+  confirmVendorPayment,
   createAccount,
   getAccount,
   getCandidates,
@@ -22,6 +23,7 @@ import {
   updateAccount,
   type Candidates,
   type ImportOutcome,
+  type LinkTarget,
 } from './data'
 import { readCsv } from './csv'
 import { payeeFromDescription } from './filter'
@@ -147,6 +149,26 @@ export async function confirmPaymentAction(
   const r = await confirmPayment(db, lineId, parsed.data.invoiceId, parsed.data.notes)
   revalidate(firmId, accountId)
   if (r.ok) revalidatePath(`/f/${firmId}/invoices/${parsed.data.invoiceId}`)
+  return r.ok ? { ok: true, data: undefined } : r
+}
+
+/** Money-out line → a payment on an approved vendor bill. */
+export async function confirmVendorPaymentAction(
+  firmId: string,
+  accountId: string,
+  lineId: string,
+  formData: FormData,
+): Promise<FormResult> {
+  const { db } = await requireFirmRole(firmId, [...MANAGERS])
+  const billId = str(formData, 'billId')
+  if (!UUID.test(billId)) return { ok: false, error: 'Choose a bill.', fieldErrors: { billId: 'Choose a bill.' } }
+  const notes = str(formData, 'notes').trim().slice(0, 1000) || null
+  const r = await confirmVendorPayment(db, lineId, billId, notes)
+  revalidate(firmId, accountId)
+  if (r.ok) {
+    revalidatePath(`/f/${firmId}/vendor-bills`)
+    revalidatePath(`/f/${firmId}/vendor-bills/${billId}`)
+  }
   return r.ok ? { ok: true, data: undefined } : r
 }
 
@@ -297,7 +319,7 @@ export async function linkLineAction(
   firmId: string,
   accountId: string,
   lineId: string,
-  target: { paymentId: string } | { expenseId: string },
+  target: LinkTarget,
 ): Promise<Result<void>> {
   const { db } = await requireFirmRole(firmId, [...MANAGERS])
   const r = await linkLine(db, lineId, target)

@@ -20,7 +20,7 @@ import { LineActions, type Option, type ProjectOption } from './line-actions'
 const th = 'py-2 pr-4 font-medium'
 const td = 'py-2 pr-4 align-top'
 
-const LINK_LABEL = { payment: 'Invoice payment', expense: 'Expense', other_income: 'Other income' } as const
+const LINK_LABEL = { payment: 'Invoice payment', expense: 'Expense', other_income: 'Other income', vendor_payment: 'Vendor bill payment' } as const
 
 export function ReviewList({
   firmId,

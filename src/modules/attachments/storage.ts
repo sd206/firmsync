@@ -15,7 +15,7 @@ import { fail, ok, type Result } from '@/lib/result'
 import { createAdminDb } from '@/lib/supabase/admin'
 
 /*
- * Attachment files for payments and expenses.
+ * Attachment files for payments, expenses, vendor bills and vendor payments.
  *
  * Storage write model: users may only create `incoming-{uuid}` objects in an owner folder
  * (via a signed upload target issued with their own client, so the insert policy applies).
@@ -39,14 +39,33 @@ const DOWNLOAD_SECONDS = 60
 const STALE_INCOMING_MS = 24 * 60 * 60 * 1000
 const LIST_PAGE = 100
 
-export type Owner = { kind: 'payment'; id: string } | { kind: 'expense'; id: string }
+export type OwnerKind = 'payment' | 'expense' | 'vendor_bill' | 'vendor_payment'
+export type Owner = { kind: OwnerKind; id: string }
 export type Validate = typeof validateAttachment
 export type Rejected = { name: string; error: string }
 export type DeclaredFile = { name: string; size: number }
 export type UploadTarget = { index: number; uploadPath: string; token: string }
 export type UploadedItem = { uploadPath: string; name: string }
 
-const KIND_FOLDER = { payment: 'payments', expense: 'expenses' } as const
+const KIND_FOLDER = {
+  payment: 'payments',
+  expense: 'expenses',
+  vendor_bill: 'vendor-bills',
+  vendor_payment: 'vendor-payments',
+} as const
+const KIND_TABLE = { payment: 'payments', expense: 'expenses', vendor_bill: 'vendor_bills', vendor_payment: 'vendor_payments' } as const
+const KIND_COLUMN = {
+  payment: 'payment_id',
+  expense: 'expense_id',
+  vendor_bill: 'vendor_bill_id',
+  vendor_payment: 'vendor_payment_id',
+} as const
+const KIND_NOT_FOUND = {
+  payment: PAYMENT_NOT_FOUND,
+  expense: EXPENSE_NOT_FOUND,
+  vendor_bill: 'Bill not found.',
+  vendor_payment: PAYMENT_NOT_FOUND,
+} as const
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 /** The owner's folder. Throws (fails closed) unless both ids are uuids, so a path can never escape it. */
@@ -78,15 +97,30 @@ async function ensurePaymentTakesFiles(db: SupabaseClient, firmId: string, payme
 
 /** The owner row exists in this firm and the user can see it (RLS: admin/manager only). */
 async function ensureOwnerInFirm(db: SupabaseClient, firmId: string, owner: Owner): Promise<Result<void>> {
-  const table = owner.kind === 'payment' ? 'payments' : 'expenses'
-  const { data, error } = await db.from(table).select('id').eq('firm_id', firmId).eq('id', owner.id).maybeSingle()
+  if (!(owner.kind in KIND_TABLE)) return fail(NOT_FOUND)
+  const { data, error } = await db
+    .from(KIND_TABLE[owner.kind])
+    .select('id')
+    .eq('firm_id', firmId)
+    .eq('id', owner.id)
+    .maybeSingle()
   if (error) return fail(mapDbError(error))
-  return data ? ok(undefined) : fail(owner.kind === 'payment' ? PAYMENT_NOT_FOUND : EXPENSE_NOT_FOUND)
+  return data ? ok(undefined) : fail(KIND_NOT_FOUND[owner.kind])
 }
 
-/** Can this owner take new files right now? Payments follow their invoice status; expenses always can. */
+/** A void bill takes no new files. */
+async function ensureBillTakesFiles(db: SupabaseClient, firmId: string, billId: string): Promise<Result<void>> {
+  const { data, error } = await db.from('vendor_bills').select('status').eq('firm_id', firmId).eq('id', billId).maybeSingle()
+  if (error) return fail(mapDbError(error))
+  if (!data) return fail(KIND_NOT_FOUND.vendor_bill)
+  return (data as { status: string }).status === 'void' ? fail("A void bill can't be changed.") : ok(undefined)
+}
+
+/** Can this owner take new files right now? Payments follow their invoice status; void bills can't. */
 function ensureOwnerTakesFiles(db: SupabaseClient, firmId: string, owner: Owner): Promise<Result<void>> {
-  return owner.kind === 'payment' ? ensurePaymentTakesFiles(db, firmId, owner.id) : ensureOwnerInFirm(db, firmId, owner)
+  if (owner.kind === 'payment') return ensurePaymentTakesFiles(db, firmId, owner.id)
+  if (owner.kind === 'vendor_bill') return ensureBillTakesFiles(db, firmId, owner.id)
+  return ensureOwnerInFirm(db, firmId, owner)
 }
 
 /** Every object (not sub-folder) directly in the owner folder, read with the service role. */
@@ -186,6 +220,13 @@ async function register(
   args: { path: string; name: string; mime: string; size: number },
 ) {
   const common = { p_storage_path: args.path, p_file_name: args.name, p_mime: args.mime, p_size: args.size }
+  if (owner.kind === 'vendor_bill' || owner.kind === 'vendor_payment') {
+    return db.rpc('add_vendor_attachment', {
+      p_owner_kind: owner.kind === 'vendor_bill' ? 'bill' : 'payment',
+      p_owner: owner.id,
+      ...common,
+    })
+  }
   return owner.kind === 'payment'
     ? db.rpc('add_payment_attachment', { p_payment: owner.id, ...common })
     : db.rpc('add_expense_attachment', { p_expense: owner.id, ...common })
@@ -264,12 +305,12 @@ export async function deleteAttachment(
   owner: Owner,
   attachmentId: string,
 ): Promise<Result<void>> {
-  if (!UUID_RE.test(owner.id)) return fail(NOT_FOUND)
+  if (!UUID_RE.test(owner.id) || !(owner.kind in KIND_COLUMN)) return fail(NOT_FOUND)
   const { data: row, error: lookupError } = await db
     .from('attachments')
     .select('id')
     .eq('firm_id', firmId)
-    .eq(owner.kind === 'expense' ? 'expense_id' : 'payment_id', owner.id)
+    .eq(KIND_COLUMN[owner.kind], owner.id)
     .eq('id', attachmentId)
     .maybeSingle()
   if (lookupError) return fail(mapDbError(lookupError))

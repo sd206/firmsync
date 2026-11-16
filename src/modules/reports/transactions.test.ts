@@ -103,3 +103,15 @@ describe('transactions', () => {
     )
   })
 })
+
+describe('vendor payments in transactions', () => {
+  it('describes them and counts them as money out', () => {
+    const vp = {
+      kind: 'vendor_payment' as const, id: 'v1', txn_date: '2026-03-10', client_name: null, project_name: null,
+      invoice_number: 'CL-1', method: 'card', reference: null, payee: 'Cloud Inc', category: 'Vendor bill', amount: '300.00', notes: 'Paid by card',
+    }
+    const row = toTxnRow(vp)
+    expect(row).toMatchObject({ transaction: 'Vendor payment – Cloud Inc, bill #CL-1', category: 'Vendor bill', amount: '-300.00', notes: 'Paid by card' })
+    expect(txnTotals([row, toTxnRow(payment)])).toEqual({ moneyIn: '1500.00', moneyOut: '-300.00', net: '1200.00', count: 2 })
+  })
+})
