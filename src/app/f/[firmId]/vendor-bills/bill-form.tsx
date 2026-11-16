@@ -62,6 +62,7 @@ export function BillForm({
   clients,
   projects,
   bill,
+  inboxFile,
 }: {
   firmId: string
   vendors: Option[]
@@ -70,6 +71,8 @@ export function BillForm({
   projects: ProjectOption[]
   /** Present when editing a pending or rejected bill. */
   bill?: BillValues
+  /** A file from the Bill inbox that becomes this new bill's file once it is saved. */
+  inboxFile?: { id: string; fileName: string; vendorId: string | null }
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -83,6 +86,7 @@ export function BillForm({
     setLines((ls) => ls.map((l) => (l.key === key ? { ...l, ...patch } : l)))
 
   function submit(fd: FormData) {
+    const failedInbox: string[] = []
     startTransition(async () => {
       setErrors({})
       setError(null)
@@ -117,11 +121,13 @@ export function BillForm({
           return
         }
         savedId.current = r.data.id
+        if (r.data.inboxFileFailed) failedInbox.push(r.data.inboxFileFailed)
         const failed = await uploadFiles(files, {
           createTargets: (declared) => createVendorUploadTargetsAction(firmId, 'vendor_bill', r.data.id, declared),
           finalize: (items) => finalizeVendorUploadsAction(firmId, r.data.id, 'vendor_bill', r.data.id, items),
         })
-        const q = failed.length > 0 ? `?filesRejected=${encodeURIComponent(rejectedFilesParam(failed))}` : ''
+        const all = [...failedInbox, ...failed]
+        const q = all.length > 0 ? `?filesRejected=${encodeURIComponent(rejectedFilesParam(all))}` : ''
         router.push(`/f/${firmId}/vendor-bills/${r.data.id}${q}`)
         router.refresh()
       } catch (e) {
@@ -146,7 +152,7 @@ export function BillForm({
           <select
             id="bill-vendor"
             name="vendorId"
-            defaultValue={bill?.vendorId ?? ''}
+            defaultValue={bill?.vendorId ?? inboxFile?.vendorId ?? ''}
             aria-invalid={!!errors.vendorId}
             className={`${selectClass} max-w-72`}
           >
@@ -373,8 +379,17 @@ export function BillForm({
         />
         <FieldError message={errors.notes} />
       </div>
+      {inboxFile && (
+        <p role="status" className="text-sm">
+          <input type="hidden" name="inboxFileId" value={inboxFile.id} />
+          Attached from Bill inbox:{' '}
+          <a href={`/f/${firmId}/attachments/${inboxFile.id}`} target="_blank" rel="noreferrer" className="underline underline-offset-4">
+            {inboxFile.fileName}
+          </a>
+        </p>
+      )}
       <div className="flex flex-col gap-1">
-        <Label htmlFor="bill-files">{bill ? 'Add files' : 'Bill PDF'}</Label>
+        <Label htmlFor="bill-files">{bill ? 'Add files' : inboxFile ? 'More files (optional)' : 'Bill PDF'}</Label>
         <input id="bill-files" name="files" type="file" multiple accept={FILE_ACCEPT} className="text-sm" aria-invalid={!!errors.files} />
         <FieldError message={errors.files} />
       </div>

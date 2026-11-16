@@ -1,12 +1,26 @@
 import Link from 'next/link'
 import { requireFirmRole } from '@/lib/auth/context'
+import { inboxFileForBill } from '@/modules/bill-inbox/data'
 import { BillForm } from '../bill-form'
 import { loadBillFormOptions } from '../form-options'
 
-export default async function NewBillPage({ params }: { params: Promise<{ firmId: string }> }) {
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+export default async function NewBillPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ firmId: string }>
+  searchParams: Promise<{ inboxFile?: string | string[] }>
+}) {
   const { firmId } = await params
+  const sp = await searchParams
   const { db } = await requireFirmRole(firmId, ['admin', 'manager'])
-  const opts = await loadBillFormOptions(db, firmId)
+  const fileId = typeof sp.inboxFile === 'string' && UUID.test(sp.inboxFile) ? sp.inboxFile : null
+  const [opts, file] = await Promise.all([
+    loadBillFormOptions(db, firmId),
+    fileId ? inboxFileForBill(db, firmId, fileId) : Promise.resolve(null),
+  ])
 
   return (
     <div className="max-w-5xl">
@@ -19,6 +33,11 @@ export default async function NewBillPage({ params }: { params: Promise<{ firmId
           {opts.error}
         </p>
       )}
+      {file && !file.ok && (
+        <p role="alert" className="mt-4 text-sm text-destructive">
+          {file.error}
+        </p>
+      )}
       {opts.vendors.length === 0 && (
         <p className="mt-4 text-sm">
           Add the vendor first in{' '}
@@ -28,7 +47,9 @@ export default async function NewBillPage({ params }: { params: Promise<{ firmId
           .
         </p>
       )}
-      <BillForm firmId={firmId} vendors={opts.vendors} categories={opts.categories} clients={opts.clients} projects={opts.projects} />
+      <BillForm firmId={firmId} vendors={opts.vendors} categories={opts.categories} clients={opts.clients} projects={opts.projects}
+        inboxFile={file && file.ok ? { id: file.data.attachmentId, fileName: file.data.fileName, vendorId: file.data.vendorId } : undefined}
+      />
     </div>
   )
 }

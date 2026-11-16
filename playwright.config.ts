@@ -3,6 +3,11 @@ import dotenv from 'dotenv'
 
 dotenv.config({ path: '.env.test.local' })
 
+// Bill inbox: a configured (fake) Resend setup for the test build; no mail is ever received in tests.
+process.env.INBOUND_DOMAINS ??= 'test.resend.app'
+process.env.RESEND_API_KEY ??= 're_test_not_real'
+process.env.RESEND_INBOUND_SECRET ??= 'whsec_dGVzdC1vbmx5LXNlY3JldA=='
+
 export default defineConfig({
   testDir: 'tests/e2e',
   workers: 1,

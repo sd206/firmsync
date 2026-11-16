@@ -1,6 +1,7 @@
 import { requireFirmRole } from '@/lib/auth/context'
 import { AccountMenu } from '@/components/account-menu'
 import type { FirmRole } from '@/lib/db-types'
+import { newInboxCount } from '@/modules/bill-inbox/data'
 import { FirmNav, type NavEntry } from './firm-nav'
 
 type Item = { label: string; path: string; roles: FirmRole[] }
@@ -28,6 +29,7 @@ const NAV: (Item | Group)[] = [
       { label: 'Unpaid invoices', path: '/invoices/unpaid', roles: MANAGERS },
       { label: 'Payments', path: '/payments', roles: MANAGERS },
       { label: 'Vendor bills', path: '/vendor-bills', roles: MANAGERS },
+      { label: 'Bill inbox', path: '/bill-inbox', roles: MANAGERS },
       { label: 'Expenses', path: '/expenses', roles: MANAGERS },
       { label: 'Other income', path: '/other-income', roles: MANAGERS },
       { label: 'Bank accounts', path: '/bank', roles: MANAGERS },
@@ -53,13 +55,14 @@ const NAV: (Item | Group)[] = [
   },
 ]
 
-function navFor(role: FirmRole, base: string): NavEntry[] {
+function navFor(role: FirmRole, base: string, inboxCount = 0): NavEntry[] {
+  const label = (i: Item) => (i.path === '/bill-inbox' && inboxCount > 0 ? `${i.label} (${inboxCount})` : i.label)
   const out: NavEntry[] = []
   for (const entry of NAV) {
     if ('items' in entry) {
       const items = entry.items
         .filter((i) => i.roles.includes(role))
-        .map((i) => ({ label: i.label, href: `${base}${i.path}` }))
+        .map((i) => ({ label: label(i), href: `${base}${i.path}` }))
       if (items.length > 0) out.push({ label: entry.label, items })
     } else if (entry.roles.includes(role)) {
       out.push({ label: entry.label, href: `${base}${entry.path}` })
@@ -76,7 +79,8 @@ export default async function FirmLayout({
   params: Promise<{ firmId: string }>
 }) {
   const { firmId } = await params
-  const { role, firmName, email } = await requireFirmRole(firmId, ALL)
+  const { role, firmName, email, db } = await requireFirmRole(firmId, ALL)
+  const inboxCount = MANAGERS.includes(role) ? await newInboxCount(db, firmId) : 0
   const base = `/f/${firmId}`
 
   return (
@@ -86,7 +90,7 @@ export default async function FirmLayout({
           <span className="font-semibold">{firmName}</span>
           <AccountMenu email={email} role={role} />
         </div>
-        <FirmNav entries={navFor(role, base)} home={base} />
+        <FirmNav entries={navFor(role, base, inboxCount)} home={base} />
       </header>
       <main className="p-6">{children}</main>
     </div>
