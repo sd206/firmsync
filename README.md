@@ -110,6 +110,32 @@ npm run test:e2e    # Playwright; needs local Supabase running
 
 Payment and expense files are uploaded from the browser straight to storage under a holding name (`incoming-*`), then checked by the server, which moves the good ones into place and removes the rest. Users can't overwrite or delete stored files outside the app; the database policies only allow adding holding-name uploads. Abandoned uploads (older than 24 hours) are swept the next time that payment's or expense's folder is touched.
 
+## Bill inbox (Resend)
+
+Each firm can turn on one address, `bills-<code>@<domain>` (Settings › Bill inbox; admins only). Mail sent to it appears in Billing › Bill inbox with its PDF and image files (up to 10 per email). From there a manager can Create bill, Ignore or Mark duplicate. Nothing is ever turned into a bill automatically.
+
+Resend receives the mail and posts `email.received` to `/api/inbound/resend`. The route checks the Svix signature, finds the firm by the address code, downloads the files through Resend's Receiving API and stores them. Resend's own retries of the same email are ignored. A vendor sending the same bill twice shows up twice.
+
+**Setup (once, production only):**
+
+1. In Resend › Receiving, copy the account's `<id>.resend.app` domain.
+2. In Resend › Webhooks, add `https://firmsync.vercel.app/api/inbound/resend` for the `email.received` event, and copy its signing secret.
+3. Create a Resend API key that can read received emails.
+4. In Vercel, add these variables, then redeploy:
+   - `RESEND_API_KEY`
+   - `RESEND_INBOUND_SECRET` (the `whsec_…` secret)
+   - `INBOUND_DOMAINS=<id>.resend.app`
+5. In FirmSync, go to Settings › Bill inbox, choose Turn on, then send a test email to the address shown.
+
+Without these variables, Settings says the inbox isn't set up, and the webhook answers 503.
+
+**Moving to your own domain later:**
+
+1. Verify the domain in Resend and enable receiving on a subdomain (e.g. `in.firmsync.app`).
+2. Add Resend's MX record for that subdomain at your DNS host.
+3. Set `INBOUND_DOMAINS=in.firmsync.app,<id>.resend.app` and redeploy. The first domain is the one shown to users, and both are accepted, with the same address code.
+4. Once vendors have switched, remove the old domain from the list.
+
 ## Hosted Supabase
 
 ### Platform owner
