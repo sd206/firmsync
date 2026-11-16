@@ -11,6 +11,7 @@ import {
   confirmExpenseAction,
   confirmOtherIncomeAction,
   confirmPaymentAction,
+  confirmVendorPaymentAction,
   ignoreLinesAction,
   linkLineAction,
 } from '@/modules/bank/actions'
@@ -20,7 +21,7 @@ import { payeeFromDescription } from '@/modules/bank/filter'
 export type Option = { id: string; name: string }
 export type ProjectOption = { id: string; name: string; clientId: string }
 
-type Mode = 'payment' | 'other_income' | 'expense' | 'existing' | 'ignore'
+type Mode = 'payment' | 'other_income' | 'expense' | 'bill' | 'existing' | 'ignore'
 
 const select = 'h-8 w-full rounded-lg border bg-card px-2 text-sm'
 
@@ -62,7 +63,7 @@ export function LineActions({
         if (!r.ok) setLoadError(r.error)
         else {
           setCand(r.data)
-          const existing = moneyIn ? r.data.payments.length : r.data.expenses.length
+          const existing = moneyIn ? r.data.payments.length : r.data.expenses.length + r.data.vendor_payments.length
           if (existing > 0 && !chosenExisting) {
             setMode('existing')
             setChosenExisting(true)
@@ -85,6 +86,7 @@ export function LineActions({
       ]
     : [
         { id: 'expense', label: 'Expense' },
+        { id: 'bill', label: 'Vendor bill payment' },
         { id: 'existing', label: 'Already entered' },
         { id: 'ignore', label: 'Ignore' },
       ]
@@ -202,12 +204,45 @@ export function LineActions({
         </form>
       )}
 
+      {mode === 'bill' && (
+        <form
+          aria-label="Vendor bill payment"
+          className="grid max-w-xl gap-3"
+          onSubmit={submit((fd) => confirmVendorPaymentAction(firmId, accountId, line.id, fd))}
+        >
+          {!cand ? (
+            <p>Loading approved bills…</p>
+          ) : cand.bills.length === 0 ? (
+            <p>There are no approved bills with a balance of {formatMoney(absAmount, currency)} or more. Approve the bill first.</p>
+          ) : (
+            <div className="grid gap-1.5">
+              <Label htmlFor={`bill-${line.id}`}>Bill</Label>
+              <select id={`bill-${line.id}`} name="billId" className={select} defaultValue={cand.bills[0].id}>
+                {cand.bills.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.bill_number} · {b.vendor_name} · {formatMoney(b.balance_due, currency)} due {b.due_date}
+                    {Number(b.balance_due) === Number(absAmount) ? ' (exact match)' : ''}
+                  </option>
+                ))}
+              </select>
+              {errors.billId && <p className="text-xs text-destructive">{errors.billId}</p>}
+            </div>
+          )}
+          <Notes id={`bn-${line.id}`} error={errors.notes} />
+          <div>
+            <Button type="submit" disabled={pending || !cand || cand.bills.length === 0}>
+              Confirm bill payment
+            </Button>
+          </div>
+        </form>
+      )}
+
       {mode === 'existing' && (
         <div className="grid max-w-xl gap-2">
           {!cand ? (
             <p>Looking for matching entries…</p>
-          ) : (moneyIn ? cand.payments : cand.expenses).length === 0 ? (
-            <p>No unmatched {moneyIn ? 'payment' : 'expense'} of {formatMoney(absAmount, currency)} within 7 days of this date.</p>
+          ) : (moneyIn ? cand.payments.length : cand.expenses.length + cand.vendor_payments.length) === 0 ? (
+            <p>No unmatched {moneyIn ? 'payment' : 'expense or bill payment'} of {formatMoney(absAmount, currency)} within 7 days of this date.</p>
           ) : (
             <ul className="grid gap-2">
               {moneyIn
@@ -221,16 +256,33 @@ export function LineActions({
                       </Button>
                     </li>
                   ))
-                : cand.expenses.map((x) => (
-                    <li key={x.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-card p-2">
-                      <span>
-                        {x.spent_on} · {x.payee} · {formatMoney(x.amount, currency)}
-                      </span>
-                      <Button type="button" size="sm" disabled={pending} onClick={() => run(() => linkLineAction(firmId, accountId, line.id, { expenseId: x.id }), onDone)}>
-                        Match
-                      </Button>
-                    </li>
-                  ))}
+                : [
+                    ...cand.expenses.map((x) => (
+                      <li key={x.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-card p-2">
+                        <span>
+                          {x.spent_on} · {x.payee} · {formatMoney(x.amount, currency)}
+                        </span>
+                        <Button type="button" size="sm" disabled={pending} onClick={() => run(() => linkLineAction(firmId, accountId, line.id, { expenseId: x.id }), onDone)}>
+                          Match
+                        </Button>
+                      </li>
+                    )),
+                    ...cand.vendor_payments.map((v) => (
+                      <li key={v.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-card p-2">
+                        <span>
+                          {v.paid_on} · Bill #{v.bill_number} · {v.vendor_name} · {formatMoney(v.amount, currency)}
+                        </span>
+                        <Button
+                          type="button"
+                          size="sm"
+                          disabled={pending}
+                          onClick={() => run(() => linkLineAction(firmId, accountId, line.id, { vendorPaymentId: v.id }), onDone)}
+                        >
+                          Match
+                        </Button>
+                      </li>
+                    )),
+                  ]}
             </ul>
           )}
         </div>
