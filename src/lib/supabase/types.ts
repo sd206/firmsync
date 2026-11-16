@@ -1271,6 +1271,16 @@ isOneToOne: false
               "outstanding": string,"overdue": string,"overdue_count": number
             }[]
                            },
+"payables_bills":
+{ Args: { "p_firm": string,"p_overdue_only": boolean,"p_today": string,"p_vendors": (string)[] }; Returns: {
+              "amount_paid": string,"balance": string,"bill_date": string,"bill_id": string,"bill_number": string,"days_overdue": number,"due_date": string,"status": string,"total": string,"vendor_id": string,"vendor_name": string
+            }[]
+                           },
+"payables_report":
+{ Args: { "p_firm": string,"p_overdue_only": boolean,"p_today": string,"p_vendors": (string)[] }; Returns: {
+              "awaiting_approval": string,"awaiting_count": number,"d1_30": string,"d31_60": string,"d61_90": string,"d90_plus": string,"due_7": string,"due_8_30": string,"due_later": string,"oldest_overdue_days": number,"total": string,"vendor_id": string,"vendor_name": string
+            }[]
+                           },
 "payment_lock":
 { Args: { "p_missing": string,"p_payment": string }; Returns: {
               "amount": number,
@@ -1319,6 +1329,16 @@ isOneToOne: false
 "pnl_report":
 { Args: { "p_clients": (string)[],"p_firm": string,"p_from": string,"p_group": string,"p_projects": (string)[],"p_to": string }; Returns: {
               "client_label": string,"collected": string,"direct_expenses": string,"discounts": string,"fees": string,"gross": string,"group_key": string,"invoiced": string,"label": string,"labour": string,"margin": string,"net": string,"overhead": string,"project_label": string,"revenue": string,"revenue_hours": string,"row_kind": string,"sort_key": string
+            }[]
+                           },
+"receivables_invoices":
+{ Args: { "p_clients": (string)[],"p_firm": string,"p_overdue_only": boolean,"p_today": string }; Returns: {
+              "amount_paid": string,"balance": string,"client_id": string,"client_name": string,"days_overdue": number,"due_date": string,"invoice_id": string,"issue_date": string,"number": string,"total": string
+            }[]
+                           },
+"receivables_report":
+{ Args: { "p_clients": (string)[],"p_firm": string,"p_overdue_only": boolean,"p_today": string }; Returns: {
+              "avg_days_late": string,"avg_days_to_pay": string,"client_id": string,"client_name": string,"d1_30": string,"d31_60": string,"d61_90": string,"d90_plus": string,"not_due": string,"oldest_overdue_days": number,"open_invoices": number,"total": string
             }[]
                            },
 "record_payment":

@@ -25,7 +25,15 @@ function toCents(amount: string): bigint {
 
 /** Exact a - b on decimal strings via BigInt cents; canonical 2-dp result, negative allowed. */
 export function subtractMoney(a: string, b: string): string {
-  const diff = toCents(a) - toCents(b)
+  return fromCents(toCents(a) - toCents(b))
+}
+
+/** Exact sum of decimal strings via BigInt cents; canonical 2-dp result ('0.00' when empty). */
+export function sumMoney(values: string[]): string {
+  return fromCents(values.reduce((acc, v) => acc + toCents(v), ZERO))
+}
+
+function fromCents(diff: bigint): string {
   const neg = diff < ZERO
   const abs = neg ? -diff : diff
   const frac = (abs % HUNDRED).toString().padStart(2, '0')

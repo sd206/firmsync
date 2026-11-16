@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatMoney, formatMoneyCode, parseMoney, subtractMoney } from './money'
+import { formatMoney, formatMoneyCode, parseMoney, subtractMoney, sumMoney } from './money'
 
 describe('parseMoney', () => {
   it('canonicalises valid input', () => {
@@ -31,5 +31,14 @@ describe('formatMoneyCode', () => {
   it('formats with the currency code and a regular space', () => {
     expect(formatMoneyCode('1234.5', 'USD')).toBe('USD 1,234.50')
     expect(formatMoneyCode('0', 'EUR')).toBe('EUR 0.00')
+  })
+})
+
+describe('sumMoney', () => {
+  it('adds exactly to two decimals', () => {
+    expect(sumMoney(['0.10', '0.20'])).toBe('0.30')
+    expect(sumMoney([])).toBe('0.00')
+    expect(sumMoney(['-1.05', '2.00'])).toBe('0.95')
+    expect(sumMoney(['1250.5', '0.5'])).toBe('1251.00')
   })
 })

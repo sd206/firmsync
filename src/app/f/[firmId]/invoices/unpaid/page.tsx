@@ -37,6 +37,13 @@ export default async function UnpaidInvoicesPage({
         Invoices
       </Link>
       <h1 className="mt-2 text-2xl font-semibold">Unpaid invoices</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
+        For totals by client and how quickly each client pays,{' '}
+        <Link href={`/f/${firmId}/reports/receivables`} className="underline underline-offset-4">
+          See the Receivables report
+        </Link>
+        .
+      </p>
 
       <form method="get" className="mt-4 flex items-end gap-2 text-sm">
         <div>

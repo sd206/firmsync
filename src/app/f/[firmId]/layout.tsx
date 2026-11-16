@@ -40,6 +40,8 @@ const NAV: (Item | Group)[] = [
     items: [
       { label: 'Profit & loss', path: '/reports/pnl', roles: MANAGERS },
       { label: 'Transactions', path: '/reports/transactions', roles: MANAGERS },
+      { label: 'Receivables', path: '/reports/receivables', roles: MANAGERS },
+      { label: 'Payables', path: '/reports/payables', roles: MANAGERS },
     ],
   },
   {
