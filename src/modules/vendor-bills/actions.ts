@@ -5,6 +5,7 @@ import { requireFirmRole } from '@/lib/auth/context'
 import { fieldErrorsOf, type FormResult, str } from '@/lib/form'
 import { fail, type Result } from '@/lib/result'
 import * as attachments from '@/modules/attachments/storage'
+import { attachInboxFileToBill, inboxFileForBill } from '@/modules/bill-inbox/data'
 import type { DeclaredFile, Rejected, UploadedItem, UploadTarget } from '@/modules/attachments/storage'
 import {
   approveBill,
@@ -45,12 +46,23 @@ export async function saveBillAction(
   firmId: string,
   billId: string | null,
   formData: FormData,
-): Promise<FormResult<{ id: string }>> {
+): Promise<FormResult<{ id: string; inboxFileFailed?: string }>> {
   const { db } = await requireFirmRole(firmId, [...MANAGERS])
   const parsed = billInputSchema.safeParse(billFields(formData))
   if (!parsed.success) return fieldErrorsOf(parsed.error)
   const r = await saveBill(db, firmId, billId, parsed.data)
-  if (r.ok) revalidate(firmId, r.data.id)
+  if (!r.ok) return r
+  revalidate(firmId, r.data.id)
+  // A bill created from the Bill inbox: copy that file onto the bill only once the bill is saved.
+  const inboxFileId = str(formData, 'inboxFileId')
+  if (inboxFileId && UUID.test(inboxFileId)) {
+    const att = await attachInboxFileToBill(db, firmId, r.data.id, inboxFileId)
+    revalidatePath(`/f/${firmId}/bill-inbox`)
+    if (!att.ok) {
+      const file = await inboxFileForBill(db, firmId, inboxFileId)
+      return { ok: true, data: { id: r.data.id, inboxFileFailed: file.ok ? file.data.fileName : 'the inbox file' } }
+    }
+  }
   return r
 }
 
