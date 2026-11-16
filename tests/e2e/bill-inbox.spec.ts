@@ -40,11 +40,12 @@ test('a manager turns an emailed bill into a bill, and ignores, restores and mar
   const { data: v } = await adminDb().from('vendors').insert({ firm_id: f.firmId, name: 'Acme Staffing', email: 'ap@acme.test' }).select('id').single()
   await seedInboxItem(f, { vendorId: v!.id, subject: 'Invoice INV-9001', upload: true, receivedAt: new Date(Date.now() - 60_000).toISOString() })
   await seedInboxItem(f, { from: 'promo@spam.test', subject: 'Special offer', files: 0 })
+  await seedInboxItem(f, { from: f.manager.email, subject: 'Paper bill, entered by hand', files: 0 })
 
   await login(page, f.manager.email)
   await page.goto(`/f/${f.firmId}`)
   await openMenu(page, 'Billing')
-  await firmNav(page).getByRole('link', { name: 'Bill inbox (2)' }).click()
+  await firmNav(page).getByRole('link', { name: 'Bill inbox (3)' }).click()
   await expect(page).toHaveURL(/\/bill-inbox$/)
 
   const acme = page.getByRole('row').filter({ hasText: 'Invoice INV-9001' })
@@ -68,6 +69,13 @@ test('a manager turns an emailed bill into a bill, and ignores, restores and mar
   await page.goto(`/f/${f.firmId}/bill-inbox?tab=bill_created`)
   await expect(page.getByRole('row').filter({ hasText: 'Invoice INV-9001' }).getByRole('link', { name: 'Bill INV-9001' })).toBeVisible()
 
+  // An email with no files can be moved to Bills created by hand.
+  await page.goto(`/f/${f.firmId}/bill-inbox`)
+  await page.getByRole('row').filter({ hasText: 'Paper bill' }).getByRole('button', { name: 'Mark bills created' }).click()
+  await expect(page.getByRole('row').filter({ hasText: 'Paper bill' })).toHaveCount(0)
+  await page.goto(`/f/${f.firmId}/bill-inbox?tab=bill_created`)
+  await expect(page.getByRole('row').filter({ hasText: 'Paper bill' })).toBeVisible()
+
   await page.goto(`/f/${f.firmId}/bill-inbox`)
   const spam = page.getByRole('row').filter({ hasText: 'Special offer' })
   await expect(spam).toContainText('Unknown sender')
@@ -85,6 +93,7 @@ test('a manager turns an emailed bill into a bill, and ignores, restores and mar
   await page.goto(`/f/${f.firmId}/bill-inbox`)
   await page.getByRole('row').filter({ hasText: 'Special offer' }).getByRole('button', { name: 'Mark duplicate' }).click()
   await page.getByRole('dialog').getByRole('button', { name: 'Mark duplicate' }).click()
+  await expect(page.getByRole('row').filter({ hasText: 'Special offer' })).toHaveCount(0)
   await page.goto(`/f/${f.firmId}/bill-inbox?tab=duplicate`)
   await expect(page.getByRole('row').filter({ hasText: 'Special offer' })).toBeVisible()
 })

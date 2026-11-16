@@ -240,6 +240,16 @@ export async function attachInboxFileToBill(
 ): Promise<Result<void>> {
   const file = await inboxFileForBill(db, firmId, attachmentId)
   if (!file.ok) return file
+  // Already attached to this bill (e.g. the save was retried): nothing more to copy.
+  const { data: linked, error: linkErr } = await db
+    .from('bill_inbox_bills')
+    .select('bill_id')
+    .eq('firm_id', firmId)
+    .eq('attachment_id', attachmentId)
+    .eq('bill_id', billId)
+    .maybeSingle()
+  if (linkErr) return fail(mapDbError(linkErr))
+  if (linked) return ok(undefined)
   const { data: src, error: srcErr } = await db
     .from('attachments')
     .select('storage_path, file_name, mime_type, size_bytes')

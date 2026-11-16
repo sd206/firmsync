@@ -61,16 +61,14 @@ export async function storeFiles(
   const rejected: { name: string; reason: string }[] = []
   let failed = false
   try {
-    const { count } = await db
-      .from('attachments')
-      .select('id', { count: 'exact', head: true })
-      .eq('bill_inbox_item_id', item.id)
-    let accepted = count ?? 0
-    const { data: done } = await db.from('attachments').select('file_name').eq('bill_inbox_item_id', item.id)
-    const have = new Set(((done ?? []) as { file_name: string }[]).map((d) => d.file_name))
+    // Files are tracked by Resend's attachment id, so a retry fetches only what's missing.
+    const { data: done } = await db.from('attachments').select('bill_inbox_source').eq('bill_inbox_item_id', item.id)
+    const stored = (done ?? []) as { bill_inbox_source: string | null }[]
+    let accepted = stored.length
+    const have = new Set(stored.map((d) => d.bill_inbox_source))
     for (const att of await deps.resend.listAttachments(item.emailId)) {
       const name = displayFileName(att.filename)
-      if (have.has(name)) continue
+      if (have.has(att.id)) continue
       if (accepted >= MAX_FILES_PER_EMAIL) {
         rejected.push({ name, reason: TOO_MANY })
         continue
@@ -91,13 +89,16 @@ export async function storeFiles(
         file_name: name,
         mime_type: info.data.mime,
         size_bytes: bytes.length,
+        bill_inbox_source: att.id,
       })
       if (ins.error) {
         await db.storage.from(BUCKET).remove([path])
+        // Another run stored this attachment at the same time: nothing to do.
+        if (ins.error.code === '23505') continue
         throw new Error(`attachment: ${ins.error.message}`)
       }
       accepted += 1
-      have.add(name)
+      have.add(att.id)
     }
   } catch (e) {
     console.error('bill inbox file download failed', e)
@@ -152,15 +153,29 @@ export async function receiveInbound(deps: ReceiveDeps, event: InboundEvent): Pr
           vendor_id: sender.kind === 'vendor' ? sender.vendorId : null,
           sender_kind: sender.kind,
           forwarded_by: sender.kind === 'member' ? sender.forwardedBy : null,
+          // Stays true until the files are stored, so a run cut off midway shows "Try again".
+          download_failed: true,
         },
         { onConflict: 'firm_id,resend_email_id', ignoreDuplicates: true },
       )
       .select('id')
     if (ins.error) throw new Error(`item: ${ins.error.message}`)
     const row = (ins.data ?? [])[0] as { id: string } | undefined
-    if (!row) continue // Resend retried an email we already have.
-    stored += 1
-    await storeFiles(deps, { id: row.id, firmId: addr.firm_id, emailId: event.email_id })
+    if (row) {
+      stored += 1
+      await storeFiles(deps, { id: row.id, firmId: addr.firm_id, emailId: event.email_id })
+      continue
+    }
+    // Resend retried an email we already have: finish its files if the first run didn't.
+    const prev = await db
+      .from('bill_inbox_items')
+      .select('id, download_failed')
+      .eq('firm_id', addr.firm_id)
+      .eq('resend_email_id', event.email_id)
+      .maybeSingle()
+    if (prev.error) throw new Error(`item: ${prev.error.message}`)
+    const p = prev.data as { id: string; download_failed: boolean } | null
+    if (p?.download_failed) await storeFiles(deps, { id: p.id, firmId: addr.firm_id, emailId: event.email_id })
   }
   return { stored }
 }

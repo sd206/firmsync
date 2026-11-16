@@ -7,6 +7,8 @@ export type ResendReceiving = {
 }
 
 const API = 'https://api.resend.com'
+/** Each Resend call or file download gives up after this, so the webhook ends well inside its time limit. */
+const TIMEOUT_MS = 15_000
 
 export function resendReceiving(apiKey: string): ResendReceiving {
   return {
@@ -14,6 +16,7 @@ export function resendReceiving(apiKey: string): ResendReceiving {
       const res = await fetch(`${API}/emails/receiving/${encodeURIComponent(emailId)}/attachments`, {
         headers: { Authorization: `Bearer ${apiKey}` },
         cache: 'no-store',
+        signal: AbortSignal.timeout(TIMEOUT_MS),
       })
       if (!res.ok) throw new Error(`resend attachments ${res.status}`)
       const body = (await res.json()) as { data?: unknown } | unknown[]
@@ -32,7 +35,7 @@ export function resendReceiving(apiKey: string): ResendReceiving {
 
 /** Downloads one attachment from its signed URL. */
 export async function fetchFile(url: string): Promise<Uint8Array> {
-  const res = await fetch(url, { cache: 'no-store' })
+  const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(TIMEOUT_MS) })
   if (!res.ok) throw new Error(`attachment download ${res.status}`)
   return new Uint8Array(await res.arrayBuffer())
 }

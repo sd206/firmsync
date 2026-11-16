@@ -46,7 +46,8 @@ export function InboxActions({ firmId, row }: { firmId: string; row: InboxRow })
             >
               Mark duplicate
             </Button>
-            {row.files.length > 1 && unbilled.length < row.files.length && (
+            {/* By hand: emails with no files, or several files of which only some were bills. */}
+            {(row.files.length === 0 || row.files.length > 1) && (
               <Button
                 type="button"
                 size="sm"

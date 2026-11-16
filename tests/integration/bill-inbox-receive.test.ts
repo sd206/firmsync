@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import type { ResendReceiving } from '@/modules/bill-inbox/resend'
-import { receiveInbound } from '@/modules/bill-inbox/receive'
+import { receiveInbound, storeFiles } from '@/modules/bill-inbox/receive'
 import { adminDb, newFirm } from './helpers'
 import { inboxAddress } from './bill-inbox-fixtures'
 
@@ -137,6 +137,62 @@ describe('receiveInbound', () => {
     const { deps } = setup([{ name: 'x.pdf' }], { failFetch: true })
     expect((await receiveInbound(deps, event([`bills-${a.code}@${DOMAIN}`]))).stored).toBe(1)
     expect((await items(f))[0].download_failed).toBe(true)
+  })
+
+  it('keeps two attachments with the same name', async () => {
+    const f = await newFirm('Receive Same Name')
+    const a = await inboxAddress(f)
+    const { deps } = setup([{ name: 'invoice.pdf' }, { name: 'invoice.pdf' }])
+    await receiveInbound(deps, event([`bills-${a.code}@${DOMAIN}`]))
+    const [row] = await items(f)
+    expect(await filesOf(row.id)).toHaveLength(2)
+    expect(row.rejected_files).toEqual([])
+  })
+
+  it('marks an email as not downloaded until its files are stored, and a Resend retry finishes the job', async () => {
+    const f = await newFirm('Receive Recover')
+    const a = await inboxAddress(f)
+    const e = event([`bills-${a.code}@${DOMAIN}`])
+    let seenDuringDownload: boolean | null = null
+    const first = setup()
+    const slowFetch = first.deps.fetchFile
+    first.deps.fetchFile = async (url: string) => {
+      const { data } = await adminDb().from('bill_inbox_items').select('download_failed').eq('firm_id', f.firmId).single()
+      seenDuringDownload = (data as { download_failed: boolean }).download_failed
+      return slowFetch(url)
+    }
+    await receiveInbound(first.deps, e)
+    expect(seenDuringDownload).toBe(true)
+    expect((await items(f))[0].download_failed).toBe(false)
+
+    // A run cut off after the item was saved: no files yet, still marked as not downloaded.
+    const g = await newFirm('Receive Recover Cut')
+    const b = await inboxAddress(g)
+    const cut = event([`bills-${b.code}@${DOMAIN}`])
+    await adminDb().from('bill_inbox_items').insert({
+      firm_id: g.firmId, address_id: b.id, resend_email_id: cut.email_id, from_address: 'ap@acme.test', to_address: `bills-${b.code}`,
+      subject: 'Cut off', received_at: cut.created_at, sender_kind: 'unknown', download_failed: true,
+    })
+    const { deps } = setup()
+    expect((await receiveInbound(deps, cut)).stored).toBe(0)
+    const [row] = await items(g)
+    expect(row.download_failed).toBe(false)
+    expect(await filesOf(row.id)).toHaveLength(1)
+  })
+
+  it('stores each file once even when two retries run at the same time', async () => {
+    const f = await newFirm('Receive Concurrent')
+    const a = await inboxAddress(f)
+    const { deps } = setup([{ name: 'a.pdf' }, { name: 'b.pdf' }], { failFetch: true })
+    const e = event([`bills-${a.code}@${DOMAIN}`])
+    await receiveInbound(deps, e)
+    const [row] = await items(f)
+    const ok = setup([{ name: 'a.pdf' }, { name: 'b.pdf' }])
+    await Promise.all([
+      storeFiles(ok.deps, { id: row.id, firmId: f.firmId, emailId: e.email_id }),
+      storeFiles(ok.deps, { id: row.id, firmId: f.firmId, emailId: e.email_id }),
+    ])
+    expect(await filesOf(row.id)).toHaveLength(2)
   })
 
   it('gives each addressed firm its own item and keeps them apart', async () => {

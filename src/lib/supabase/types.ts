@@ -25,14 +25,14 @@ export type Database = {
           Tables: {
             "attachments": {
                   Row: {
-                    "bill_inbox_item_id": string | null,"created_at": string,"created_by": string | null,"expense_id": string | null,"file_name": string,"firm_id": string,"id": string,"mime_type": string,"payment_id": string | null,"size_bytes": number,"storage_path": string,"updated_at": string,"vendor_bill_id": string | null,"vendor_payment_id": string | null
+                    "bill_inbox_item_id": string | null,"bill_inbox_source": string | null,"created_at": string,"created_by": string | null,"expense_id": string | null,"file_name": string,"firm_id": string,"id": string,"mime_type": string,"payment_id": string | null,"size_bytes": number,"storage_path": string,"updated_at": string,"vendor_bill_id": string | null,"vendor_payment_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "bill_inbox_item_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"expense_id"?: string | null,"file_name": string,"firm_id": string,"id"?: string,"mime_type": string,"payment_id"?: string | null,"size_bytes": number,"storage_path": string,"updated_at"?: string,"vendor_bill_id"?: string | null,"vendor_payment_id"?: string | null
+                    "bill_inbox_item_id"?: string | null,"bill_inbox_source"?: string | null,"created_at"?: string,"created_by"?: string | null,"expense_id"?: string | null,"file_name": string,"firm_id": string,"id"?: string,"mime_type": string,"payment_id"?: string | null,"size_bytes": number,"storage_path": string,"updated_at"?: string,"vendor_bill_id"?: string | null,"vendor_payment_id"?: string | null
                   }
                   Update: {
-                    "bill_inbox_item_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"expense_id"?: string | null,"file_name"?: string,"firm_id"?: string,"id"?: string,"mime_type"?: string,"payment_id"?: string | null,"size_bytes"?: number,"storage_path"?: string,"updated_at"?: string,"vendor_bill_id"?: string | null,"vendor_payment_id"?: string | null
+                    "bill_inbox_item_id"?: string | null,"bill_inbox_source"?: string | null,"created_at"?: string,"created_by"?: string | null,"expense_id"?: string | null,"file_name"?: string,"firm_id"?: string,"id"?: string,"mime_type"?: string,"payment_id"?: string | null,"size_bytes"?: number,"storage_path"?: string,"updated_at"?: string,"vendor_bill_id"?: string | null,"vendor_payment_id"?: string | null
                   }
                   Relationships: [
                     {

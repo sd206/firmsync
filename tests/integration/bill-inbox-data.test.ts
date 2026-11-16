@@ -85,6 +85,10 @@ describe('bill inbox data', () => {
     expect(link!.bill_id).toBe(bill)
     const { data: st } = await adminDb().from('bill_inbox_items').select('status').eq('id', item.itemId).single()
     expect(st!.status).toBe('bill_created')
+    // Saving the same bill again (a retried save) doesn't attach the file a second time.
+    expect(await attachInboxFileToBill(f.manager.db, f.firmId, bill, item.attachmentIds[0])).toEqual({ ok: true, data: undefined })
+    const { count: billFiles } = await adminDb().from('attachments').select('id', { count: 'exact', head: true }).eq('vendor_bill_id', bill)
+    expect(billFiles).toBe(1)
     // The inbox keeps its own copy.
     const { count } = await adminDb().from('attachments').select('id', { count: 'exact', head: true }).eq('bill_inbox_item_id', item.itemId)
     expect(count).toBe(1)
