@@ -25,17 +25,23 @@ export type Database = {
           Tables: {
             "attachments": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"expense_id": string | null,"file_name": string,"firm_id": string,"id": string,"mime_type": string,"payment_id": string | null,"size_bytes": number,"storage_path": string,"updated_at": string,"vendor_bill_id": string | null,"vendor_payment_id": string | null
+                    "bill_inbox_item_id": string | null,"created_at": string,"created_by": string | null,"expense_id": string | null,"file_name": string,"firm_id": string,"id": string,"mime_type": string,"payment_id": string | null,"size_bytes": number,"storage_path": string,"updated_at": string,"vendor_bill_id": string | null,"vendor_payment_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"expense_id"?: string | null,"file_name": string,"firm_id": string,"id"?: string,"mime_type": string,"payment_id"?: string | null,"size_bytes": number,"storage_path": string,"updated_at"?: string,"vendor_bill_id"?: string | null,"vendor_payment_id"?: string | null
+                    "bill_inbox_item_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"expense_id"?: string | null,"file_name": string,"firm_id": string,"id"?: string,"mime_type": string,"payment_id"?: string | null,"size_bytes": number,"storage_path": string,"updated_at"?: string,"vendor_bill_id"?: string | null,"vendor_payment_id"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"expense_id"?: string | null,"file_name"?: string,"firm_id"?: string,"id"?: string,"mime_type"?: string,"payment_id"?: string | null,"size_bytes"?: number,"storage_path"?: string,"updated_at"?: string,"vendor_bill_id"?: string | null,"vendor_payment_id"?: string | null
+                    "bill_inbox_item_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"expense_id"?: string | null,"file_name"?: string,"firm_id"?: string,"id"?: string,"mime_type"?: string,"payment_id"?: string | null,"size_bytes"?: number,"storage_path"?: string,"updated_at"?: string,"vendor_bill_id"?: string | null,"vendor_payment_id"?: string | null
                   }
                   Relationships: [
                     {
+      foreignKeyName: "attachments_bill_inbox_item_fk"
+      columns: ["firm_id","bill_inbox_item_id"]
+isOneToOne: false
+      referencedRelation: "bill_inbox_items"
+      referencedColumns: ["firm_id","id"]
+    },{
       foreignKeyName: "attachments_expense_fk"
       columns: ["firm_id","expense_id"]
 isOneToOne: false
@@ -186,6 +192,96 @@ isOneToOne: false
       columns: ["firm_id","vendor_payment_id"]
 isOneToOne: false
       referencedRelation: "vendor_payments"
+      referencedColumns: ["firm_id","id"]
+    }
+                  ]
+                },"bill_inbox_addresses": {
+                  Row: {
+                    "code": string,"created_at": string,"enabled": boolean,"firm_id": string,"id": string,"replaced_at": string | null,"unknown_sender": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "code": string,"created_at"?: string,"enabled"?: boolean,"firm_id": string,"id"?: string,"replaced_at"?: string | null,"unknown_sender"?: string
+                  }
+                  Update: {
+                    "code"?: string,"created_at"?: string,"enabled"?: boolean,"firm_id"?: string,"id"?: string,"replaced_at"?: string | null,"unknown_sender"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "bill_inbox_addresses_firm_id_fkey"
+      columns: ["firm_id"]
+isOneToOne: false
+      referencedRelation: "firms"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"bill_inbox_bills": {
+                  Row: {
+                    "attachment_id": string,"bill_id": string,"created_at": string,"firm_id": string,"item_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "attachment_id": string,"bill_id": string,"created_at"?: string,"firm_id": string,"item_id": string
+                  }
+                  Update: {
+                    "attachment_id"?: string,"bill_id"?: string,"created_at"?: string,"firm_id"?: string,"item_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "bill_inbox_bills_attachment_fk"
+      columns: ["firm_id","attachment_id"]
+isOneToOne: false
+      referencedRelation: "attachments"
+      referencedColumns: ["firm_id","id"]
+    },{
+      foreignKeyName: "bill_inbox_bills_bill_fk"
+      columns: ["firm_id","bill_id"]
+isOneToOne: false
+      referencedRelation: "vendor_bills"
+      referencedColumns: ["firm_id","id"]
+    },{
+      foreignKeyName: "bill_inbox_bills_firm_id_fkey"
+      columns: ["firm_id"]
+isOneToOne: false
+      referencedRelation: "firms"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bill_inbox_bills_item_fk"
+      columns: ["firm_id","item_id"]
+isOneToOne: false
+      referencedRelation: "bill_inbox_items"
+      referencedColumns: ["firm_id","id"]
+    }
+                  ]
+                },"bill_inbox_items": {
+                  Row: {
+                    "address_id": string,"created_at": string,"download_failed": boolean,"firm_id": string,"forwarded_by": string | null,"from_address": string,"handled_at": string | null,"handled_by": string | null,"id": string,"note": string | null,"received_at": string,"rejected_files": NonNullable<Json>,"resend_email_id": string,"sender_kind": string,"status": string,"subject": string,"to_address": string,"vendor_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "address_id": string,"created_at"?: string,"download_failed"?: boolean,"firm_id": string,"forwarded_by"?: string | null,"from_address": string,"handled_at"?: string | null,"handled_by"?: string | null,"id"?: string,"note"?: string | null,"received_at": string,"rejected_files"?: NonNullable<Json>,"resend_email_id": string,"sender_kind": string,"status"?: string,"subject"?: string,"to_address": string,"vendor_id"?: string | null
+                  }
+                  Update: {
+                    "address_id"?: string,"created_at"?: string,"download_failed"?: boolean,"firm_id"?: string,"forwarded_by"?: string | null,"from_address"?: string,"handled_at"?: string | null,"handled_by"?: string | null,"id"?: string,"note"?: string | null,"received_at"?: string,"rejected_files"?: NonNullable<Json>,"resend_email_id"?: string,"sender_kind"?: string,"status"?: string,"subject"?: string,"to_address"?: string,"vendor_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "bill_inbox_items_address_fk"
+      columns: ["firm_id","address_id"]
+isOneToOne: false
+      referencedRelation: "bill_inbox_addresses"
+      referencedColumns: ["firm_id","id"]
+    },{
+      foreignKeyName: "bill_inbox_items_firm_id_fkey"
+      columns: ["firm_id"]
+isOneToOne: false
+      referencedRelation: "firms"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bill_inbox_items_vendor_fk"
+      columns: ["firm_id","vendor_id"]
+isOneToOne: false
+      referencedRelation: "vendors"
       referencedColumns: ["firm_id","id"]
     }
                   ]
@@ -893,6 +989,109 @@ isOneToOne: false
               "account_kind": string,"account_name": string,"amount": string,"description": string,"exact_match": boolean,"line_id": string,"posted_on": string
             }[]
                            },
+"bill_inbox_admin":
+{ Args: { "p_firm": string }; Returns: undefined
+                           },
+"bill_inbox_disable":
+{ Args: { "p_firm": string }; Returns: {
+              "code": string,
+"created_at": string,
+"enabled": boolean,
+"firm_id": string,
+"id": string,
+"replaced_at": string | null,
+"unknown_sender": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "bill_inbox_addresses"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"bill_inbox_enable":
+{ Args: { "p_firm": string }; Returns: {
+              "code": string,
+"created_at": string,
+"enabled": boolean,
+"firm_id": string,
+"id": string,
+"replaced_at": string | null,
+"unknown_sender": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "bill_inbox_addresses"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"bill_inbox_link_bill":
+{ Args: { "p_attachment": string,"p_bill": string,"p_item": string }; Returns: undefined
+                           },
+"bill_inbox_lock_item":
+{ Args: { "p_item": string }; Returns: {
+              "address_id": string,
+"created_at": string,
+"download_failed": boolean,
+"firm_id": string,
+"forwarded_by": string | null,
+"from_address": string,
+"handled_at": string | null,
+"handled_by": string | null,
+"id": string,
+"note": string | null,
+"received_at": string,
+"rejected_files": NonNullable<Json>,
+"resend_email_id": string,
+"sender_kind": string,
+"status": string,
+"subject": string,
+"to_address": string,
+"vendor_id": string | null
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "bill_inbox_items"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"bill_inbox_new_code":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
+"bill_inbox_replace":
+{ Args: { "p_firm": string }; Returns: {
+              "code": string,
+"created_at": string,
+"enabled": boolean,
+"firm_id": string,
+"id": string,
+"replaced_at": string | null,
+"unknown_sender": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "bill_inbox_addresses"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"bill_inbox_set_status":
+{ Args: { "p_item": string,"p_note": string,"p_status": string }; Returns: undefined
+                           },
+"bill_inbox_set_unknown":
+{ Args: { "p_firm": string,"p_mode": string }; Returns: {
+              "code": string,
+"created_at": string,
+"enabled": boolean,
+"firm_id": string,
+"id": string,
+"replaced_at": string | null,
+"unknown_sender": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "bill_inbox_addresses"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "can_edit_consultant_time":
 { Args: { "p_consultant": string,"p_firm": string }; Returns: boolean
                            },
