@@ -184,6 +184,15 @@ describe('payables report', () => {
   })
 })
 
+describe('zero balances', () => {
+  it('leaves out issued invoices with nothing to pay, like the Unpaid list', async () => {
+    const f = await newFirm('AR Zero Firm')
+    const { clientId } = await invoice(f, 0, d(-20), d(-10))
+    expect(await call(f, 'receivables_report', { p_clients: [clientId] })).toEqual([])
+    expect(await call(f, 'receivables_invoices', { p_clients: [clientId] })).toEqual([])
+  })
+})
+
 describe('report access', () => {
   it("rejects consultants and ignores other firms' ids", async () => {
     const f = await newFirm('AR Access A')

@@ -1,10 +1,11 @@
 -- Receivables and Payables reports: who owes the firm, what the firm owes vendors.
+-- Only documents with something left to pay count (as in the Unpaid invoices list).
 -- Balances are as of p_today (passed in by the app). Admins and managers only.
 
 -- ---------------------------------------------------------------------------
 -- Receivables: one row per client with an open balance.
 -- ---------------------------------------------------------------------------
-create function public.receivables_report(p_firm uuid, p_today date, p_clients uuid[], p_overdue_only boolean)
+create or replace function public.receivables_report(p_firm uuid, p_today date, p_clients uuid[], p_overdue_only boolean)
 returns table (
   client_id uuid,
   client_name text,
@@ -35,6 +36,7 @@ begin
     from public.invoices i
     where i.firm_id = p_firm
       and i.status in ('issued', 'partly_paid')
+      and i.total - i.amount_paid > 0
       and (p_clients is null or i.client_id = any (p_clients))
       and (not coalesce(p_overdue_only, false) or p_today - i.due_date > 0)
   ),
@@ -96,7 +98,7 @@ grant execute on function public.receivables_report(uuid, date, uuid[], boolean)
 -- ---------------------------------------------------------------------------
 -- Receivables detail: open invoices.
 -- ---------------------------------------------------------------------------
-create function public.receivables_invoices(p_firm uuid, p_today date, p_clients uuid[], p_overdue_only boolean)
+create or replace function public.receivables_invoices(p_firm uuid, p_today date, p_clients uuid[], p_overdue_only boolean)
 returns table (
   invoice_id uuid,
   number text,
@@ -129,6 +131,7 @@ begin
   join public.clients c on c.firm_id = i.firm_id and c.id = i.client_id
   where i.firm_id = p_firm
     and i.status in ('issued', 'partly_paid')
+    and i.total - i.amount_paid > 0
     and (p_clients is null or i.client_id = any (p_clients))
     and (not coalesce(p_overdue_only, false) or p_today - i.due_date > 0)
   order by c.name, i.due_date, i.number;
@@ -141,7 +144,7 @@ grant execute on function public.receivables_invoices(uuid, date, uuid[], boolea
 -- ---------------------------------------------------------------------------
 -- Payables: one row per vendor with an approved balance or a bill awaiting approval.
 -- ---------------------------------------------------------------------------
-create function public.payables_report(p_firm uuid, p_today date, p_vendors uuid[], p_overdue_only boolean)
+create or replace function public.payables_report(p_firm uuid, p_today date, p_vendors uuid[], p_overdue_only boolean)
 returns table (
   vendor_id uuid,
   vendor_name text,
@@ -174,6 +177,7 @@ begin
     from public.vendor_bills b
     where b.firm_id = p_firm
       and b.status in ('approved', 'partly_paid', 'pending_approval')
+      and b.total - b.amount_paid > 0
       and (p_vendors is null or b.vendor_id = any (p_vendors))
       and (not coalesce(p_overdue_only, false) or p_today - b.due_date > 0)
   ),
@@ -217,7 +221,7 @@ grant execute on function public.payables_report(uuid, date, uuid[], boolean) to
 -- ---------------------------------------------------------------------------
 -- Payables detail: approved, partly paid and awaiting-approval bills.
 -- ---------------------------------------------------------------------------
-create function public.payables_bills(p_firm uuid, p_today date, p_vendors uuid[], p_overdue_only boolean)
+create or replace function public.payables_bills(p_firm uuid, p_today date, p_vendors uuid[], p_overdue_only boolean)
 returns table (
   bill_id uuid,
   bill_number text,
@@ -251,6 +255,7 @@ begin
   join public.vendors v on v.firm_id = b.firm_id and v.id = b.vendor_id
   where b.firm_id = p_firm
     and b.status in ('approved', 'partly_paid', 'pending_approval')
+    and b.total - b.amount_paid > 0
     and (p_vendors is null or b.vendor_id = any (p_vendors))
     and (not coalesce(p_overdue_only, false) or p_today - b.due_date > 0)
   order by v.name, b.due_date, b.bill_number;
