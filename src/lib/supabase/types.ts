@@ -830,8 +830,14 @@ isOneToOne: false
 "add_payment_attachment":
 { Args: { "p_file_name": string,"p_mime": string,"p_payment": string,"p_size": number,"p_storage_path": string }; Returns: string
                            },
+"add_vendor_attachment":
+{ Args: { "p_file_name": string,"p_mime": string,"p_owner": string,"p_owner_kind": string,"p_size": number,"p_storage_path": string }; Returns: string
+                           },
 "approve_timesheet":
 { Args: { "p_timesheet": string }; Returns: undefined
+                           },
+"approve_vendor_bill":
+{ Args: { "p_bill": string }; Returns: undefined
                            },
 "bank_account_checked":
 { Args: { "p_account": string }; Returns: {
@@ -913,6 +919,9 @@ isOneToOne: false
 { Args: { "p_line": string }; Returns: undefined
                            },
 "delete_payment":
+{ Args: { "p_payment": string }; Returns: string[]
+                           },
+"delete_vendor_payment":
 { Args: { "p_payment": string }; Returns: string[]
                            },
 "expense_totals":
@@ -1108,11 +1117,17 @@ isOneToOne: false
 "record_payment":
 { Args: { "p_amount": number,"p_invoice": string,"p_method": Database["public"]['Enums']["payment_method"],"p_notes": string,"p_paid_on": string,"p_reference": string }; Returns: string
                            },
+"record_vendor_payment":
+{ Args: { "p_amount": number,"p_bill": string,"p_method": Database["public"]['Enums']["payment_method"],"p_notes": string,"p_paid_on": string,"p_reference": string }; Returns: string
+                           },
 "regenerate_invoice_lines":
 { Args: { "p_consultants": (string)[],"p_invoice": string }; Returns: undefined
                            },
 "reject_timesheet":
 { Args: { "p_comment": string,"p_timesheet": string }; Returns: undefined
+                           },
+"reject_vendor_bill":
+{ Args: { "p_bill": string,"p_reason": string }; Returns: undefined
                            },
 "reopen_timesheet":
 { Args: { "p_timesheet": string }; Returns: undefined
@@ -1128,6 +1143,9 @@ isOneToOne: false
                            },
 "save_timesheet_week":
 { Args: { "p_consultant": string,"p_entries": Json,"p_firm": string,"p_week_start": string }; Returns: string
+                           },
+"save_vendor_bill":
+{ Args: { "p_bill": string,"p_bill_date": string,"p_due_date": string,"p_firm": string,"p_lines": Json,"p_notes": string,"p_number": string,"p_period_end": string,"p_period_start": string,"p_vendor": string }; Returns: string
                            },
 "set_default_template":
 { Args: { "p_template": string }; Returns: undefined
@@ -1186,11 +1204,52 @@ isOneToOne: false
 "update_payment_details":
 { Args: { "p_method": Database["public"]['Enums']["payment_method"],"p_notes": string,"p_paid_on": string,"p_payment": string,"p_reference": string }; Returns: undefined
                            },
+"vendor_bill_apply_payments":
+{ Args: { "p_bill": string }; Returns: undefined
+                           },
+"vendor_bill_contractor_check":
+{ Args: { "p_bill": string }; Returns: {
+              "consultant_id": string,"consultant_name": string,"expected": string,"hours": string
+            }[]
+                           },
 "vendor_bill_internal":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"vendor_bill_lock":
+{ Args: { "p_bill": string,"p_roles": (Database["public"]['Enums']["firm_role"])[] }; Returns: {
+              "amount_paid": number,
+"approved_at": string | null,
+"approved_by": string | null,
+"bill_date": string,
+"bill_number": string,
+"created_at": string,
+"created_by": string | null,
+"due_date": string,
+"firm_id": string,
+"id": string,
+"notes": string | null,
+"period_end": string | null,
+"period_start": string | null,
+"rejected_reason": string | null,
+"status": Database["public"]['Enums']["vendor_bill_status"],
+"total": number,
+"updated_at": string,
+"vendor_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "vendor_bills"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"vendor_bill_set_internal":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
 "void_invoice":
 { Args: { "p_invoice": string }; Returns: undefined
+                           },
+"void_vendor_bill":
+{ Args: { "p_bill": string }; Returns: undefined
                            },
 "week_projects":
 { Args: { "p_consultant": string,"p_firm": string,"p_week_start": string }; Returns: {
