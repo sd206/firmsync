@@ -47,8 +47,12 @@ The user picked A.
 
 ## How mail arrives (decided)
 
-- **Provider: Resend**, already used for sending. Receiving is on every plan. Each received email
+- **Provider: Resend.** The firm already has a Resend account and a verified sending domain (Resend is
+  Supabase's SMTP for sign-in emails). The app code has no Resend SDK yet, so this adds the `resend`
+  package (or plain fetch) and Svix verification. Receiving is on every plan. Each received email
   counts toward the Resend email quota.
+- **Environments:** only production (`firmsync.vercel.app`) gets a receiving webhook. Preview and
+  local deployments never receive real mail; tests mock Resend.
 - **Domain:**
   - A receiving subdomain, e.g. `in.<firm domain>`, with Resend's MX record added at the DNS host
     (Squarespace).
@@ -88,8 +92,13 @@ The user picked A.
 - **Turn off:** mail to it is dropped and logged as above.
 - **Replace:** creates a new code. The old address stops working immediately. No grace period
   (my call; easy to add later).
-- **Unknown senders:** a sender is known when their address (case-insensitive) equals the email on
-  one of the firm's vendors. For other senders, the admin picks one of two options:
+- **Known senders (my calls):** matching is on the sender address, case-insensitive. Reply-To and
+  forwarded-message headers are ignored.
+  - Equals the email on exactly one of the firm's vendors: that vendor is matched.
+  - Equals the email on several vendors: known, but no vendor is matched.
+  - Equals the email of a member of the firm: known, shown as "Forwarded by <name>", no vendor
+    matched. Staff forwarding bills is expected to be the usual way mail arrives.
+- **Unknown senders:** for any other sender, the admin picks one of two options:
   - **Hold in the inbox, marked "Unknown sender"** (default)
   - **Drop** (logged, not stored)
 - Only admins can change these settings. The settings page shows the address with a Copy button to
@@ -109,6 +118,7 @@ The user picked A.
 - **Actions on a New item:**
   - **Create bill**, one button per accepted file. It opens the new-bill form with the matched vendor
     preselected (the user can change it) and that file attached to the new bill when it is saved.
+    One file makes one bill (my call). More files can be added on the bill page, as today.
     - After a successful save, the item shows "Bill INV-4471 created" with a link. When every file
       on the item has a bill, the item moves to Bills created.
     - An item can also be moved to Bills created by hand, for emails where only one of several files
@@ -182,7 +192,15 @@ The user picked A.
 - Table and column names, the exact folder layout, and whether Create bill copies or moves the file.
 - How the new-bill form receives the preselected vendor and the inbox file (e.g. a query parameter
   carrying the inbox file id, re-checked on the server).
-- Downloading files inside the webhook request versus a short follow-up step, as long as the
-  one-hour download URL is respected and a failure leaves the item visible with "Files couldn't be
-  downloaded".
+- Indexes for the duplicate hint, and how the menu count is computed.
+
+## Decided after review (my calls)
+
+- **Downloads happen inside the webhook request.** The handler answers 2xx once the item row
+  exists; Resend retries only on non-2xx.
+- **A failed download still leaves the item visible**, marked "Files couldn't be downloaded", with a
+  **Try again** button. It re-lists the attachments through the Receiving API, which gives fresh
+  one-hour URLs, and downloads them again.
+- **Inbox files use the existing attachments table**, as a new owner kind, the same way vendor bills
+  were added. Create bill copies the file.
 - UI layout details within the existing app style.
