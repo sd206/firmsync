@@ -53,11 +53,17 @@ The user picked A.
   counts toward the Resend email quota.
 - **Environments:** only production (`firmsync.vercel.app`) gets a receiving webhook. Preview and
   local deployments never receive real mail; tests mock Resend.
-- **Domain:**
-  - A receiving subdomain, e.g. `in.<firm domain>`, with Resend's MX record added at the DNS host
-    (Squarespace).
-  - Normal mail on the main domain is not affected.
-  - Resend accepts any address on the subdomain (catch-all).
+- **Domain (user's choice):**
+  - Start on Resend's managed receiving domain (`<id>.resend.app`). It needs no DNS setup and accepts
+    any address on it (catch-all). `firmsync.vercel.app` can't be used, because MX records can't be
+    added to a `vercel.app` name.
+  - Later the user may buy a FirmSync domain and receive on a subdomain of it (e.g.
+    `in.firmsync.app`, one MX record).
+  - **Switching domains must not break addresses already given to vendors.**
+    `INBOUND_DOMAINS` is a comma-separated list. The first entry is the one shown in Settings; every
+    listed domain is accepted.
+  - The firm's code is the same on every domain. `bills-7f3k2q@` works on both the old and the new
+    domain until the old one is removed from the list.
 - **Webhook:**
   - Resend posts `email.received` to `POST /api/inbound/resend` on the app.
   - The handler must verify the Svix signature (`svix-id`, `svix-timestamp`, `svix-signature`)
@@ -72,20 +78,20 @@ The user picked A.
     checked), and stores it in the firm's storage folder.
   - Files that fail the checks are not stored. The item lists them as "Not accepted: name (reason)".
 - **Routing:**
-  - The handler looks at the `to` addresses (and `received_for` as a fallback) for one on the
-    receiving domain whose code matches an enabled firm address.
+  - The handler looks at the `to` addresses (and `received_for` as a fallback) for one on any
+    domain in `INBOUND_DOMAINS` whose code matches an enabled firm address.
   - No match, or the address is turned off or replaced: answer 200, store nothing, and log one line
     (the address code and the Resend email id, not the content).
 - **Resend's own retries:** if Resend delivers the same webhook again (same Resend email id), the
   handler stores nothing new. This is not duplicate detection. A vendor sending the same bill twice
   is two separate emails and shows up twice.
-- **Configuration:** `RESEND_API_KEY` (server only), `RESEND_INBOUND_SECRET`, and `INBOUND_DOMAIN`
+- **Configuration:** `RESEND_API_KEY` (server only), `RESEND_INBOUND_SECRET`, and `INBOUND_DOMAINS`
   are set in Vercel. If they're missing, Settings › Bill inbox says the feature isn't set up, and
   the webhook answers 503.
 
 ## The address (decided)
 
-- Each firm has at most one active address: `bills-<code>@<INBOUND_DOMAIN>`.
+- Each firm has at most one active address: `bills-<code>@<first INBOUND_DOMAINS entry>`.
   - The code is random: 10 lowercase letters and digits, hard to guess.
   - Codes are never reused.
 - **Turn on:** creates the address, or re-enables the existing one with the same code.
@@ -161,12 +167,21 @@ The user picked A.
 
 ## Setup steps for the user (manual, once)
 
-1. In Resend: enable receiving on the chosen subdomain and copy the MX record.
-2. In Squarespace DNS: add that MX record for the subdomain.
-3. In Resend: create a webhook for `email.received` pointing at
+1. In Resend: open Receiving and copy the account's `<id>.resend.app` domain.
+2. In Resend: create a webhook for `email.received` pointing at
    `https://firmsync.vercel.app/api/inbound/resend`, and copy its signing secret.
-4. In Vercel: add `RESEND_API_KEY`, `RESEND_INBOUND_SECRET`, `INBOUND_DOMAIN`, then redeploy.
+3. In Resend: create an API key that can read received emails.
+4. In Vercel: add `RESEND_API_KEY`, `RESEND_INBOUND_SECRET`, and `INBOUND_DOMAINS=<id>.resend.app`,
+   then redeploy.
 5. In FirmSync: Settings › Bill inbox › Turn on, then send a test email.
+
+Later, to move to a FirmSync domain:
+
+1. Verify the domain in Resend and enable receiving on its `in.` subdomain.
+2. Add the MX record at the DNS host.
+3. Set `INBOUND_DOMAINS=in.firmsync.app,<id>.resend.app` and redeploy.
+4. Tell vendors the new address.
+5. Once mail to the old address has stopped, remove it from the list.
 
 ## Testing
 
