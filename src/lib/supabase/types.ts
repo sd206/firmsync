@@ -903,6 +903,9 @@ isOneToOne: false
 "confirm_bank_line_payment":
 { Args: { "p_invoice": string,"p_line": string,"p_notes": string }; Returns: string
                            },
+"confirm_bank_line_vendor_payment":
+{ Args: { "p_bill": string,"p_line": string,"p_notes": string }; Returns: string
+                           },
 "create_firm_with_admin":
 { Args: { "p_admin": string,"p_name": string }; Returns: string
                            },
@@ -1032,11 +1035,11 @@ isOneToOne: false
 { Args: { "p_invoice": string }; Returns: string
                            },
 "link_bank_line":
-{ Args: { "p_expense": string,"p_line": string,"p_payment": string }; Returns: undefined
+{ Args: { "p_expense": string,"p_line": string,"p_payment": string,"p_vendor_payment"?: string }; Returns: undefined
                            },
 "list_bank_lines":
 { Args: { "p_account": string,"p_status": string }; Returns: {
-              "amount": string,"bank_ref": string,"description": string,"expense_id": string,"id": string,"ignore_reason": string,"linked_label": string,"other_income_id": string,"payment_id": string,"posted_on": string,"status": string,"suggested_category_id": string
+              "amount": string,"bank_ref": string,"description": string,"expense_id": string,"id": string,"ignore_reason": string,"linked_label": string,"other_income_id": string,"payment_id": string,"posted_on": string,"status": string,"suggested_category_id": string,"vendor_payment_id": string
             }[]
                            },
 "list_expenses":
