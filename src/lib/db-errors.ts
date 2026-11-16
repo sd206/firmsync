@@ -91,6 +91,8 @@ const BY_MATCH: [string, string][] = [
   ['BILL_STATE', "This bill can't be changed in its current state."],
   ['BILL_STATUS', "A bill's status changes only by approving, rejecting, paying or voiding it."],
   ['BILL_CONSULTANT', 'Contractor lines can only name consultants supplied by this vendor.'],
+  ['BILL_EXPENSE', 'This expense came from a vendor bill. Change it through the bill (void it and enter a corrected one).'],
+  ['LINE_MOVE', "A bill line can't be moved to another bill."],
   ['REJECT_REASON', 'Say why the bill is rejected (up to 500 characters).'],
   ['vendor_bills_vendor_number_key', 'This bill number is already entered for this vendor.'],
   ['vendor_bills_due_chk', 'The due date must be on or after the bill date.'],

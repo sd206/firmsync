@@ -105,7 +105,11 @@ export const billInputSchema = z
       .trim()
       .min(1, "Enter the vendor's invoice number.")
       .max(60, 'Keep this to 60 characters or fewer.'),
-    billDate: z.string().refine(isIsoDate, 'Enter a valid bill date.'),
+    // Approval books expense lines on the bill date, and expenses can't be in the future.
+    billDate: z
+      .string()
+      .refine(isIsoDate, 'Enter a valid bill date.')
+      .refine((v) => v <= todayIso(), "The bill date can't be in the future."),
     dueDate: z.string().refine(isIsoDate, 'Enter a valid due date.'),
     periodStart: optionalDate('Enter a valid start date.'),
     periodEnd: optionalDate('Enter a valid end date.'),

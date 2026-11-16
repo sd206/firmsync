@@ -888,6 +888,11 @@ isOneToOne: false
 "bank_match_candidates":
 { Args: { "p_line": string }; Returns: Json
                            },
+"bill_bank_withdrawals":
+{ Args: { "p_bill": string }; Returns: {
+              "account_kind": string,"account_name": string,"amount": string,"description": string,"exact_match": boolean,"line_id": string,"posted_on": string
+            }[]
+                           },
 "can_edit_consultant_time":
 { Args: { "p_consultant": string,"p_firm": string }; Returns: boolean
                            },

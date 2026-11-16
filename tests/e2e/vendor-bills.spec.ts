@@ -93,6 +93,10 @@ test('enter, approve and pay a vendor bill from the bank', async ({ page }) => {
   await expect(page.getByTestId('status')).toHaveText('Approved')
   await goTo(page, 'Billing', 'Expenses')
   await expect(page.getByRole('row').filter({ hasText: 'Acme Staffing' })).toContainText('$300.00')
+  // The bill's expense is read-only: it changes only through the bill.
+  await page.getByRole('row').filter({ hasText: 'Acme Staffing' }).getByRole('link', { name: 'Acme Staffing' }).click()
+  await expect(page.getByRole('link', { name: 'vendor bill INV-4471' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Delete expense' })).toHaveCount(0)
 
   // The bank payment is suggested for the bill and pays it.
   await page.goto(`/f/${f.firmId}/bank`)

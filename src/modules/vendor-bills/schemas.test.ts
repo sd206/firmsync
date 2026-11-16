@@ -46,6 +46,11 @@ describe('billInputSchema', () => {
     expect(due.error?.issues[0]).toMatchObject({ path: ['dueDate'], message: 'The due date must be on or after the bill date.' })
   })
 
+  it('refuses a bill dated in the future', () => {
+    const r = billInputSchema.safeParse(base([{ kind: 'contractor', description: 'X', amount: '1' }], { billDate: '2999-01-01', dueDate: '2999-02-01' }))
+    expect(r.error?.issues[0]).toMatchObject({ path: ['billDate'], message: "The bill date can't be in the future." })
+  })
+
   it('needs both period dates or neither, in order', () => {
     const one = billInputSchema.safeParse(base([{ kind: 'contractor', description: 'X', amount: '1' }], { periodStart: '2026-10-01' }))
     expect(one.error?.issues[0].path).toEqual(['periodEnd'])
