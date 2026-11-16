@@ -25,14 +25,14 @@ export type Database = {
           Tables: {
             "attachments": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"expense_id": string | null,"file_name": string,"firm_id": string,"id": string,"mime_type": string,"payment_id": string | null,"size_bytes": number,"storage_path": string,"updated_at": string
+                    "created_at": string,"created_by": string | null,"expense_id": string | null,"file_name": string,"firm_id": string,"id": string,"mime_type": string,"payment_id": string | null,"size_bytes": number,"storage_path": string,"updated_at": string,"vendor_bill_id": string | null,"vendor_payment_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"expense_id"?: string | null,"file_name": string,"firm_id": string,"id"?: string,"mime_type": string,"payment_id"?: string | null,"size_bytes": number,"storage_path": string,"updated_at"?: string
+                    "created_at"?: string,"created_by"?: string | null,"expense_id"?: string | null,"file_name": string,"firm_id": string,"id"?: string,"mime_type": string,"payment_id"?: string | null,"size_bytes": number,"storage_path": string,"updated_at"?: string,"vendor_bill_id"?: string | null,"vendor_payment_id"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"expense_id"?: string | null,"file_name"?: string,"firm_id"?: string,"id"?: string,"mime_type"?: string,"payment_id"?: string | null,"size_bytes"?: number,"storage_path"?: string,"updated_at"?: string
+                    "created_at"?: string,"created_by"?: string | null,"expense_id"?: string | null,"file_name"?: string,"firm_id"?: string,"id"?: string,"mime_type"?: string,"payment_id"?: string | null,"size_bytes"?: number,"storage_path"?: string,"updated_at"?: string,"vendor_bill_id"?: string | null,"vendor_payment_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -52,6 +52,18 @@ isOneToOne: false
       columns: ["firm_id","payment_id"]
 isOneToOne: false
       referencedRelation: "payments"
+      referencedColumns: ["firm_id","id"]
+    },{
+      foreignKeyName: "attachments_vendor_bill_fk"
+      columns: ["firm_id","vendor_bill_id"]
+isOneToOne: false
+      referencedRelation: "vendor_bills"
+      referencedColumns: ["firm_id","id"]
+    },{
+      foreignKeyName: "attachments_vendor_payment_fk"
+      columns: ["firm_id","vendor_payment_id"]
+isOneToOne: false
+      referencedRelation: "vendor_payments"
       referencedColumns: ["firm_id","id"]
     }
                   ]
@@ -123,14 +135,14 @@ isOneToOne: false
                   ]
                 },"bank_lines": {
                   Row: {
-                    "account_id": string,"amount": number,"bank_ref": string | null,"clean_description": string,"created_at": string,"dedupe_key": string,"description": string,"expense_id": string | null,"firm_id": string,"id": string,"ignore_reason": string | null,"import_id": string | null,"other_income_id": string | null,"payment_id": string | null,"posted_on": string,"status": Database["public"]['Enums']["bank_line_status"],"updated_at": string
+                    "account_id": string,"amount": number,"bank_ref": string | null,"clean_description": string,"created_at": string,"dedupe_key": string,"description": string,"expense_id": string | null,"firm_id": string,"id": string,"ignore_reason": string | null,"import_id": string | null,"other_income_id": string | null,"payment_id": string | null,"posted_on": string,"status": Database["public"]['Enums']["bank_line_status"],"updated_at": string,"vendor_payment_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "account_id": string,"amount": number,"bank_ref"?: string | null,"clean_description": string,"created_at"?: string,"dedupe_key": string,"description": string,"expense_id"?: string | null,"firm_id": string,"id"?: string,"ignore_reason"?: string | null,"import_id"?: string | null,"other_income_id"?: string | null,"payment_id"?: string | null,"posted_on": string,"status"?: Database["public"]['Enums']["bank_line_status"],"updated_at"?: string
+                    "account_id": string,"amount": number,"bank_ref"?: string | null,"clean_description": string,"created_at"?: string,"dedupe_key": string,"description": string,"expense_id"?: string | null,"firm_id": string,"id"?: string,"ignore_reason"?: string | null,"import_id"?: string | null,"other_income_id"?: string | null,"payment_id"?: string | null,"posted_on": string,"status"?: Database["public"]['Enums']["bank_line_status"],"updated_at"?: string,"vendor_payment_id"?: string | null
                   }
                   Update: {
-                    "account_id"?: string,"amount"?: number,"bank_ref"?: string | null,"clean_description"?: string,"created_at"?: string,"dedupe_key"?: string,"description"?: string,"expense_id"?: string | null,"firm_id"?: string,"id"?: string,"ignore_reason"?: string | null,"import_id"?: string | null,"other_income_id"?: string | null,"payment_id"?: string | null,"posted_on"?: string,"status"?: Database["public"]['Enums']["bank_line_status"],"updated_at"?: string
+                    "account_id"?: string,"amount"?: number,"bank_ref"?: string | null,"clean_description"?: string,"created_at"?: string,"dedupe_key"?: string,"description"?: string,"expense_id"?: string | null,"firm_id"?: string,"id"?: string,"ignore_reason"?: string | null,"import_id"?: string | null,"other_income_id"?: string | null,"payment_id"?: string | null,"posted_on"?: string,"status"?: Database["public"]['Enums']["bank_line_status"],"updated_at"?: string,"vendor_payment_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -168,6 +180,12 @@ isOneToOne: false
       columns: ["firm_id","payment_id"]
 isOneToOne: false
       referencedRelation: "payments"
+      referencedColumns: ["firm_id","id"]
+    },{
+      foreignKeyName: "bank_lines_vendor_payment_fk"
+      columns: ["firm_id","vendor_payment_id"]
+isOneToOne: false
+      referencedRelation: "vendor_payments"
       referencedColumns: ["firm_id","id"]
     }
                   ]
@@ -277,14 +295,14 @@ isOneToOne: false
                   ]
                 },"expenses": {
                   Row: {
-                    "amount": number,"category_id": string,"client_id": string | null,"created_at": string,"created_by": string | null,"firm_id": string,"id": string,"notes": string | null,"payee": string,"project_id": string | null,"spent_on": string,"updated_at": string
+                    "amount": number,"category_id": string,"client_id": string | null,"created_at": string,"created_by": string | null,"firm_id": string,"id": string,"notes": string | null,"payee": string,"project_id": string | null,"spent_on": string,"updated_at": string,"vendor_bill_line_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "amount": number,"category_id": string,"client_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"firm_id": string,"id"?: string,"notes"?: string | null,"payee": string,"project_id"?: string | null,"spent_on": string,"updated_at"?: string
+                    "amount": number,"category_id": string,"client_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"firm_id": string,"id"?: string,"notes"?: string | null,"payee": string,"project_id"?: string | null,"spent_on": string,"updated_at"?: string,"vendor_bill_line_id"?: string | null
                   }
                   Update: {
-                    "amount"?: number,"category_id"?: string,"client_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"firm_id"?: string,"id"?: string,"notes"?: string | null,"payee"?: string,"project_id"?: string | null,"spent_on"?: string,"updated_at"?: string
+                    "amount"?: number,"category_id"?: string,"client_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"firm_id"?: string,"id"?: string,"notes"?: string | null,"payee"?: string,"project_id"?: string | null,"spent_on"?: string,"updated_at"?: string,"vendor_bill_line_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -310,6 +328,12 @@ isOneToOne: false
       columns: ["firm_id","project_id"]
 isOneToOne: false
       referencedRelation: "projects"
+      referencedColumns: ["firm_id","id"]
+    },{
+      foreignKeyName: "expenses_vendor_bill_line_fk"
+      columns: ["firm_id","vendor_bill_line_id"]
+isOneToOne: false
+      referencedRelation: "vendor_bill_lines"
       referencedColumns: ["firm_id","id"]
     }
                   ]
@@ -669,6 +693,108 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"vendor_bill_lines": {
+                  Row: {
+                    "amount": number,"bill_id": string,"category_id": string | null,"client_id": string | null,"consultant_id": string | null,"created_at": string,"description": string,"firm_id": string,"id": string,"kind": string,"position": number,"project_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount": number,"bill_id": string,"category_id"?: string | null,"client_id"?: string | null,"consultant_id"?: string | null,"created_at"?: string,"description": string,"firm_id": string,"id"?: string,"kind": string,"position"?: number,"project_id"?: string | null
+                  }
+                  Update: {
+                    "amount"?: number,"bill_id"?: string,"category_id"?: string | null,"client_id"?: string | null,"consultant_id"?: string | null,"created_at"?: string,"description"?: string,"firm_id"?: string,"id"?: string,"kind"?: string,"position"?: number,"project_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "vendor_bill_lines_bill_fk"
+      columns: ["firm_id","bill_id"]
+isOneToOne: false
+      referencedRelation: "vendor_bills"
+      referencedColumns: ["firm_id","id"]
+    },{
+      foreignKeyName: "vendor_bill_lines_category_fk"
+      columns: ["firm_id","category_id"]
+isOneToOne: false
+      referencedRelation: "expense_categories"
+      referencedColumns: ["firm_id","id"]
+    },{
+      foreignKeyName: "vendor_bill_lines_client_fk"
+      columns: ["firm_id","client_id"]
+isOneToOne: false
+      referencedRelation: "clients"
+      referencedColumns: ["firm_id","id"]
+    },{
+      foreignKeyName: "vendor_bill_lines_consultant_fk"
+      columns: ["firm_id","consultant_id"]
+isOneToOne: false
+      referencedRelation: "consultants"
+      referencedColumns: ["firm_id","id"]
+    },{
+      foreignKeyName: "vendor_bill_lines_firm_id_fkey"
+      columns: ["firm_id"]
+isOneToOne: false
+      referencedRelation: "firms"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "vendor_bill_lines_project_fk"
+      columns: ["firm_id","project_id"]
+isOneToOne: false
+      referencedRelation: "projects"
+      referencedColumns: ["firm_id","id"]
+    }
+                  ]
+                },"vendor_bills": {
+                  Row: {
+                    "amount_paid": number,"approved_at": string | null,"approved_by": string | null,"bill_date": string,"bill_number": string,"created_at": string,"created_by": string | null,"due_date": string,"firm_id": string,"id": string,"notes": string | null,"period_end": string | null,"period_start": string | null,"rejected_reason": string | null,"status": Database["public"]['Enums']["vendor_bill_status"],"total": number,"updated_at": string,"vendor_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount_paid"?: number,"approved_at"?: string | null,"approved_by"?: string | null,"bill_date": string,"bill_number": string,"created_at"?: string,"created_by"?: string | null,"due_date": string,"firm_id": string,"id"?: string,"notes"?: string | null,"period_end"?: string | null,"period_start"?: string | null,"rejected_reason"?: string | null,"status"?: Database["public"]['Enums']["vendor_bill_status"],"total"?: number,"updated_at"?: string,"vendor_id": string
+                  }
+                  Update: {
+                    "amount_paid"?: number,"approved_at"?: string | null,"approved_by"?: string | null,"bill_date"?: string,"bill_number"?: string,"created_at"?: string,"created_by"?: string | null,"due_date"?: string,"firm_id"?: string,"id"?: string,"notes"?: string | null,"period_end"?: string | null,"period_start"?: string | null,"rejected_reason"?: string | null,"status"?: Database["public"]['Enums']["vendor_bill_status"],"total"?: number,"updated_at"?: string,"vendor_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "vendor_bills_firm_id_fkey"
+      columns: ["firm_id"]
+isOneToOne: false
+      referencedRelation: "firms"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "vendor_bills_vendor_fk"
+      columns: ["firm_id","vendor_id"]
+isOneToOne: false
+      referencedRelation: "vendors"
+      referencedColumns: ["firm_id","id"]
+    }
+                  ]
+                },"vendor_payments": {
+                  Row: {
+                    "amount": number,"bill_id": string,"created_at": string,"created_by": string | null,"firm_id": string,"id": string,"method": Database["public"]['Enums']["payment_method"],"notes": string | null,"paid_on": string,"reference": string | null,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount": number,"bill_id": string,"created_at"?: string,"created_by"?: string | null,"firm_id": string,"id"?: string,"method": Database["public"]['Enums']["payment_method"],"notes"?: string | null,"paid_on": string,"reference"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "amount"?: number,"bill_id"?: string,"created_at"?: string,"created_by"?: string | null,"firm_id"?: string,"id"?: string,"method"?: Database["public"]['Enums']["payment_method"],"notes"?: string | null,"paid_on"?: string,"reference"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "vendor_payments_bill_fk"
+      columns: ["firm_id","bill_id"]
+isOneToOne: false
+      referencedRelation: "vendor_bills"
+      referencedColumns: ["firm_id","id"]
+    },{
+      foreignKeyName: "vendor_payments_firm_id_fkey"
+      columns: ["firm_id"]
+isOneToOne: false
+      referencedRelation: "firms"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"vendors": {
                   Row: {
                     "address": string | null,"contact_name": string | null,"created_at": string,"created_by": string | null,"email": string | null,"firm_id": string,"id": string,"name": string,"phone": string | null,"updated_at": string
@@ -744,7 +870,8 @@ isOneToOne: false
 "payment_id": string | null,
 "posted_on": string,
 "status": Database["public"]['Enums']["bank_line_status"],
-"updated_at": string
+"updated_at": string,
+"vendor_payment_id": string | null
             }
                           SetofOptions: {
         from: "*"
@@ -1059,6 +1186,9 @@ isOneToOne: false
 "update_payment_details":
 { Args: { "p_method": Database["public"]['Enums']["payment_method"],"p_notes": string,"p_paid_on": string,"p_payment": string,"p_reference": string }; Returns: undefined
                            },
+"vendor_bill_internal":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
 "void_invoice":
 { Args: { "p_invoice": string }; Returns: undefined
                            },
@@ -1069,7 +1199,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "bank_account_kind": "bank"|"credit_card","bank_line_status": "new"|"done"|"ignored","consultant_type": "employee"|"independent"|"vendor","firm_role": "admin"|"manager"|"consultant","invoice_discount_type": "none"|"percent"|"amount","invoice_layout": "classic"|"modern"|"compact","invoice_line_kind": "time"|"manual","invoice_status": "draft"|"issued"|"partly_paid"|"paid"|"void","payment_method": "bank_transfer"|"check"|"card"|"cash"|"other","project_status": "active"|"on_hold"|"closed","timesheet_status": "draft"|"submitted"|"approved"|"rejected"
+            "bank_account_kind": "bank"|"credit_card","bank_line_status": "new"|"done"|"ignored","consultant_type": "employee"|"independent"|"vendor","firm_role": "admin"|"manager"|"consultant","invoice_discount_type": "none"|"percent"|"amount","invoice_layout": "classic"|"modern"|"compact","invoice_line_kind": "time"|"manual","invoice_status": "draft"|"issued"|"partly_paid"|"paid"|"void","payment_method": "bank_transfer"|"check"|"card"|"cash"|"other","project_status": "active"|"on_hold"|"closed","timesheet_status": "draft"|"submitted"|"approved"|"rejected","vendor_bill_status": "pending_approval"|"rejected"|"approved"|"partly_paid"|"paid"|"void"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -1189,7 +1319,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "bank_account_kind": ["bank", "credit_card"],"bank_line_status": ["new", "done", "ignored"],"consultant_type": ["employee", "independent", "vendor"],"firm_role": ["admin", "manager", "consultant"],"invoice_discount_type": ["none", "percent", "amount"],"invoice_layout": ["classic", "modern", "compact"],"invoice_line_kind": ["time", "manual"],"invoice_status": ["draft", "issued", "partly_paid", "paid", "void"],"payment_method": ["bank_transfer", "check", "card", "cash", "other"],"project_status": ["active", "on_hold", "closed"],"timesheet_status": ["draft", "submitted", "approved", "rejected"]
+            "bank_account_kind": ["bank", "credit_card"],"bank_line_status": ["new", "done", "ignored"],"consultant_type": ["employee", "independent", "vendor"],"firm_role": ["admin", "manager", "consultant"],"invoice_discount_type": ["none", "percent", "amount"],"invoice_layout": ["classic", "modern", "compact"],"invoice_line_kind": ["time", "manual"],"invoice_status": ["draft", "issued", "partly_paid", "paid", "void"],"payment_method": ["bank_transfer", "check", "card", "cash", "other"],"project_status": ["active", "on_hold", "closed"],"timesheet_status": ["draft", "submitted", "approved", "rejected"],"vendor_bill_status": ["pending_approval", "rejected", "approved", "partly_paid", "paid", "void"]
           }
         }
 } as const
