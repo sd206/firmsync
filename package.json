@@ -15,7 +15,8 @@
     "test:int": "vitest run --project integration",
     "test:e2e": "playwright test",
     "db:reset": "supabase db reset",
-    "db:types": "supabase gen types typescript --local > src/lib/supabase/types.ts"
+    "db:types": "supabase gen types typescript --local > src/lib/supabase/types.ts",
+    "check:team": "node scripts/check-team-setup.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
