@@ -18,6 +18,8 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      // Videos and their one-off build scripts; kept out of git.
+      "marketing/media/**",
     ],
   },
 ];

@@ -2,6 +2,15 @@
 
 A multi-tenant web app for consulting firms to run their operations: each firm manages its own members, vendors, consultants (with hourly cost rates), clients, projects and consultant assignments (with client rates), and sees margin per hour. A platform owner creates firms and their first Admin. Built with Next.js 15 (App Router) and Supabase (Postgres, Auth, Storage) with row-level security for tenant isolation.
 
+## Working with the AI launch team
+
+FirmSync is being taken to go-live with an AI team. Open a Claude session in this folder and it acts as the launch manager.
+- `CLAUDE.md`: the team rules, roles and what always needs the owner's approval.
+- `launch/checklist.md`: the go-live checklist.
+- `launch/decisions.md`: every launch decision, with the reasons.
+- `launch/status/`: the Monday status summaries.
+- `npm run check:team`: checks that the team setup is complete.
+
 ## Prerequisites
 
 - Node.js 22 or newer, and npm
