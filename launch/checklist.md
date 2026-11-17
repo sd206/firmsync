@@ -51,3 +51,12 @@ Everything that has to be true on launch day: FirmSync on its own domain, with t
 
 19. Go-live runbook and launch-day test — Owner: Launch manager + You · Depends: 1–18 · Status: Not started
     Order of switches, checks and rollback; a real-card test sign-up, then a refund.
+
+## After launch
+
+Not needed for launch day; started once FirmSync is live.
+
+20. Two-factor sign-in for admins and managers — Owner: Developer · Depends: 19 · Status: Not started
+    Prerequisite for live bank connections. Reviewer pass required (sign-in).
+21. Live bank connections — Owner: Developer + You · Depends: 12, 20 · Status: Not started
+    Read-only transaction feed into the existing bank lines and review screen, alongside file import. Evaluate Stripe Financial Connections first (Plaid as the alternative). You: provider account, production approval and security questionnaire. Developer: link flow, encrypted token storage, sync, duplicate handling, reconnect, disconnect and revoke on cancellation or deletion. Privacy policy must name the provider (item 14). Reviewer pass required.

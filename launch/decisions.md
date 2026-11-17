@@ -37,3 +37,6 @@ A launch manager (the owner's main FirmSync session) owns `launch/checklist.md` 
 
 ## 2026-11-17 — Developers commit on their own branch
 Team members may commit freely on their own branch as part of work the owner has approved; pushing and merging still need the owner's yes. **Why:** the build process commits after every step, and asking each time would stall the work.
+
+## 2026-11-17 — Live bank connections after launch
+Live bank feeds (read-only, through a provider such as Stripe Financial Connections or Plaid) come after launch, not before; two-factor sign-in for admins and managers comes first. Checklist items 20 and 21. **Why:** statement file import already covers the need; a provider approval process and a security review would lengthen the path to launch; holding live bank access raises the stakes of a stolen admin password. Estimated at about 2–3 weeks of developer work plus provider onboarding.
