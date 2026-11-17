@@ -2,11 +2,22 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireUser } from '@/lib/auth/context'
 import { AccountMenu } from '@/components/account-menu'
+import { formatBytes } from '@/lib/domain/storage'
 import { CreateFirmForm } from './create-firm-form'
+import { StorageGrantForm } from './storage-grant-form'
 
 const PAGE_SIZE = 50
 
-type Row = { id: string; name: string; created_at: string; admin_emails: string[]; total_count: number }
+type Row = {
+  id: string
+  name: string
+  created_at: string
+  admin_emails: string[]
+  total_count: number
+  used_bytes: number
+  allowance_bytes: number
+  storage_grant_gb: number
+}
 
 export default async function PlatformFirmsPage({
   searchParams,
@@ -37,7 +48,7 @@ export default async function PlatformFirmsPage({
   }
 
   return (
-    <main className="mx-auto max-w-3xl p-8">
+    <main className="mx-auto max-w-5xl p-8">
       <div className="flex items-center justify-between rounded-lg bg-brand px-4 py-2 text-brand-foreground">
         <span className="font-semibold">Platform</span>
         <AccountMenu email={email} />
@@ -80,8 +91,11 @@ export default async function PlatformFirmsPage({
                 <th scope="col" className="py-2 pr-4 font-medium">
                   Admins
                 </th>
-                <th scope="col" className="py-2 font-medium">
+                <th scope="col" className="py-2 pr-4 font-medium">
                   Created
+                </th>
+                <th scope="col" className="py-2 font-medium">
+                  Storage
                 </th>
               </tr>
             </thead>
@@ -90,7 +104,17 @@ export default async function PlatformFirmsPage({
                 <tr key={f.id} className="border-b">
                   <td className="py-2 pr-4">{f.name}</td>
                   <td className="py-2 pr-4">{f.admin_emails.join(', ')}</td>
-                  <td className="py-2">{new Date(f.created_at).toISOString().slice(0, 10)}</td>
+                  <td className="py-2 pr-4">{new Date(f.created_at).toISOString().slice(0, 10)}</td>
+                  <td className="py-2">
+                    <div>
+                      {formatBytes(Number(f.used_bytes))} of {formatBytes(Number(f.allowance_bytes))}
+                    </div>
+                    <StorageGrantForm
+                      key={`${f.id}-${f.storage_grant_gb}`}
+                      firmId={f.id}
+                      extraGb={f.storage_grant_gb}
+                    />
+                  </td>
                 </tr>
               ))}
             </tbody>

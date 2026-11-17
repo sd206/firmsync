@@ -116,3 +116,29 @@ test('consultant sees no banner on a full firm', async ({ page }) => {
   await expect(page.getByRole('region', { name: 'Storage warning' })).toHaveCount(0)
   await expect(page.getByText(/of storage/)).toHaveCount(0)
 })
+
+test('platform owner gives a firm extra storage', async ({ page }) => {
+  const name = `Storage E2E Grant ${crypto.randomUUID().slice(0, 8)}`
+  const f = await newFirm(name)
+  await page.goto('/login')
+  await page.getByLabel('Email').fill('owner@local.test')
+  await page.getByLabel('Password').fill('owner-password-123')
+  await page.getByRole('button', { name: 'Sign in' }).click()
+  await expect(page).not.toHaveURL(/\/login/)
+  await page.goto(`/platform/firms?q=${encodeURIComponent(name)}`)
+
+  const row = page.getByRole('row').filter({ hasText: name })
+  await expect(row).toContainText('0 B of 5 GB')
+  await row.getByLabel('Extra GB').fill('3')
+  await row.getByRole('button', { name: 'Save' }).click()
+  await expect(row).toContainText('0 B of 8 GB')
+
+  await row.getByLabel('Extra GB').fill('-1')
+  await row.getByRole('button', { name: 'Save' }).click()
+  await expect(row).toContainText('Enter a whole number of GB from 0 to 10000.')
+
+  await page.context().clearCookies()
+  await login(page, f.admin.email)
+  await page.goto(`/f/${f.firmId}/settings/storage`)
+  await expect(page.getByText('0 B of 8 GB used (0%)')).toBeVisible()
+})

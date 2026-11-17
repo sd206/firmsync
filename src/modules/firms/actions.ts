@@ -5,7 +5,7 @@ import { requireFirmRole, requireUser } from '@/lib/auth/context'
 import { fail, type Result } from '@/lib/result'
 import { siteUrl } from '@/lib/site-url'
 import { createAdminDb } from '@/lib/supabase/admin'
-import { createFirmWithAdmin, updateFirmSettings, uploadFirmLogo } from './data'
+import { createFirmWithAdmin, setStorageGrant, updateFirmSettings, uploadFirmLogo } from './data'
 import { createFirmSchema, firmSettingsSchema } from './schemas'
 
 export type SettingsFieldErrors = Partial<Record<string, string>>
@@ -82,5 +82,22 @@ export async function createFirmAction(formData: FormData): Promise<Result<{ fir
     `${siteUrl()}/auth/callback`,
   )
   if (result.ok) revalidatePath('/platform/firms')
+  return result
+}
+
+const GRANT_ERROR = 'Enter a whole number of GB from 0 to 10000.'
+
+/** Platform owner: extra storage for a firm, in whole GB, free of charge. */
+export async function setStorageGrantAction(firmId: string, formData: FormData): Promise<Result<void>> {
+  const { isPlatformOwner, db } = await requireUser()
+  if (!isPlatformOwner) return fail("You don't have permission to do that.")
+  const raw = str(formData, 'extraGb').trim()
+  const gb = Number(raw)
+  if (!/^\d{1,5}$/.test(raw) || gb > 10000) return fail(GRANT_ERROR)
+  const result = await setStorageGrant(db, firmId, gb)
+  if (result.ok) {
+    revalidatePath('/platform/firms')
+    revalidatePath(`/f/${firmId}`, 'layout')
+  }
   return result
 }

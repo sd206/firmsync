@@ -175,3 +175,10 @@ export async function uploadFirmLogo(
   await afterStore(firmId)
   return ok({ logoPath: path })
 }
+
+/** Platform owner: sets a firm's free extra storage in whole GB (the database checks the caller). */
+export async function setStorageGrant(db: SupabaseClient, firmId: string, gb: number): Promise<Result<void>> {
+  const { error } = await db.rpc('platform_set_storage_grant', { p_firm: firmId, p_gb: gb })
+  if (error) return fail(mapDbError(error))
+  return ok(undefined)
+}
