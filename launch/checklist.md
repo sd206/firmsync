@@ -17,7 +17,7 @@ Everything that has to be true on launch day: FirmSync on its own domain, with t
 
 ## Website
 
-5. Site map and page-by-page copy — Owner: Website & copy writer · Depends: — · Status: In progress
+5. Site map and page-by-page copy — Owner: Website & copy writer · Depends: — · Status: Done
    In `marketing/website/`: home/landing, features, pricing, about, contact, help-centre index; sign-up and log-in links with plan, `utm_*` and `ref`.
 6. Build the site in Framer from the copy — Owner: You · Depends: 5 · Status: Waiting on you
    Framer plan with a custom domain; brand colours and logo shared with the app.
