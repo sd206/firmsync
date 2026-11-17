@@ -64,6 +64,8 @@ $$;
 revoke execute on function public.firm_storage_allowance(uuid) from public, anon, authenticated;
 revoke execute on function public.firm_storage_used(uuid) from public, anon, authenticated;
 revoke execute on function public.storage_kind(text) from public, anon, authenticated;
+grant execute on function public.firm_storage_allowance(uuid) to service_role;
+grant execute on function public.firm_storage_used(uuid) to service_role;
 
 -- ---------------------------------------------------------------------------
 -- Firm functions (admins and managers)

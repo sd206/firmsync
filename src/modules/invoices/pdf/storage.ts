@@ -4,6 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { mapDbError } from '@/lib/db-errors'
 import { fail, ok, type Result } from '@/lib/result'
 import { createAdminDb } from '@/lib/supabase/admin'
+import { afterStore } from '@/modules/storage/alerts'
 import { getTemplate } from '@/modules/invoice-templates/data'
 import { ensureInvoiceInFirm, getInvoice, setInvoicePdf, type InvoiceDetail } from '../data'
 import { renderInvoicePdf } from './render'
@@ -182,6 +183,7 @@ export async function generateAndStorePdf(
     if (rm.error) console.error('invoice PDF cleanup failed', rm.error)
     return set
   }
+  await afterStore(firmId)
   return ok({ path })
 }
 

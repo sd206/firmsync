@@ -1,5 +1,6 @@
 import 'server-only'
 import { randomUUID } from 'node:crypto'
+import { afterStore } from '@/modules/storage/alerts'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { displayFileName, validateAttachment } from '@/lib/domain/attachments'
 import type { ResendReceiving } from './resend'
@@ -109,6 +110,7 @@ export async function storeFiles(
     .update({ rejected_files: rejected, download_failed: failed })
     .eq('id', item.id)
   if (error) throw new Error(`item update: ${error.message}`)
+  await afterStore(item.firmId)
 }
 
 /** Stores a received email for every firm whose bill address it was sent to. */

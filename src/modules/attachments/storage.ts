@@ -14,6 +14,7 @@ import {
 import { fail, ok, type Result } from '@/lib/result'
 import { createAdminDb } from '@/lib/supabase/admin'
 import { ensureRoomFor } from '@/modules/storage/data'
+import { afterStore } from '@/modules/storage/alerts'
 
 /*
  * Attachment files for payments, expenses, vendor bills and vendor payments.
@@ -304,6 +305,7 @@ export async function finalizeUploads(
     }
     added += 1
   }
+  if (added > 0) await afterStore(firmId)
   return ok({ added, rejected })
 }
 

@@ -4,6 +4,7 @@ import { mapDbError } from '@/lib/db-errors'
 import { validateInvoicePattern } from '@/lib/domain/invoice-pattern'
 import { fail, ok, type Result } from '@/lib/result'
 import { ensureRoomFor } from '@/modules/storage/data'
+import { afterStore } from '@/modules/storage/alerts'
 import type { FirmSettingsInput } from './schemas'
 
 /**
@@ -171,5 +172,6 @@ export async function uploadFirmLogo(
     const rm = await db.storage.from(BUCKET).remove([previous])
     if (rm.error) console.error(rm.error)
   }
+  await afterStore(firmId)
   return ok({ logoPath: path })
 }

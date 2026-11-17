@@ -143,3 +143,22 @@ describe('storage alert check', () => {
     expect((await f.admin.db.rpc('storage_alert_check', { p_firm: f.firmId })).error).not.toBeNull()
   })
 })
+
+describe('afterStore with the real database', () => {
+  it('emails the firm admin once when usage crosses 95%', async () => {
+    const { afterStore } = await import('@/modules/storage/alerts')
+    const f = await newFirm('Storage Alert Mail Firm')
+    await adminDb().from('firms').update({ storage_included_bytes: 1000 }).eq('id', f.firmId)
+    await expenseWithFile(f, 960)
+    const sent: { to: string[]; subject: string }[] = []
+    const env = { NOTIFY_FROM: 'FirmSync <alerts@example.test>', RESEND_API_KEY: 're_test', NEXT_PUBLIC_SITE_URL: 'http://x' }
+    const send = async (m: { to: string[]; subject: string }) => {
+      sent.push(m)
+    }
+    await afterStore(f.firmId, { db: adminDb(), send, env })
+    await afterStore(f.firmId, { db: adminDb(), send, env })
+    expect(sent).toHaveLength(1)
+    expect(sent[0].to).toEqual([f.admin.email])
+    expect(sent[0].subject).toBe('Storage Alert Mail Firm is using 95% of its FirmSync storage')
+  })
+})
