@@ -253,7 +253,15 @@ Payment, expense and bill files never pass through a server action:
 
 Downloads use short-lived signed URLs.
 
-### 6.5 Reports
+### 6.5 Storage limits
+
+- **Allowance** per firm: `storage_included_bytes` (5 GiB) + 10 GiB × `storage_blocks` + 1 GiB × `storage_grant_gb`, all on `firms` and changeable only by the service role or the platform owner's `platform_set_storage_grant`.
+- **Usage** is summed from `storage.objects` sizes under `firms/<firmId>/` (`firm_storage_status`, `firm_storage_breakdown`, `firm_storage_files`), so every stored file counts, whichever feature wrote it.
+- **Gate:** `ensureRoomFor` runs before upload links are issued (attachments) and before a logo is stored. It is a soft check and fails open if the lookup errors. Invoice PDFs and Bill-inbox mail are never gated.
+- **Alerts:** after anything is stored, `afterStore` calls `storage_alert_check`, a latch that returns true once per crossing of 95% (re-arming below 90%), and emails the admins through Resend when `NOTIFY_FROM` is set.
+- **Clean-up:** Setup › Storage lists files; admins delete attachments through the same `delete_attachment` rules as on each record.
+
+### 6.6 Reports
 
 Reports are read-only database functions that take `p_today` from the app (`todayIso()`), so results are consistent and testable.
 
@@ -266,10 +274,11 @@ Reports are read-only database functions that take `p_today` from the app (`toda
 
 Every report has a CSV download from a `csv/route.ts` beside its page. The CSVs have a UTF-8 BOM and CRLF line endings for Excel, plain-number amounts, and protection against spreadsheet formula injection.
 
-### 6.6 Where the service-role client is used
+### 6.7 Where the service-role client is used
 
 | Place | Why |
 |---|---|
+| `modules/storage/alerts` | Reads usage and admins' emails for the 95% warning email after a file is stored. |
 | `api/inbound/resend` and `modules/bill-inbox` | Webhook requests have no user, and the signed request is the authority. |
 | `modules/firms`, `modules/members`, `modules/consultants` | Inviting users and creating auth accounts need Supabase's admin auth API. |
 | `modules/attachments/storage`, `modules/invoices/pdf/storage` | Moving and validating files and writing PDFs. Each call first checks that the user may act on the parent record. |
@@ -285,7 +294,7 @@ Every report has a CSV download from a `csv/route.ts` beside its page. The CSVs 
 | Migrations | `npm run db:reset` / `npx supabase migration up` | `npx supabase db push --linked` (dry run first, applied deliberately) |
 | Email | Mailpit (:54424) | Custom SMTP for auth; Resend for the inbound bill inbox |
 
-**Environment variables:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server only), `NEXT_PUBLIC_SITE_URL`, and for the bill inbox `RESEND_API_KEY`, `RESEND_INBOUND_SECRET` and `INBOUND_DOMAINS`. Without the bill-inbox variables, that feature switches itself off: the webhook answers 503 and Settings says the inbox isn't set up.
+**Environment variables:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server only), `NEXT_PUBLIC_SITE_URL`, for the bill inbox `RESEND_API_KEY`, `RESEND_INBOUND_SECRET` and `INBOUND_DOMAINS`, and optionally `NOTIFY_FROM` for storage warning emails. Without the bill-inbox variables, that feature switches itself off: the webhook answers 503 and Settings says the inbox isn't set up.
 
 **Release order:** apply the database migration before deploying code that depends on it. Migrations use `create or replace` for functions, and changes only add to the schema, so the running app keeps working while the migration is applied.
 

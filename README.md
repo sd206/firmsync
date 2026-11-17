@@ -110,6 +110,15 @@ npm run test:e2e    # Playwright; needs local Supabase running
 
 Payment and expense files are uploaded from the browser straight to storage under a holding name (`incoming-*`), then checked by the server, which moves the good ones into place and removes the rest. Users can't overwrite or delete stored files outside the app; the database policies only allow adding holding-name uploads. Abandoned uploads (older than 24 hours) are swept the next time that payment's or expense's folder is touched.
 
+## Storage limits
+
+- **Allowance:** each firm gets 5 GB (1 GB = 1,073,741,824 bytes), plus 10 GB for each storage block bought (billing, coming later) and any extra GB the platform owner grants in Platform › Firms ("Extra GB").
+- **What counts:** everything the firm stores: payment, expense, vendor bill and vendor payment files, Bill-inbox files, invoice PDFs and the logo. Uploads still in progress count too.
+- **Warnings (admins and managers; consultants see nothing):** from 80%, a notice on the dashboard; from 95%, a banner on every page, and the firm's admins get one email (sent again only after usage drops below 90% and rises past 95% again).
+- **At 100%:** new payment, expense, vendor bill and vendor payment files and logo changes are refused with "Your firm has used all of its storage. Delete old files or add storage in Settings › Billing." Invoice PDFs are still made and emailed bills still arrive, even if that takes the firm over its allowance. The check happens when an upload starts, so two uploads at the same moment can take a firm slightly over.
+- **Setup › Storage** (`/f/{firmId}/settings/storage`, admins and managers): usage, a breakdown by type, and every file, largest or oldest first, linked to its record. Admins can select payment, expense and vendor files and delete them (this can't be undone). Invoice PDFs and the logo can't be deleted there; Bill-inbox files go when their inbox item is handled.
+- **Warning email:** sent through Resend only when `NOTIFY_FROM` (for example `FirmSync <alerts@yourdomain.com>`) and `RESEND_API_KEY` are set. Resend only sends from a domain verified in your Resend account, so leave `NOTIFY_FROM` unset until you have one; the banners still work.
+
 ## Bill inbox (Resend)
 
 Each firm can turn on one address, `bills-<code>@<domain>` (Settings › Bill inbox; admins only). Mail sent to it appears in Billing › Bill inbox with its PDF and image files (up to 10 per email). From there a manager can Create bill, Ignore or Mark duplicate. Nothing is ever turned into a bill automatically.
