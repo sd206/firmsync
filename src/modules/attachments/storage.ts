@@ -13,6 +13,7 @@ import {
 } from '@/lib/domain/attachments'
 import { fail, ok, type Result } from '@/lib/result'
 import { createAdminDb } from '@/lib/supabase/admin'
+import { ensureRoomFor } from '@/modules/storage/data'
 
 /*
  * Attachment files for payments, expenses, vendor bills and vendor payments.
@@ -191,6 +192,7 @@ export async function createUploadTargets(
   const folder = ownerFolder(firmId, owner)
   const targets: UploadTarget[] = []
   const rejected: Rejected[] = []
+  const accepted: { index: number; name: string; size: number }[] = []
   for (const [index, file] of declared.entries()) {
     const name = displayFileName(typeof file?.name === 'string' ? file.name : '')
     const size = typeof file?.size === 'number' && Number.isFinite(file.size) ? file.size : 0
@@ -202,6 +204,16 @@ export async function createUploadTargets(
       rejected.push({ name, error: FILE_TOO_LARGE })
       continue
     }
+    accepted.push({ index, name, size })
+  }
+
+  // The whole batch must fit in the firm's storage (a soft check; see the storage design).
+  if (accepted.length > 0) {
+    const room = await ensureRoomFor(db, firmId, accepted.reduce((sum, f) => sum + f.size, 0))
+    if (!room.ok) return room
+  }
+
+  for (const { index, name } of accepted) {
     const path = `${folder}${INCOMING}${randomUUID()}`
     const { data, error } = await db.storage.from(BUCKET).createSignedUploadUrl(path)
     if (error || !data) {

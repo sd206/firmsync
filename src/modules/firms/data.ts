@@ -3,6 +3,7 @@ import { findOrInviteUser } from '@/lib/auth/invite'
 import { mapDbError } from '@/lib/db-errors'
 import { validateInvoicePattern } from '@/lib/domain/invoice-pattern'
 import { fail, ok, type Result } from '@/lib/result'
+import { ensureRoomFor } from '@/modules/storage/data'
 import type { FirmSettingsInput } from './schemas'
 
 /**
@@ -144,6 +145,8 @@ export async function uploadFirmLogo(
     return fail(LOGO_ERROR)
   }
   if (!contentMatchesType(file.type, file.bytes)) return fail(LOGO_ERROR)
+  const room = await ensureRoomFor(db, firmId, file.bytes.byteLength)
+  if (!room.ok) return room
 
   const prefix = `firms/${firmId}/logo/`
   const current = await db.from('firms').select('logo_path').eq('id', firmId).maybeSingle()

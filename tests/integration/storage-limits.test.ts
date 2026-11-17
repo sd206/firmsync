@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest'
 import { adminDb, newFirm, signIn } from './helpers'
-import { categoryId, expenseAttachmentPath, SPENT_ON } from './expense-fixtures'
+import { expenseWithFile, putObject } from './storage-fixtures'
 import { issueManualInvoice } from './invoice-fixtures'
 
 type Firm = Awaited<ReturnType<typeof newFirm>>
@@ -9,33 +9,6 @@ type FileRow = { path: string; kind: string; attachment_id: string | null; owner
 const BUCKET = 'firm-files'
 const GiB = 1073741824
 const BASE = 5 * GiB
-
-export async function putObject(path: string, size: number) {
-  const { error } = await adminDb().storage.from(BUCKET).upload(path, new Uint8Array(size), { contentType: 'application/pdf' })
-  if (error) throw new Error(`upload ${path}: ${error.message}`)
-}
-
-/** An expense with one stored, recorded attachment of `size` bytes. */
-export async function expenseWithFile(f: Firm, size: number, payee = 'Uber'): Promise<{ expenseId: string; attachmentId: string; path: string }> {
-  const db = adminDb()
-  const cat = await categoryId(f.firmId, 'Travel')
-  const { data: e, error } = await db
-    .from('expenses')
-    .insert({ firm_id: f.firmId, spent_on: SPENT_ON, category_id: cat, payee, amount: 10 })
-    .select('id')
-    .single()
-  if (error || !e) throw new Error(`expense: ${error?.message}`)
-  const expenseId = (e as { id: string }).id
-  const path = expenseAttachmentPath(f.firmId, expenseId)
-  await putObject(path, size)
-  const { data: a, error: aErr } = await db
-    .from('attachments')
-    .insert({ firm_id: f.firmId, expense_id: expenseId, storage_path: path, file_name: `${payee}.pdf`, mime_type: 'application/pdf', size_bytes: size })
-    .select('id')
-    .single()
-  if (aErr || !a) throw new Error(`attachment: ${aErr?.message}`)
-  return { expenseId, attachmentId: (a as { id: string }).id, path }
-}
 
 async function status(f: Firm) {
   const { data, error } = await f.manager.db.rpc('firm_storage_status', { p_firm: f.firmId })
