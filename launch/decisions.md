@@ -34,3 +34,6 @@ After briefly choosing a code-built site, the owner settled on Framer: the websi
 
 ## 2026-11-17 — AI launch team
 A launch manager (the owner's main FirmSync session) owns `launch/checklist.md` and starts specialist sessions (Developer, Reviewer, Website & copy writer, Support writer) from written briefs. Weekly status every Monday in `launch/status/`. The owner approves merges, pushes, production changes, anything published or sent, purchases, accounts, legal text, prices and offers. Design: `docs/superpowers/specs/2026-11-17-launch-team-design.md`.
+
+## 2026-11-17 — Developers commit on their own branch
+Team members may commit freely on their own branch as part of work the owner has approved; pushing and merging still need the owner's yes. **Why:** the build process commits after every step, and asking each time would stall the work.

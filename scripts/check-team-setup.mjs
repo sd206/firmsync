@@ -25,7 +25,7 @@ if (charter === null) fail('CLAUDE.md is missing')
 else {
   for (const h of HEADINGS) if (!charter.split(/\r?\n/).includes(h)) fail(`CLAUDE.md lacks heading "${h}"`)
   // Specialists must not act as the launch manager.
-  for (const must of ['Only the launch manager edits `launch/checklist.md`'])
+  for (const must of ['Only the launch manager edits `launch/checklist.md`', 'Commit freely on your own branch'])
     if (!charter.includes(must)) fail(`CLAUDE.md must say "${must}"`)
 }
 

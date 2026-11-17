@@ -30,7 +30,7 @@ marketing/media/             videos and images (on this computer only; not in gi
 
 ## Standing rules
 
-- Commit, push and merge only when the owner asks; always work on a branch, never directly on main.
+- Always work on a branch, never directly on main. Commit freely on your own branch as part of work the owner has approved (a brief or plan they said go to); push and merge only when the owner asks. (Owner's decision, 2026-11-17.)
 - Production database migrations: run `npx supabase db push --linked --dry-run` first, show the result, and apply with `--yes` only after the owner says yes.
 - Never type passwords or API keys into production sites; the owner pastes secrets into Vercel, Stripe, Supabase and other services.
 - Public material (videos, screenshots, website images) uses only the fictional local "Demo Consulting" firm, never real customer data.
