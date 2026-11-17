@@ -32,7 +32,9 @@ describe('formatBytes', () => {
 
 describe('usagePercent', () => {
   it('floors to a whole percent', () => {
-    expect(usagePercent(4_402_341_478, 5_368_709_120)).toBe(82)
+    // 81.99…% rounds down, not to the nearest percent.
+    expect(usagePercent(4_402_341_478, 5_368_709_120)).toBe(81)
+    expect(usagePercent(4_402_341_479, 5_368_709_120)).toBe(82)
     expect(usagePercent(0, 1000)).toBe(0)
     expect(usagePercent(5, 0)).toBe(100)
   })
