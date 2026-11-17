@@ -461,14 +461,14 @@ isOneToOne: false
                   ]
                 },"firms": {
                   Row: {
-                    "address": string | null,"contact_email": string | null,"contact_name": string | null,"contact_phone": string | null,"created_at": string,"created_by": string | null,"currency": string,"default_payment_terms_days": number,"default_tax_percent": number,"id": string,"invoice_next_seq": number,"invoice_number_pattern": string,"logo_path": string | null,"name": string,"updated_at": string
+                    "address": string | null,"contact_email": string | null,"contact_name": string | null,"contact_phone": string | null,"created_at": string,"created_by": string | null,"currency": string,"default_payment_terms_days": number,"default_tax_percent": number,"id": string,"invoice_next_seq": number,"invoice_number_pattern": string,"logo_path": string | null,"name": string,"storage_alert_sent": boolean,"storage_blocks": number,"storage_grant_gb": number,"storage_included_bytes": number,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "address"?: string | null,"contact_email"?: string | null,"contact_name"?: string | null,"contact_phone"?: string | null,"created_at"?: string,"created_by"?: string | null,"currency"?: string,"default_payment_terms_days"?: number,"default_tax_percent"?: number,"id"?: string,"invoice_next_seq"?: number,"invoice_number_pattern"?: string,"logo_path"?: string | null,"name": string,"updated_at"?: string
+                    "address"?: string | null,"contact_email"?: string | null,"contact_name"?: string | null,"contact_phone"?: string | null,"created_at"?: string,"created_by"?: string | null,"currency"?: string,"default_payment_terms_days"?: number,"default_tax_percent"?: number,"id"?: string,"invoice_next_seq"?: number,"invoice_number_pattern"?: string,"logo_path"?: string | null,"name": string,"storage_alert_sent"?: boolean,"storage_blocks"?: number,"storage_grant_gb"?: number,"storage_included_bytes"?: number,"updated_at"?: string
                   }
                   Update: {
-                    "address"?: string | null,"contact_email"?: string | null,"contact_name"?: string | null,"contact_phone"?: string | null,"created_at"?: string,"created_by"?: string | null,"currency"?: string,"default_payment_terms_days"?: number,"default_tax_percent"?: number,"id"?: string,"invoice_next_seq"?: number,"invoice_number_pattern"?: string,"logo_path"?: string | null,"name"?: string,"updated_at"?: string
+                    "address"?: string | null,"contact_email"?: string | null,"contact_name"?: string | null,"contact_phone"?: string | null,"created_at"?: string,"created_by"?: string | null,"currency"?: string,"default_payment_terms_days"?: number,"default_tax_percent"?: number,"id"?: string,"invoice_next_seq"?: number,"invoice_number_pattern"?: string,"logo_path"?: string | null,"name"?: string,"storage_alert_sent"?: boolean,"storage_blocks"?: number,"storage_grant_gb"?: number,"storage_included_bytes"?: number,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -1141,6 +1141,27 @@ isOneToOne: false
               "invite_pending": boolean,"signed_in": boolean,"user_id": string
             }[]
                            },
+"firm_storage_allowance":
+{ Args: { "p_firm": string }; Returns: number
+                           },
+"firm_storage_breakdown":
+{ Args: { "p_firm": string }; Returns: {
+              "bytes": number,"files": number,"kind": string
+            }[]
+                           },
+"firm_storage_files":
+{ Args: { "p_firm": string,"p_kind": string,"p_limit": number,"p_offset": number,"p_sort": string }; Returns: {
+              "attachment_id": string,"created_at": string,"file_name": string,"kind": string,"label": string,"owner_id": string,"path": string,"size_bytes": number,"total_count": number
+            }[]
+                           },
+"firm_storage_status":
+{ Args: { "p_firm": string }; Returns: {
+              "allowance_bytes": number,"used_bytes": number
+            }[]
+                           },
+"firm_storage_used":
+{ Args: { "p_firm": string }; Returns: number
+                           },
 "format_invoice_number":
 { Args: { "p_issue": string,"p_pattern": string,"p_seq": number }; Returns: string
                            },
@@ -1308,13 +1329,16 @@ isOneToOne: false
                            },
 "platform_firms":
 { Args: { "p_limit": number,"p_offset": number,"p_search": string }; Returns: {
-              "admin_emails": (string)[],"created_at": string,"id": string,"name": string,"total_count": number
+              "admin_emails": (string)[],"allowance_bytes": number,"created_at": string,"id": string,"name": string,"storage_grant_gb": number,"total_count": number,"used_bytes": number
             }[]
                            },
 "platform_list_firms":
 { Args: Record<PropertyKey, never>; Returns: {
               "admin_emails": (string)[],"created_at": string,"id": string,"name": string
             }[]
+                           },
+"platform_set_storage_grant":
+{ Args: { "p_firm": string,"p_gb": number }; Returns: undefined
                            },
 "pnl_breakdown":
 { Args: { "p_clients": (string)[],"p_firm": string,"p_from": string,"p_group": string,"p_projects": (string)[],"p_split_project": boolean,"p_to": string }; Returns: {
@@ -1386,7 +1410,13 @@ isOneToOne: false
 "set_invoice_pdf":
 { Args: { "p_invoice": string,"p_path": string }; Returns: undefined
                            },
+"storage_alert_check":
+{ Args: { "p_firm": string }; Returns: boolean
+                           },
 "storage_firm_id":
+{ Args: { "p_name": string }; Returns: string
+                           },
+"storage_kind":
 { Args: { "p_name": string }; Returns: string
                            },
 "submit_timesheet":
