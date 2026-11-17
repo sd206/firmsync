@@ -72,3 +72,47 @@ test('uploading a receipt in a full firm shows the full-storage message', async 
   await page.getByRole('button', { name: 'Save expense' }).click()
   await expect(page.getByText(FULL)).toBeVisible()
 })
+
+test('dashboard shows the 80% notice and no banner', async ({ page }) => {
+  const f = await newFirm('Storage E2E Notice')
+  await expenseWithFile(f, 850, 'Notice')
+  await setAllowance(f.firmId, 1000)
+  await login(page, f.manager.email)
+  await page.goto(`/f/${f.firmId}`)
+  await expect(page.getByText("You've used 850 B of 1000 B of storage (85%).")).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Manage storage' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Storage warning' })).toHaveCount(0)
+})
+
+test('a nearly full firm shows the warning banner on every page', async ({ page }) => {
+  const f = await newFirm('Storage E2E Warning')
+  await expenseWithFile(f, 960, 'Warn')
+  await setAllowance(f.firmId, 1000)
+  await login(page, f.admin.email)
+  await page.goto(`/f/${f.firmId}/clients`)
+  const banner = page.getByRole('region', { name: 'Storage warning' })
+  await expect(banner).toContainText('Your firm has used 960 B of 1000 B of storage. Uploads stop at 100%.')
+  await expect(banner.getByRole('link', { name: 'Free up space' })).toHaveAttribute('href', `/f/${f.firmId}/settings/storage`)
+})
+
+test('pages show the full banner with a Free up space link', async ({ page }) => {
+  const f = await newFirm('Storage E2E Full Banner')
+  await expenseWithFile(f, 1000, 'Full')
+  await setAllowance(f.firmId, 1000)
+  await login(page, f.manager.email)
+  await page.goto(`/f/${f.firmId}/expenses`)
+  const banner = page.getByRole('region', { name: 'Storage warning' })
+  await expect(banner).toContainText('Storage is full (1000 B of 1000 B). Uploads are paused.')
+  await expect(banner.getByRole('link', { name: 'Free up space' })).toBeVisible()
+})
+
+test('consultant sees no banner on a full firm', async ({ page }) => {
+  const f = await newFirm('Storage E2E Consultant Banner')
+  await expenseWithFile(f, 1000, 'Full')
+  await setAllowance(f.firmId, 1000)
+  await login(page, f.consultant.email)
+  await page.goto(`/f/${f.firmId}`)
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Storage warning' })).toHaveCount(0)
+  await expect(page.getByText(/of storage/)).toHaveCount(0)
+})

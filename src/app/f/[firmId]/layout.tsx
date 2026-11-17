@@ -2,7 +2,9 @@ import { requireFirmRole } from '@/lib/auth/context'
 import { AccountMenu } from '@/components/account-menu'
 import type { FirmRole } from '@/lib/db-types'
 import { newInboxCount } from '@/modules/bill-inbox/data'
+import { getStorageStatus } from '@/modules/storage/data'
 import { FirmNav, type NavEntry } from './firm-nav'
+import { StorageBanner } from './storage-banner'
 
 type Item = { label: string; path: string; roles: FirmRole[] }
 type Group = { label: string; items: Item[] }
@@ -83,7 +85,11 @@ export default async function FirmLayout({
 }) {
   const { firmId } = await params
   const { role, firmName, email, db } = await requireFirmRole(firmId, ALL)
-  const inboxCount = MANAGERS.includes(role) ? await newInboxCount(db, firmId) : 0
+  const isManager = MANAGERS.includes(role)
+  const [inboxCount, storage] = await Promise.all([
+    isManager ? newInboxCount(db, firmId) : 0,
+    isManager ? getStorageStatus(db, firmId) : null,
+  ])
   const base = `/f/${firmId}`
 
   return (
@@ -95,6 +101,7 @@ export default async function FirmLayout({
         </div>
         <FirmNav entries={navFor(role, base, inboxCount)} home={base} />
       </header>
+      <StorageBanner firmId={firmId} status={storage?.ok ? storage.data : null} />
       <main className="p-6">{children}</main>
     </div>
   )

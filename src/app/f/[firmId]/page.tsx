@@ -3,6 +3,8 @@ import { requireFirmRole } from '@/lib/auth/context'
 import { formatMoney } from '@/lib/domain/money'
 import { getFirm } from '@/modules/firms/data'
 import { getDashboardSummary } from '@/modules/firms/dashboard'
+import { getStorageStatus } from '@/modules/storage/data'
+import { formatBytes, usagePercent } from '@/lib/domain/storage'
 
 export default async function FirmDashboard({ params }: { params: Promise<{ firmId: string }> }) {
   const { firmId } = await params
@@ -26,13 +28,27 @@ export default async function FirmDashboard({ params }: { params: Promise<{ firm
     )
   }
 
-  const [summary, firm] = await Promise.all([getDashboardSummary(db, firmId, role), getFirm(db, firmId)])
+  const [summary, firm, storage] = await Promise.all([
+    getDashboardSummary(db, firmId, role),
+    getFirm(db, firmId),
+    getStorageStatus(db, firmId),
+  ])
+  const storageNotice = storage.ok && storage.data.level !== 'ok' ? storage.data : null
   const currency = firm.ok ? firm.data.currency : 'USD'
   const canEditSettings = role === 'admin' || role === 'manager'
 
   return (
     <div className="max-w-3xl">
       <h1 className="text-2xl font-semibold">{firmName} dashboard</h1>
+      {storageNotice && (
+        <p className="mt-3 text-sm">
+          You&apos;ve used {formatBytes(storageNotice.used)} of {formatBytes(storageNotice.allowance)} of storage (
+          {usagePercent(storageNotice.used, storageNotice.allowance)}%).{' '}
+          <Link href={`/f/${firmId}/settings/storage`} className="underline underline-offset-4">
+            Manage storage
+          </Link>
+        </p>
+      )}
 
       {!summary.ok ? (
         <p role="alert" className="mt-4 text-sm text-destructive">
