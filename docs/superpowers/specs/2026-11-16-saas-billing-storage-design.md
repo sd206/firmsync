@@ -28,14 +28,19 @@ FirmSync is going to be sold as a SaaS product. Firms must be able to sign up on
 - Deleting a firm's data without the warnings promised, or before 120 days of read-only.
 - Billing outages (Stripe down, a missed webhook) locking paying firms out.
 
-## 3. Pricing (decided)
+## 3. Pricing (decided; revised 2026-11-17)
 
-| Item | Monthly | Annual |
-|---|---|---|
-| Platform fee, includes 2 core seats and 5 GB | $19.99 | $199.90 (2 months free) |
-| Each additional core seat | $9.99 | $99.90 |
-| Each consultant seat | $4.99 | $49.90 |
-| Each extra 10 GB storage | $4.99 | $49.90 |
+Whole-dollar prices (no .99). Annual = 10 × monthly (2 months free).
+
+| Item | List monthly | List annual | Founding monthly | Founding annual |
+|---|---|---|---|---|
+| Platform fee, includes 2 core seats and 5 GB | $29 | $290 | $19 | $190 |
+| Each additional core seat | $15 | $150 | $10 | $100 |
+| Each consultant seat | $5 | $50 | $4 | $40 |
+| Each extra 10 GB storage | $5 | $50 | $5 | $50 |
+
+- **Founding offer:** founding prices for the firm's first 12 months, open to the first 25 firms or until a date the platform owner sets, whichever comes first (both configurable). Sign-up applies it automatically while the offer is open; the firm's billing record stores the founding end date; the app shows it in Settings › Billing and emails the admins 60 and 30 days before it ends. After 12 months the firm moves to list prices. Implementation (Stripe coupons/schedules vs. separate founding prices) is left to the builder.
+- **CPA referrals:** a partner code (`ref=<code>`) on the website link is carried through sign-up like the `utm_*` values and stored on the firm. A referred firm gets a one-time **$100 credit** (Stripe customer balance) on top of any founding pricing. Partners earn **20% of what the referred firm actually pays, for its first 12 months**, paid manually each month. The platform owner manages partners (name, code, contact, active) and sees a monthly report per partner (firms, status, amounts paid, commission due) in Platform › Partners. A partner agreement with ethics disclosure (AICPA/state rules) is the owner's to put in place before the programme starts.
 
 - **Core seat:** a firm member with role admin or manager.
 - **Consultant seat (decided: option B):** every **active** consultant record, whether or not it has a login — except a consultant linked to an admin/manager login, who is covered by that core seat. Consultant-role members without a consultant record (should be rare) also count as consultant seats. Marking a consultant inactive removes the seat.
@@ -83,6 +88,15 @@ Works without Stripe: the allowance is a number per firm the platform owner can 
 - Managers keep their existing ability to delete files on each record.
 
 ## 7. Part 2 — Sign-up and billing
+
+**Website and app addresses (decided 2026-11-17).** The marketing website (landing page, features, pricing, about, contact, terms, privacy) is a separate site on the main domain (e.g. `firmsync.com`, built in Framer). The app lives on `app.<domain>`. The website's sign-up buttons link to `app.<domain>/signup?plan=monthly|annual` plus any `utm_*` parameters; log-in links go to `app.<domain>/login`. The app keeps the plan and the `utm_*` values through Checkout and stores them on the firm's billing record.
+
+**Sign-up safeguards (decided 2026-11-17).**
+- The sign-up page shows the price from Stripe (by lookup key) before payment; the website's prices are copy only.
+- Each firm records the terms version it accepted and when.
+- The "check your email" page shows the address used and has a "Resend the email" button (rate-limited).
+- Stripe Checkout's abandoned-checkout recovery email is turned on.
+- At launch, Supabase's site URL, allowed redirect URLs and email links move to `app.<domain>`, and auth email is sent from the domain with SPF/DKIM set up (go-live checklist).
 
 **Sign-up (public `/signup`).**
 1. Visitor enters firm name, their name and email, chooses monthly or annual, ticks acceptance of terms.
