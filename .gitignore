@@ -49,3 +49,9 @@ supabase/.temp
 # playwright
 /test-results/
 /playwright-report/
+
+# marketing media (videos, images): large files stay out of git
+/marketing/media/
+
+# personal Claude settings
+.claude/settings.local.json
