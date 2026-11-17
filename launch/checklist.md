@@ -42,7 +42,7 @@ Everything that has to be true on launch day: FirmSync on its own domain, with t
 
 ## Marketing
 
-15. Positioning one-pager (who, problem, promise, proof) — Owner: Website & copy writer · Depends: — · Status: Not started
+15. Positioning one-pager (who, problem, promise, proof) — Owner: Website & copy writer · Depends: — · Status: In progress
 16. LinkedIn plan, first 8 posts, outreach templates — Owner: Website & copy writer · Depends: 15 · Status: Not started
 17. CPA partner kit (one-pager, referral link instructions, client email) — Owner: Website & copy writer · Depends: 15 · Status: Not started
 18. Launch announcement (email and LinkedIn) — Owner: Website & copy writer · Depends: 15 · Status: Not started
