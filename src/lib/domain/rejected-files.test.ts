@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { MAX_REJECTED_NAMES, rejectedFilesNotice, rejectedFilesParam } from './rejected-files'
+import { MAX_REJECTED_NAMES, rejectedFilesNotice, rejectedFilesParam, storageFullNotice } from './rejected-files'
 
 describe('rejected files notice', () => {
   it('joins names and puts them in the fixed sentence', () => {
@@ -20,5 +20,15 @@ describe('rejected files notice', () => {
     expect(rejectedFilesNotice(['a', 'b'])).toBeNull()
     expect(rejectedFilesNotice('  ')).toBeNull()
     expect(rejectedFilesNotice('a\u0000b\nc.pdf')).toBe("Expense saved, but some receipts weren't attached: abc.pdf.")
+  })
+})
+
+describe('storageFullNotice', () => {
+  it('gives the fixed full-storage notice only for 1', () => {
+    expect(storageFullNotice('1', 'Expense')).toBe(
+      "Expense saved, but the files weren't attached. Your firm has used all of its storage. Delete old files or add storage in Settings › Billing.",
+    )
+    expect(storageFullNotice('yes', 'Bill')).toBeNull()
+    expect(storageFullNotice(undefined, 'Bill')).toBeNull()
   })
 })

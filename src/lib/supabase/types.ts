@@ -1151,7 +1151,7 @@ isOneToOne: false
                            },
 "firm_storage_files":
 { Args: { "p_firm": string,"p_kind": string,"p_limit": number,"p_offset": number,"p_sort": string }; Returns: {
-              "attachment_id": string,"created_at": string,"file_name": string,"kind": string,"label": string,"owner_id": string,"path": string,"size_bytes": number,"total_count": number
+              "attachment_id": string,"created_at": string,"file_name": string,"kind": string,"label": string,"owner_id": string,"path": string,"record_id": string,"size_bytes": number,"total_count": number
             }[]
                            },
 "firm_storage_status":

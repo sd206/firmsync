@@ -110,7 +110,7 @@ create function public.firm_storage_files(
   p_firm uuid, p_kind text, p_sort text, p_limit integer, p_offset integer
 )
 returns table (
-  path text, kind text, attachment_id uuid, owner_id uuid, file_name text,
+  path text, kind text, attachment_id uuid, owner_id uuid, record_id uuid, file_name text,
   size_bytes bigint, created_at timestamptz, label text, total_count bigint
 )
 language plpgsql
@@ -145,6 +145,15 @@ begin
         when 'invoice_pdf' then i.id
         else null
       end as owner_id,
+      case ob.kind
+        when 'payment' then p.invoice_id
+        when 'expense' then a.expense_id
+        when 'vendor_bill' then a.vendor_bill_id
+        when 'vendor_payment' then vp.bill_id
+        when 'bill_inbox' then a.bill_inbox_item_id
+        when 'invoice_pdf' then i.id
+        else null
+      end as record_id,
       case
         when a.id is not null then a.file_name
         when i.id is not null then 'Invoice ' || coalesce(i.number, 'draft') || '.pdf'
@@ -177,7 +186,7 @@ begin
     left join public.bill_inbox_items bi on bi.firm_id = p_firm and bi.id = a.bill_inbox_item_id
     where p_kind is null or ob.kind = p_kind
   )
-  select r.path, r.kind, r.attachment_id, r.owner_id, r.file_name, r.size_bytes, r.created_at, r.label,
+  select r.path, r.kind, r.attachment_id, r.owner_id, r.record_id, r.file_name, r.size_bytes, r.created_at, r.label,
          count(*) over ()
   from rows r
   order by

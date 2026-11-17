@@ -1,10 +1,10 @@
 import 'server-only'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { mapDbError } from '@/lib/db-errors'
-import { storageLevel, type StorageLevel } from '@/lib/domain/storage'
+import { STORAGE_FULL, storageLevel, type StorageLevel } from '@/lib/domain/storage'
 import { fail, ok, type Result } from '@/lib/result'
 
-export const STORAGE_FULL = 'Your firm has used all of its storage. Delete old files or add storage in Settings › Billing.'
+export { STORAGE_FULL }
 export const PAGE_SIZE = 50
 
 export type StorageKind =
@@ -35,6 +35,8 @@ export type StorageFile = {
   kind: StorageKind
   attachmentId: string | null
   ownerId: string | null
+  /** The record whose page shows this file (the invoice for a payment, the bill for a vendor payment). */
+  recordId: string | null
   fileName: string
   sizeBytes: number
   createdAt: string | null
@@ -80,6 +82,7 @@ export async function listStorageFiles(
     kind: StorageKind
     attachment_id: string | null
     owner_id: string | null
+    record_id: string | null
     file_name: string
     size_bytes: number | string
     created_at: string | null
@@ -94,6 +97,7 @@ export async function listStorageFiles(
       kind: r.kind,
       attachmentId: r.attachment_id,
       ownerId: r.owner_id,
+      recordId: r.record_id,
       fileName: r.file_name,
       sizeBytes: Number(r.size_bytes),
       createdAt: r.created_at,

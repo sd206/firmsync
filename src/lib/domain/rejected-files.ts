@@ -1,3 +1,5 @@
+import { STORAGE_FULL } from './storage'
+
 /** Cap on the file names carried in `?filesRejected=` and shown back to the user. */
 export const MAX_REJECTED_NAMES = 300
 
@@ -18,4 +20,9 @@ export function rejectedFilesNotice(param: string | string[] | undefined): strin
   if (typeof param !== 'string') return null
   const names = cap(param.replace(/[\u0000-\u001f\u007f]/g, '')).trim()
   return names ? `Expense saved, but some receipts weren't attached: ${names}.` : null
+}
+
+/** The fixed notice for `?storageFull=1`: the record was saved but its files were refused. */
+export function storageFullNotice(param: string | string[] | undefined, saved: 'Expense' | 'Bill'): string | null {
+  return param === '1' ? `${saved} saved, but the files weren't attached. ${STORAGE_FULL}` : null
 }

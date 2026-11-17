@@ -12,6 +12,7 @@ import { useRun } from '@/components/use-run'
 import { MAX_FILES_PER_UPLOAD, TOO_MANY_FILES } from '@/lib/domain/attachments'
 import { todayIso } from '@/lib/domain/dates'
 import { formatMoney } from '@/lib/domain/money'
+import { STORAGE_FULL } from '@/lib/domain/storage'
 import { recordVendorPaymentAction, recordVendorPaymentFromWithdrawalAction } from '@/modules/vendor-bills/actions'
 import type { BillWithdrawal } from '@/modules/vendor-bills/data'
 import { METHOD_LABEL, uploadVendorFiles } from '../bill-actions'
@@ -145,9 +146,11 @@ export function RecordBillPaymentPanel({
               if (files.length > MAX_FILES_PER_UPLOAD) return { ok: false, error: TOO_MANY_FILES, fieldErrors: { files: TOO_MANY_FILES } }
               const r = await recordVendorPaymentAction(firmId, billId, fd)
               if (!r.ok) return r
-              const failed = await uploadVendorFiles(firmId, billId, 'vendor_payment', r.data.id, files)
-              if (failed.length > 0) {
-                const w = `Payment recorded, but some files weren't attached: ${failed.join(', ')}.`
+              const { failed, storageFull } = await uploadVendorFiles(firmId, billId, 'vendor_payment', r.data.id, files)
+              if (storageFull || failed.length > 0) {
+                const w = storageFull
+                  ? `Payment recorded, but the files weren't attached. ${STORAGE_FULL}`
+                  : `Payment recorded, but some files weren't attached: ${failed.join(', ')}.`
                 warningRef.current = w
                 setWarning(w)
               }

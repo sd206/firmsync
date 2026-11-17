@@ -4,7 +4,7 @@ import { askConfirm } from '@/components/confirm-dialog'
 import { useRouter } from 'next/navigation'
 import { useRef, useState, useTransition } from 'react'
 import { FileList } from '@/components/attachments/file-list'
-import { FILE_ACCEPT, takeFiles, uploadFiles } from '@/components/attachments/upload-files'
+import { FILE_ACCEPT, takeFiles, uploadFiles, type UploadOutcome } from '@/components/attachments/upload-files'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,6 +13,7 @@ import { todayIso } from '@/lib/domain/dates'
 import { formatMoney } from '@/lib/domain/money'
 import type { FieldErrors, FormResult } from '@/lib/form'
 import { rejectedFilesParam } from '@/lib/domain/rejected-files'
+import { STORAGE_FULL } from '@/lib/domain/storage'
 import {
   createExpenseForUploadAction,
   createExpenseUploadTargetsAction,
@@ -40,7 +41,7 @@ export type ExpenseValues = {
 const SOMETHING_WENT_WRONG = 'Something went wrong. Please try again.'
 const selectClass = 'h-8 rounded-lg border bg-card px-2 text-sm'
 
-function uploadReceipts(firmId: string, expenseId: string, files: File[]): Promise<string[]> {
+function uploadReceipts(firmId: string, expenseId: string, files: File[]): Promise<UploadOutcome> {
   return uploadFiles(files, {
     createTargets: (declared) => createExpenseUploadTargetsAction(firmId, expenseId, declared),
     finalize: (items) => finalizeExpenseUploadsAction(firmId, expenseId, items),
@@ -125,8 +126,12 @@ export function ExpenseForm({
           setCreateError(r.error)
           return
         }
-        const failed = await uploadReceipts(firmId, r.data.id, files)
-        const q = failed.length > 0 ? `&filesRejected=${encodeURIComponent(rejectedFilesParam(failed))}` : ''
+        const { failed, storageFull } = await uploadReceipts(firmId, r.data.id, files)
+        const q = storageFull
+          ? '&storageFull=1'
+          : failed.length > 0
+            ? `&filesRejected=${encodeURIComponent(rejectedFilesParam(failed))}`
+            : ''
         router.push(`/f/${firmId}/expenses/${r.data.id}?added=1${q}`)
       } catch (e) {
         console.error('create expense failed', e)
@@ -320,8 +325,9 @@ export function ReceiptsSection({
               const files = takeFiles(fd)
               if (files.length === 0) return { ok: false, error: 'Choose a file to add.', fieldErrors: { files: 'Choose a file to add.' } }
               if (files.length > MAX_FILES_PER_UPLOAD) return { ok: false, error: TOO_MANY_FILES, fieldErrors: { files: TOO_MANY_FILES } }
-              const failed = await uploadReceipts(firmId, expenseId, files)
-              if (failed.length > 0) setWarning(`Some receipts weren't attached: ${failed.join(', ')}.`)
+              const { failed, storageFull } = await uploadReceipts(firmId, expenseId, files)
+              if (storageFull) setWarning(STORAGE_FULL)
+              else if (failed.length > 0) setWarning(`Some receipts weren't attached: ${failed.join(', ')}.`)
               return { ok: true, data: undefined }
             },
             () => setResets((n) => n + 1),

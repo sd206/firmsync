@@ -122,12 +122,16 @@ export function BillForm({
         }
         savedId.current = r.data.id
         if (r.data.inboxFileFailed) failedInbox.push(r.data.inboxFileFailed)
-        const failed = await uploadFiles(files, {
+        const { failed, storageFull } = await uploadFiles(files, {
           createTargets: (declared) => createVendorUploadTargetsAction(firmId, 'vendor_bill', r.data.id, declared),
           finalize: (items) => finalizeVendorUploadsAction(firmId, r.data.id, 'vendor_bill', r.data.id, items),
         })
         const all = [...failedInbox, ...failed]
-        const q = all.length > 0 ? `?filesRejected=${encodeURIComponent(rejectedFilesParam(all))}` : ''
+        const params = new URLSearchParams()
+        if (storageFull) params.set('storageFull', '1')
+        const named = storageFull ? failedInbox : all
+        if (named.length > 0) params.set('filesRejected', rejectedFilesParam(named))
+        const q = params.size > 0 ? `?${params.toString()}` : ''
         router.push(`/f/${firmId}/vendor-bills/${r.data.id}${q}`)
         router.refresh()
       } catch (e) {

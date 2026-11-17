@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireFirmRole } from '@/lib/auth/context'
 import { formatMoney } from '@/lib/domain/money'
-import { rejectedFilesNotice } from '@/lib/domain/rejected-files'
+import { rejectedFilesNotice, storageFullNotice } from '@/lib/domain/rejected-files'
 import { getExpense } from '@/modules/expenses/data'
 import { DeleteExpenseButton, ExpenseForm, ReceiptsSection } from '../expense-form'
 import { loadFormOptions } from '../form-data'
@@ -12,7 +12,7 @@ export default async function ExpensePage({
   searchParams,
 }: {
   params: Promise<{ firmId: string; id: string }>
-  searchParams: Promise<{ added?: string | string[]; filesRejected?: string | string[] }>
+  searchParams: Promise<{ added?: string | string[]; filesRejected?: string | string[]; storageFull?: string | string[] }>
 }) {
   const { firmId, id } = await params
   const sp = await searchParams
@@ -67,7 +67,7 @@ export default async function ExpensePage({
     )
   }
   const added = sp.added === '1'
-  const fileWarning = rejectedFilesNotice(sp.filesRejected)
+  const fileWarning = [storageFullNotice(sp.storageFull, 'Expense'), rejectedFilesNotice(sp.filesRejected)].filter(Boolean).join(' ')
 
   return (
     <div className="max-w-5xl">

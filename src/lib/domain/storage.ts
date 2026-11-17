@@ -1,5 +1,8 @@
 /** Storage sizes and how close a firm is to its allowance. 1 GB here is 1 GiB (1,073,741,824 bytes). */
 
+/** Shown when an upload is refused because the firm's storage is full. */
+export const STORAGE_FULL = 'Your firm has used all of its storage. Delete old files or add storage in Settings › Billing.'
+
 export type StorageLevel = 'ok' | 'notice' | 'warning' | 'full'
 
 const KB = 1024

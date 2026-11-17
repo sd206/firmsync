@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireFirmRole } from '@/lib/auth/context'
 import { formatMoney } from '@/lib/domain/money'
-import { rejectedFilesNotice } from '@/lib/domain/rejected-files'
+import { rejectedFilesNotice, storageFullNotice } from '@/lib/domain/rejected-files'
 import { getFirm } from '@/modules/firms/data'
 import { BILL_STATUS_LABEL, getBill } from '@/modules/vendor-bills/data'
 import { ApprovalBox, BillFiles, VendorPayments } from './bill-actions'
@@ -16,7 +16,7 @@ export default async function BillPage({
   searchParams,
 }: {
   params: Promise<{ firmId: string; id: string }>
-  searchParams: Promise<{ filesRejected?: string | string[] }>
+  searchParams: Promise<{ filesRejected?: string | string[]; storageFull?: string | string[] }>
 }) {
   const { firmId, id } = await params
   const sp = await searchParams
@@ -29,7 +29,7 @@ export default async function BillPage({
   const base = `/f/${firmId}/vendor-bills`
   const editable = b.status === 'pending_approval' || b.status === 'rejected'
   const payable = b.status === 'approved' || b.status === 'partly_paid'
-  const fileWarning = rejectedFilesNotice(sp.filesRejected)
+  const fileWarning = [storageFullNotice(sp.storageFull, 'Bill'), rejectedFilesNotice(sp.filesRejected)].filter(Boolean).join(' ')
   const check = b.contractorCheck
   const diff = check ? Math.round(Number(check.contractorTotal) * 100 - Number(check.expectedTotal) * 100) / 100 : 0
 

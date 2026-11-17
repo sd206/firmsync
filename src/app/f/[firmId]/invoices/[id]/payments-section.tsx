@@ -5,7 +5,8 @@ import Link from 'next/link'
 import { askConfirm } from '@/components/confirm-dialog'
 import { useState } from 'react'
 import { FileList } from '@/components/attachments/file-list'
-import { FILE_ACCEPT, takeFiles, uploadFiles } from '@/components/attachments/upload-files'
+import { FILE_ACCEPT, takeFiles, uploadFiles, type UploadOutcome } from '@/components/attachments/upload-files'
+import { STORAGE_FULL } from '@/lib/domain/storage'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -36,15 +37,16 @@ const td = 'py-2 pr-4 align-top'
 const select = 'h-8 rounded-lg border bg-card px-2 text-sm'
 const TOO_MANY = { ok: false as const, error: TOO_MANY_FILES, fieldErrors: { files: TOO_MANY_FILES } }
 
-function uploadPaymentFiles(firmId: string, invoiceId: string, paymentId: string, files: File[]): Promise<string[]> {
+function uploadPaymentFiles(firmId: string, invoiceId: string, paymentId: string, files: File[]): Promise<UploadOutcome> {
   return uploadFiles(files, {
     createTargets: (declared) => createUploadTargetsAction(firmId, invoiceId, paymentId, declared),
     finalize: (items) => finalizeUploadsAction(firmId, invoiceId, paymentId, items),
   })
 }
 
-function notAttached(verb: 'recorded' | 'updated', names: string[]): string | null {
-  return names.length === 0 ? null : `Payment ${verb}, but some files weren't attached: ${names.join(', ')}.`
+function notAttached(verb: 'recorded' | 'updated', { failed, storageFull }: UploadOutcome): string | null {
+  if (storageFull) return `Payment ${verb}, but the files weren't attached. ${STORAGE_FULL}`
+  return failed.length === 0 ? null : `Payment ${verb}, but some files weren't attached: ${failed.join(', ')}.`
 }
 
 type Props = {

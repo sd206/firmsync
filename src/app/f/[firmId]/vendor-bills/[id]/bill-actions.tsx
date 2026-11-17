@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { askConfirm } from '@/components/confirm-dialog'
 import { FileList } from '@/components/attachments/file-list'
 import { FILE_ACCEPT, takeFiles, uploadFiles } from '@/components/attachments/upload-files'
+import { STORAGE_FULL } from '@/lib/domain/storage'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -187,8 +188,9 @@ export function BillFiles({
                 const picked = takeFiles(fd)
                 if (picked.length === 0) return { ok: false, error: 'Choose a file to add.', fieldErrors: { files: 'Choose a file to add.' } }
                 if (picked.length > MAX_FILES_PER_UPLOAD) return { ok: false, error: TOO_MANY_FILES, fieldErrors: { files: TOO_MANY_FILES } }
-                const failed = await uploadVendorFiles(firmId, billId, 'vendor_bill', billId, picked)
-                if (failed.length > 0) setWarning(`Some files weren't attached: ${failed.join(', ')}.`)
+                const { failed, storageFull } = await uploadVendorFiles(firmId, billId, 'vendor_bill', billId, picked)
+                if (storageFull) setWarning(STORAGE_FULL)
+                else if (failed.length > 0) setWarning(`Some files weren't attached: ${failed.join(', ')}.`)
                 return { ok: true, data: undefined }
               },
               () => setResets((n) => n + 1),

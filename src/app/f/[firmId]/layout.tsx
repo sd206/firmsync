@@ -53,6 +53,7 @@ const NAV: (Item | Group)[] = [
       { label: 'Vendors', path: '/vendors', roles: MANAGERS },
       { label: 'Users', path: '/users', roles: ADMINS },
       { label: 'Settings', path: '/settings', roles: MANAGERS },
+      { label: 'Storage', path: '/settings/storage', roles: MANAGERS },
     ],
   },
 ]
