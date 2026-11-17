@@ -22,7 +22,12 @@ const HEADINGS = [
   '## Launch manager',
 ]
 if (charter === null) fail('CLAUDE.md is missing')
-else for (const h of HEADINGS) if (!charter.split(/\r?\n/).includes(h)) fail(`CLAUDE.md lacks heading "${h}"`)
+else {
+  for (const h of HEADINGS) if (!charter.split(/\r?\n/).includes(h)) fail(`CLAUDE.md lacks heading "${h}"`)
+  // Specialists must not act as the launch manager.
+  for (const must of ['Only the launch manager edits `launch/checklist.md`'])
+    if (!charter.includes(must)) fail(`CLAUDE.md must say "${must}"`)
+}
 
 // Role files.
 const ROLES = ['developer', 'reviewer', 'copy-writer', 'support-writer']
@@ -52,6 +57,7 @@ for (const role of ROLES) {
   const tools = (fm.tools ?? '').split(',').map((t) => t.trim())
   if (role === 'reviewer') for (const t of NO_EDIT) if (tools.includes(t)) fail(`${rel}: reviewer must not have ${t}`)
   for (const must of ['launch/decisions.md', 'CLAUDE.md']) if (!m[2].includes(must)) fail(`${rel}: body must mention ${must}`)
+  if (role === 'copy-writer' && !m[2].includes('ref=')) fail(`${rel}: links must include the partner code (ref=)`)
 }
 
 // Approval prompts.
@@ -65,13 +71,27 @@ const ASK = [
   'PowerShell(npx supabase db push:*)',
   'Bash(npx vercel:*)',
   'Bash(vercel:*)',
+  'PowerShell(npx vercel:*)',
+  'PowerShell(vercel:*)',
+  'PowerShell(supabase db push:*)',
+  'Bash(gh pr merge:*)',
+  'PowerShell(gh pr merge:*)',
+  'Bash(git -C:*)',
+  'PowerShell(git -C:*)',
+]
+const DENY = [
+  'Bash(npx supabase db reset --linked:*)',
+  'Bash(supabase db reset --linked:*)',
+  'PowerShell(npx supabase db reset --linked:*)',
+  'PowerShell(supabase db reset --linked:*)',
 ]
 const settingsText = read('.claude/settings.json')
 if (settingsText === null) fail('.claude/settings.json is missing')
 else {
   try {
-    const ask = JSON.parse(settingsText)?.permissions?.ask ?? []
-    for (const rule of ASK) if (!ask.includes(rule)) fail(`.claude/settings.json: permissions.ask lacks ${rule}`)
+    const perms = JSON.parse(settingsText)?.permissions ?? {}
+    for (const rule of ASK) if (!(perms.ask ?? []).includes(rule)) fail(`.claude/settings.json: permissions.ask lacks ${rule}`)
+    for (const rule of DENY) if (!(perms.deny ?? []).includes(rule)) fail(`.claude/settings.json: permissions.deny lacks ${rule}`)
   } catch {
     fail('.claude/settings.json is not valid JSON')
   }

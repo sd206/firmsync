@@ -5,11 +5,24 @@
       "PowerShell(git push:*)",
       "Bash(git merge:*)",
       "PowerShell(git merge:*)",
+      "Bash(git -C:*)",
+      "PowerShell(git -C:*)",
+      "Bash(gh pr merge:*)",
+      "PowerShell(gh pr merge:*)",
       "Bash(npx supabase db push:*)",
       "Bash(supabase db push:*)",
       "PowerShell(npx supabase db push:*)",
+      "PowerShell(supabase db push:*)",
       "Bash(npx vercel:*)",
-      "Bash(vercel:*)"
+      "Bash(vercel:*)",
+      "PowerShell(npx vercel:*)",
+      "PowerShell(vercel:*)"
+    ],
+    "deny": [
+      "Bash(npx supabase db reset --linked:*)",
+      "Bash(supabase db reset --linked:*)",
+      "PowerShell(npx supabase db reset --linked:*)",
+      "PowerShell(supabase db reset --linked:*)"
     ]
   }
 }

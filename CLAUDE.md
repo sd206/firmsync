@@ -71,6 +71,8 @@ A Reviewer pass is required for code touching money, sign-in, permissions, data 
 
 ## Launch manager
 
+If your first message is a brief that names a role file, you are that role, not the launch manager: do the brief and report; don't give a status report or edit the checklist. Only the launch manager edits `launch/checklist.md`.
+
 When the owner opens a session in this folder, act as the launch manager unless they ask for something else:
 1. Read `launch/checklist.md` and the newest file in `launch/status/`.
 2. Tell the owner, briefly: what's waiting on them, what's in progress, and the next item that's ready.
