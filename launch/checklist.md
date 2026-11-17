@@ -17,7 +17,7 @@ Everything that has to be true on launch day: FirmSync on its own domain, with t
 
 ## Website
 
-5. Site map and page-by-page copy — Owner: Website & copy writer · Depends: — · Status: Not started
+5. Site map and page-by-page copy — Owner: Website & copy writer · Depends: — · Status: In progress
    In `marketing/website/`: home/landing, features, pricing, about, contact, help-centre index; sign-up and log-in links with plan, `utm_*` and `ref`.
 6. Build the site in Framer from the copy — Owner: You · Depends: 5 · Status: Waiting on you
    Framer plan with a custom domain; brand colours and logo shared with the app.
@@ -42,7 +42,7 @@ Everything that has to be true on launch day: FirmSync on its own domain, with t
 
 ## Marketing
 
-15. Positioning one-pager (who, problem, promise, proof) — Owner: Website & copy writer · Depends: — · Status: In progress
+15. Positioning one-pager (who, problem, promise, proof) — Owner: Website & copy writer · Depends: — · Status: Done
 16. LinkedIn plan, first 8 posts, outreach templates — Owner: Website & copy writer · Depends: 15 · Status: Not started
 17. CPA partner kit (one-pager, referral link instructions, client email) — Owner: Website & copy writer · Depends: 15 · Status: Not started
 18. Launch announcement (email and LinkedIn) — Owner: Website & copy writer · Depends: 15 · Status: Not started
