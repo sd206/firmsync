@@ -1,3 +1,6 @@
+-- Usage reads storage.objects by a name range ('firms/<id>/' up to 'firms/<id>0', C collation) so the
+-- (bucket_id, name) index is used; a LIKE built from a parameter would scan every firm's objects.
+--
 -- Storage limits: each firm's allowance, its usage (everything under firms/<id>/ in firm-files),
 -- a breakdown by kind, a paged file list, the platform owner's storage grant, and the 95% alert latch.
 
@@ -35,7 +38,8 @@ as $$
   select coalesce(sum((o.metadata ->> 'size')::bigint), 0)::bigint
   from storage.objects o
   where o.bucket_id = 'firm-files'
-    and o.name like 'firms/' || p_firm::text || '/%';
+    and o.name collate "C" >= 'firms/' || p_firm::text || '/'
+    and o.name collate "C" < 'firms/' || p_firm::text || '0';
 $$;
 
 -- The kind of a stored object, from its folder.
@@ -100,7 +104,8 @@ begin
     select public.storage_kind(o.name), count(*)::integer, coalesce(sum((o.metadata ->> 'size')::bigint), 0)::bigint
     from storage.objects o
     where o.bucket_id = 'firm-files'
-      and o.name like 'firms/' || p_firm::text || '/%'
+      and o.name collate "C" >= 'firms/' || p_firm::text || '/'
+    and o.name collate "C" < 'firms/' || p_firm::text || '0'
     group by 1
     order by 1;
 end;
@@ -128,7 +133,8 @@ begin
            coalesce((o.metadata ->> 'size')::bigint, 0) as size_bytes, o.created_at
     from storage.objects o
     where o.bucket_id = 'firm-files'
-      and o.name like 'firms/' || p_firm::text || '/%'
+      and o.name collate "C" >= 'firms/' || p_firm::text || '/'
+    and o.name collate "C" < 'firms/' || p_firm::text || '0'
       and split_part(o.name, '/', array_length(string_to_array(o.name, '/'), 1)) not like 'incoming-%'
   ),
   rows as (

@@ -22,6 +22,17 @@ describe('deleteStorageFiles', () => {
     expect(after.ok && after.data.used).toBe(7)
   })
 
+  it('refuses a manager: only admins delete from the Storage page', async () => {
+    const f = await newFirm('Storage Delete Manager')
+    const a = await expenseWithFile(f, 100)
+    expect(await deleteStorageFiles(f.manager.db, f.firmId, [a.attachmentId])).toEqual({
+      ok: false,
+      error: "You don't have permission to do that.",
+    })
+    const still = await getStorageStatus(f.admin.db, f.firmId)
+    expect(still.ok && still.data.used).toBe(100)
+  })
+
   it('refuses Bill inbox files', async () => {
     const f = await newFirm('Storage Delete Inbox')
     const { attachmentIds } = await seedInboxItem(f, { fileNames: ['inv.pdf'] })
