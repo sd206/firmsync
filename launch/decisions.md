@@ -40,3 +40,6 @@ Team members may commit freely on their own branch as part of work the owner has
 
 ## 2026-11-17 — Live bank connections after launch
 Live bank feeds (read-only, through a provider such as Stripe Financial Connections or Plaid) come after launch, not before; two-factor sign-in for admins and managers comes first. Checklist items 20 and 21. **Why:** statement file import already covers the need; a provider approval process and a security review would lengthen the path to launch; holding live bank access raises the stakes of a stolen admin password. Estimated at about 2–3 weeks of developer work plus provider onboarding.
+
+## 2026-11-17 — Email invoices from the app before launch
+Admins and managers will be able to email an issued invoice to the client from FirmSync (checklist item 22). **Why:** every competitor (FreshBooks, Zoho, Harvest, Clockify) does it, and without it firms download and attach PDFs by hand, which looks unfinished in a first demo. The other gaps from the comparison (payment details on invoices, an accounting export, reminders, retainers, online payments) are not yet decided.

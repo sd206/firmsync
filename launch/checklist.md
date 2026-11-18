@@ -14,6 +14,8 @@ Everything that has to be true on launch day: FirmSync on its own domain, with t
    Help-centre link; the form emails `support@` with firm, user, page and browser.
 4. Custom-domain readiness — Owner: Developer · Depends: — · Status: Not started
    App works on `app.<domain>`; sign-in redirect URLs, email links and `NEXT_PUBLIC_SITE_URL` switch by configuration.
+22. Email invoices from the app — Owner: Developer · Depends: — (sending from the real domain needs 11) · Status: In progress
+   Send the invoice PDF to the client's billing email from the invoice page, record when and to whom it was sent. Design approved by you before building; Reviewer pass required (money).
 
 ## Website
 
