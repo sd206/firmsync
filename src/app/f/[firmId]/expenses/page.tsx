@@ -174,6 +174,14 @@ export default async function ExpensesPage({
                         <Link href={`${base}/${r.id}`} className="underline underline-offset-4">
                           {r.payee}
                         </Link>
+                        {r.vendorBillId && (
+                          <Link
+                            href={`/f/${firmId}/vendor-bills/${r.vendorBillId}`}
+                            className="ml-2 inline-flex rounded border px-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+                          >
+                            From bill
+                          </Link>
+                        )}
                       </td>
                       <td className={td}>
                         {r.categoryName}
