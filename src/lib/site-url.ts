@@ -5,7 +5,7 @@ const INVALID = 'NEXT_PUBLIC_SITE_URL must be an https:// origin with no path in
 
 /**
  * Reads NEXT_PUBLIC_SITE_URL, trimmed and without trailing slashes. In production
- * (VERCEL_ENV=production) it must be an https origin such as https://app.veritreo.com,
+ * (VERCEL_ENV=production) it must be an https origin with no path (the app's own address),
  * so a typo in Vercel shows up as an error instead of broken links in emails.
  */
 function check(env: Env): { url: string } | { error: string } {
