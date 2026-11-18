@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { PRODUCT_NAME } from '@/lib/brand'
 import { createBrowserDb } from '@/lib/supabase/browser'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -74,7 +75,7 @@ export function LoginForm({ initialError, initialMessage = null }: { initialErro
         <CardTitle>
           <h1>Sign in</h1>
         </CardTitle>
-        <CardDescription>FirmSync</CardDescription>
+        <CardDescription>{PRODUCT_NAME}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={signIn} className="flex flex-col gap-4">

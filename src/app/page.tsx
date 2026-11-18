@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { requireUser } from '@/lib/auth/context'
+import { PRODUCT_NAME } from '@/lib/brand'
 
 export default async function Home() {
   const { userId, isPlatformOwner, db } = await requireUser()
@@ -20,7 +21,7 @@ export default async function Home() {
 
   return (
     <main className="mx-auto max-w-2xl p-8">
-      <h1 className="text-2xl font-semibold">FirmSync</h1>
+      <h1 className="text-2xl font-semibold">{PRODUCT_NAME}</h1>
       {isPlatformOwner && (
         <p className="mt-4">
           <Link href="/platform/firms" className="underline">

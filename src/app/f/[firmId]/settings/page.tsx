@@ -3,6 +3,8 @@ import { requireFirmRole } from '@/lib/auth/context'
 import { getFirm } from '@/modules/firms/data'
 import { getInboxSettings } from '@/modules/bill-inbox/data'
 import { inboundDomains } from '@/modules/bill-inbox/route-mail'
+import { invoiceEmailReady } from '@/lib/email/send'
+import { EmailTemplateForm } from './email-template-form'
 import { InboxSettingsSection } from './inbox-settings'
 import { LogoForm, SettingsForm } from './settings-forms'
 
@@ -31,6 +33,12 @@ export default async function SettingsPage({ params }: { params: Promise<{ firmI
           <LogoForm firmId={firmId} logoUrl={firm.data.logoUrl} />
           <h2 className="mt-8 text-lg font-medium">Firm details</h2>
           <SettingsForm firmId={firmId} firm={firm.data} currencies={Intl.supportedValuesOf('currency')} />
+          <EmailTemplateForm
+            firmId={firmId}
+            subject={firm.data.invoiceEmailSubject}
+            body={firm.data.invoiceEmailBody}
+            sendingReady={invoiceEmailReady(process.env)}
+          />
           {inbox.ok ? (
             <InboxSettingsSection firmId={firmId} settings={inbox.data} isAdmin={role === 'admin'} />
           ) : (

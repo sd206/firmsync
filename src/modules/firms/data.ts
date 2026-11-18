@@ -49,13 +49,16 @@ export type Firm = {
   invoiceNumberPattern: string
   logoPath: string | null
   logoUrl: string | null
+  /** Invoice email wording; null = the built-in default. */
+  invoiceEmailSubject: string | null
+  invoiceEmailBody: string | null
 }
 
 export async function getFirm(db: SupabaseClient, firmId: string): Promise<Result<Firm>> {
   const { data, error } = await db
     .from('firms')
     .select(
-      'id, name, address, contact_name, contact_email, contact_phone, currency, default_tax_percent::text, default_payment_terms_days, invoice_number_pattern, logo_path',
+      'id, name, address, contact_name, contact_email, contact_phone, currency, default_tax_percent::text, default_payment_terms_days, invoice_number_pattern, logo_path, invoice_email_subject, invoice_email_body',
     )
     .eq('id', firmId)
     .maybeSingle()
@@ -83,6 +86,8 @@ export async function getFirm(db: SupabaseClient, firmId: string): Promise<Resul
     invoiceNumberPattern: data.invoice_number_pattern as string,
     logoPath,
     logoUrl,
+    invoiceEmailSubject: (data.invoice_email_subject as string | null) ?? null,
+    invoiceEmailBody: (data.invoice_email_body as string | null) ?? null,
   })
 }
 

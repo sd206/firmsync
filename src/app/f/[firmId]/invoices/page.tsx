@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { requireFirmRole } from '@/lib/auth/context'
 import type { InvoiceStatus } from '@/lib/db-types'
 import { formatMoney } from '@/lib/domain/money'
+import { lastEmails } from '@/modules/invoice-emails/data'
 import { listInvoices } from '@/modules/invoices/data'
 import { INVOICE_STATUS_LABEL, INVOICE_STATUSES } from './status-label'
 
@@ -21,7 +22,9 @@ export default async function InvoicesPage({
   const { db } = await requireFirmRole(firmId, ['admin', 'manager'])
   const raw = typeof sp.status === 'string' ? sp.status : undefined
   const status = INVOICE_STATUSES.find((s) => s === raw) as InvoiceStatus | undefined
-  const list = await listInvoices(db, firmId, { status })
+  const [list, emailed] = await Promise.all([listInvoices(db, firmId, { status }), lastEmails(db, firmId)])
+  // The marker is a nicety: if it can't load, the list still shows.
+  const emailedIds = emailed.ok ? emailed.data : new Map<string, unknown>()
   const base = `/f/${firmId}/invoices`
 
   return (
@@ -94,7 +97,12 @@ export default async function InvoicesPage({
                 <td className={td}>{r.issueDate}</td>
                 <td className={td}>{r.dueDate}</td>
                 <td className={td}>{formatMoney(r.total, r.currency)}</td>
-                <td className={td}>{INVOICE_STATUS_LABEL[r.status]}</td>
+                <td className={td}>
+                  {INVOICE_STATUS_LABEL[r.status]}
+                  {emailedIds.has(r.id) && (
+                    <span className="ml-2 rounded border px-1.5 py-0.5 text-xs text-muted-foreground">Emailed</span>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

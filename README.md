@@ -72,6 +72,16 @@ npm run test:e2e    # Playwright; needs local Supabase running
 - **Voiding:** an issued, unpaid invoice can be voided. Its hours return to the pool and its number is not reused. Drafts can be deleted.
 - Consultants never see invoices or rates.
 
+### Emailing invoices
+
+- **Who and what:** Admins and Managers can email an issued, partly paid or paid invoice from its page (**Email invoice**). Drafts and voided invoices can't be emailed. The stored PDF (the one made at issue, or by Regenerate PDF) is attached; an invoice without a PDF must have its PDF regenerated first.
+- **Recipients:** To starts as the client's current billing email (else the email on the invoice). Up to 5 To and 5 CC addresses, separated by commas; "Send me a copy" adds you to CC.
+- **The email:** plain text, from `"<firm name> via FirmSync" <INVOICE_EMAIL_FROM>`, with replies going to the firm's contact email in Settings (or the sender's own email when that's empty). The product name comes from `PRODUCT_NAME` in `src/lib/brand.ts`.
+- **Wording:** Settings › Invoice email holds the firm's default subject and message, with placeholders such as `{invoice_number}`, `{amount_due}` and `{due_date}`; Reset to default goes back to the built-in wording. Both can be changed for each email.
+- **History:** the invoice page lists every email (when, sent by, to, subject, Sent / Failed / Unknown) and shows "Emailed <date> to <address>" for the latest one; the invoice list marks emailed invoices. Sending doesn't change the invoice's status. Every send is in the audit log.
+- **Limits:** the same invoice can't be sent again within 60 seconds, or more than 10 times a day; a firm can send 50 invoice emails an hour and 200 a day. Failed sends count.
+- **Setup:** needs `RESEND_API_KEY` and a from address on a domain verified in Resend (`INVOICE_EMAIL_FROM`, or the address in `NOTIFY_FROM`). Without them the button is shown disabled with "Emailing invoices isn't set up yet." Locally, `EMAIL_TRANSPORT=mailpit` sends to Mailpit at http://127.0.0.1:54424 instead (the e2e tests do this).
+
 ## Payments
 
 - **Who:** Admins and Managers record, edit and delete payments, on the invoice page under "Payments". Consultants see nothing of this.
@@ -126,7 +136,7 @@ Payment and expense files are uploaded from the browser straight to storage unde
 - **Warnings (admins and managers; consultants see nothing):** from 80%, a notice on the dashboard; from 95%, a banner on every page, and the firm's admins get one email (sent again only after usage drops below 90% and rises past 95% again).
 - **At 100%:** new payment, expense, vendor bill and vendor payment files and logo changes are refused with "Your firm has used all of its storage. Delete old files or add storage in Settings › Billing." Invoice PDFs are still made and emailed bills still arrive, even if that takes the firm over its allowance. The check happens when an upload starts, so two uploads at the same moment can take a firm slightly over.
 - **Setup › Storage** (`/f/{firmId}/settings/storage`, admins and managers): usage, a breakdown by type, and every file, largest or oldest first, linked to its record. Admins can select payment, expense and vendor files and delete them (this can't be undone). Invoice PDFs and the logo can't be deleted there; Bill-inbox files go when their inbox item is handled.
-- **Warning email:** sent through Resend only when `NOTIFY_FROM` (for example `FirmSync <alerts@yourdomain.com>`) and `RESEND_API_KEY` are set. Resend only sends from a domain verified in your Resend account, so leave `NOTIFY_FROM` unset until you have one; the banners still work.
+- **Warning email:** sent through Resend only when `NOTIFY_FROM` (for example `FirmSync <alerts@yourdomain.com>`) and `RESEND_API_KEY` are set (locally, `EMAIL_TRANSPORT=mailpit` sends it to Mailpit instead). Resend only sends from a domain verified in your Resend account, so leave `NOTIFY_FROM` unset until you have one; the banners still work.
 
 ## Bill inbox (Resend)
 

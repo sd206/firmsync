@@ -1,5 +1,6 @@
-import { describe, expect, it, vi } from 'vitest'
-import { afterStore, type SendEmail } from './alerts'
+﻿import { describe, expect, it, vi } from 'vitest'
+import type { SendEmail } from '@/lib/email/send'
+import { afterStore } from './alerts'
 
 const FIRM = '11111111-1111-4111-8111-111111111111'
 const ENV = { NOTIFY_FROM: 'FirmSync <alerts@example.test>', RESEND_API_KEY: 're_test', NEXT_PUBLIC_SITE_URL: 'https://app.example.test' }
@@ -35,7 +36,7 @@ function fakeDb(opts: { send: boolean; rpcError?: boolean }) {
 
 describe('afterStore', () => {
   it('emails every admin when the check says to', async () => {
-    const send = vi.fn<SendEmail>(async () => {})
+    const send = vi.fn<SendEmail>(async () => ({ id: null }))
     await afterStore(FIRM, { db: fakeDb({ send: true }) as never, send, env: ENV })
     expect(send).toHaveBeenCalledTimes(1)
     const msg = send.mock.calls[0][0]
@@ -47,13 +48,13 @@ describe('afterStore', () => {
   })
 
   it('sends nothing when the check says no', async () => {
-    const send = vi.fn<SendEmail>(async () => {})
+    const send = vi.fn<SendEmail>(async () => ({ id: null }))
     await afterStore(FIRM, { db: fakeDb({ send: false }) as never, send, env: ENV })
     expect(send).not.toHaveBeenCalled()
   })
 
   it('skips the check and sending when NOTIFY_FROM is not set', async () => {
-    const send = vi.fn<SendEmail>(async () => {})
+    const send = vi.fn<SendEmail>(async () => ({ id: null }))
     const db = fakeDb({ send: true })
     await afterStore(FIRM, { db: db as never, send, env: { ...ENV, NOTIFY_FROM: undefined } })
     expect(send).not.toHaveBeenCalled()

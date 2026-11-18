@@ -461,17 +461,49 @@ isOneToOne: false
                   ]
                 },"firms": {
                   Row: {
-                    "address": string | null,"contact_email": string | null,"contact_name": string | null,"contact_phone": string | null,"created_at": string,"created_by": string | null,"currency": string,"default_payment_terms_days": number,"default_tax_percent": number,"id": string,"invoice_next_seq": number,"invoice_number_pattern": string,"logo_path": string | null,"name": string,"storage_alert_sent": boolean,"storage_blocks": number,"storage_grant_gb": number,"storage_included_bytes": number,"updated_at": string
+                    "address": string | null,"contact_email": string | null,"contact_name": string | null,"contact_phone": string | null,"created_at": string,"created_by": string | null,"currency": string,"default_payment_terms_days": number,"default_tax_percent": number,"id": string,"invoice_email_body": string | null,"invoice_email_subject": string | null,"invoice_next_seq": number,"invoice_number_pattern": string,"logo_path": string | null,"name": string,"storage_alert_sent": boolean,"storage_blocks": number,"storage_grant_gb": number,"storage_included_bytes": number,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "address"?: string | null,"contact_email"?: string | null,"contact_name"?: string | null,"contact_phone"?: string | null,"created_at"?: string,"created_by"?: string | null,"currency"?: string,"default_payment_terms_days"?: number,"default_tax_percent"?: number,"id"?: string,"invoice_next_seq"?: number,"invoice_number_pattern"?: string,"logo_path"?: string | null,"name": string,"storage_alert_sent"?: boolean,"storage_blocks"?: number,"storage_grant_gb"?: number,"storage_included_bytes"?: number,"updated_at"?: string
+                    "address"?: string | null,"contact_email"?: string | null,"contact_name"?: string | null,"contact_phone"?: string | null,"created_at"?: string,"created_by"?: string | null,"currency"?: string,"default_payment_terms_days"?: number,"default_tax_percent"?: number,"id"?: string,"invoice_email_body"?: string | null,"invoice_email_subject"?: string | null,"invoice_next_seq"?: number,"invoice_number_pattern"?: string,"logo_path"?: string | null,"name": string,"storage_alert_sent"?: boolean,"storage_blocks"?: number,"storage_grant_gb"?: number,"storage_included_bytes"?: number,"updated_at"?: string
                   }
                   Update: {
-                    "address"?: string | null,"contact_email"?: string | null,"contact_name"?: string | null,"contact_phone"?: string | null,"created_at"?: string,"created_by"?: string | null,"currency"?: string,"default_payment_terms_days"?: number,"default_tax_percent"?: number,"id"?: string,"invoice_next_seq"?: number,"invoice_number_pattern"?: string,"logo_path"?: string | null,"name"?: string,"storage_alert_sent"?: boolean,"storage_blocks"?: number,"storage_grant_gb"?: number,"storage_included_bytes"?: number,"updated_at"?: string
+                    "address"?: string | null,"contact_email"?: string | null,"contact_name"?: string | null,"contact_phone"?: string | null,"created_at"?: string,"created_by"?: string | null,"currency"?: string,"default_payment_terms_days"?: number,"default_tax_percent"?: number,"id"?: string,"invoice_email_body"?: string | null,"invoice_email_subject"?: string | null,"invoice_next_seq"?: number,"invoice_number_pattern"?: string,"logo_path"?: string | null,"name"?: string,"storage_alert_sent"?: boolean,"storage_blocks"?: number,"storage_grant_gb"?: number,"storage_included_bytes"?: number,"updated_at"?: string
                   }
                   Relationships: [
                     
+                  ]
+                },"invoice_emails": {
+                  Row: {
+                    "body": string,"cc_addresses": (string)[],"created_at": string,"created_by": string | null,"error": string | null,"firm_id": string,"id": string,"invoice_id": string,"pdf_path": string,"provider_message_id": string | null,"reply_to": string | null,"sent_at": string | null,"status": Database["public"]['Enums']["invoice_email_status"],"subject": string,"to_addresses": (string)[]
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body": string,"cc_addresses"?: (string)[],"created_at"?: string,"created_by"?: string | null,"error"?: string | null,"firm_id": string,"id"?: string,"invoice_id": string,"pdf_path": string,"provider_message_id"?: string | null,"reply_to"?: string | null,"sent_at"?: string | null,"status"?: Database["public"]['Enums']["invoice_email_status"],"subject": string,"to_addresses": (string)[]
+                  }
+                  Update: {
+                    "body"?: string,"cc_addresses"?: (string)[],"created_at"?: string,"created_by"?: string | null,"error"?: string | null,"firm_id"?: string,"id"?: string,"invoice_id"?: string,"pdf_path"?: string,"provider_message_id"?: string | null,"reply_to"?: string | null,"sent_at"?: string | null,"status"?: Database["public"]['Enums']["invoice_email_status"],"subject"?: string,"to_addresses"?: (string)[]
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "invoice_emails_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["user_id"]
+    },{
+      foreignKeyName: "invoice_emails_firm_id_fkey"
+      columns: ["firm_id"]
+isOneToOne: false
+      referencedRelation: "firms"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "invoice_emails_invoice_fk"
+      columns: ["firm_id","invoice_id"]
+isOneToOne: false
+      referencedRelation: "invoices"
+      referencedColumns: ["firm_id","id"]
+    }
                   ]
                 },"invoice_lines": {
                   Row: {
@@ -1189,8 +1221,19 @@ isOneToOne: false
               "consultant_id": string,"consultant_name": string,"entry_count": number,"hours": string,"project_id": string,"project_name": string,"rate": string
             }[]
                            },
+"invoice_email_finish":
+{ Args: { "p_error": string,"p_id": string,"p_ok": boolean,"p_provider_id": string }; Returns: undefined
+                           },
+"invoice_email_start":
+{ Args: { "p_body": string,"p_cc": (string)[],"p_invoice": string,"p_reply_to": string,"p_subject": string,"p_to": (string)[] }; Returns: string
+                           },
 "invoice_generate_time_lines":
 { Args: { "p_consultants": (string)[],"p_invoice": string }; Returns: undefined
+                           },
+"invoice_last_emails":
+{ Args: { "p_firm": string }; Returns: {
+              "invoice_id": string,"sent_at": string,"to_addresses": (string)[]
+            }[]
                            },
 "invoice_lock_draft":
 { Args: { "p_invoice": string }; Returns: {
@@ -1255,6 +1298,9 @@ isOneToOne: false
                            },
 "is_platform_owner":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"is_valid_email":
+{ Args: { "p_address": string }; Returns: boolean
                            },
 "issue_invoice":
 { Args: { "p_invoice": string }; Returns: string
@@ -1515,7 +1561,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "bank_account_kind": "bank"|"credit_card","bank_line_status": "new"|"done"|"ignored","consultant_type": "employee"|"independent"|"vendor","firm_role": "admin"|"manager"|"consultant","invoice_discount_type": "none"|"percent"|"amount","invoice_layout": "classic"|"modern"|"compact","invoice_line_kind": "time"|"manual","invoice_status": "draft"|"issued"|"partly_paid"|"paid"|"void","payment_method": "bank_transfer"|"check"|"card"|"cash"|"other","project_status": "active"|"on_hold"|"closed","timesheet_status": "draft"|"submitted"|"approved"|"rejected","vendor_bill_status": "pending_approval"|"rejected"|"approved"|"partly_paid"|"paid"|"void"
+            "bank_account_kind": "bank"|"credit_card","bank_line_status": "new"|"done"|"ignored","consultant_type": "employee"|"independent"|"vendor","firm_role": "admin"|"manager"|"consultant","invoice_discount_type": "none"|"percent"|"amount","invoice_email_status": "sending"|"sent"|"failed","invoice_layout": "classic"|"modern"|"compact","invoice_line_kind": "time"|"manual","invoice_status": "draft"|"issued"|"partly_paid"|"paid"|"void","payment_method": "bank_transfer"|"check"|"card"|"cash"|"other","project_status": "active"|"on_hold"|"closed","timesheet_status": "draft"|"submitted"|"approved"|"rejected","vendor_bill_status": "pending_approval"|"rejected"|"approved"|"partly_paid"|"paid"|"void"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -1635,7 +1681,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "bank_account_kind": ["bank", "credit_card"],"bank_line_status": ["new", "done", "ignored"],"consultant_type": ["employee", "independent", "vendor"],"firm_role": ["admin", "manager", "consultant"],"invoice_discount_type": ["none", "percent", "amount"],"invoice_layout": ["classic", "modern", "compact"],"invoice_line_kind": ["time", "manual"],"invoice_status": ["draft", "issued", "partly_paid", "paid", "void"],"payment_method": ["bank_transfer", "check", "card", "cash", "other"],"project_status": ["active", "on_hold", "closed"],"timesheet_status": ["draft", "submitted", "approved", "rejected"],"vendor_bill_status": ["pending_approval", "rejected", "approved", "partly_paid", "paid", "void"]
+            "bank_account_kind": ["bank", "credit_card"],"bank_line_status": ["new", "done", "ignored"],"consultant_type": ["employee", "independent", "vendor"],"firm_role": ["admin", "manager", "consultant"],"invoice_discount_type": ["none", "percent", "amount"],"invoice_email_status": ["sending", "sent", "failed"],"invoice_layout": ["classic", "modern", "compact"],"invoice_line_kind": ["time", "manual"],"invoice_status": ["draft", "issued", "partly_paid", "paid", "void"],"payment_method": ["bank_transfer", "check", "card", "cash", "other"],"project_status": ["active", "on_hold", "closed"],"timesheet_status": ["draft", "submitted", "approved", "rejected"],"vendor_bill_status": ["pending_approval", "rejected", "approved", "partly_paid", "paid", "void"]
           }
         }
 } as const
