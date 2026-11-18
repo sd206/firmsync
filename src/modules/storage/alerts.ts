@@ -2,23 +2,10 @@ import 'server-only'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { PRODUCT_NAME } from '@/lib/brand'
 import { formatBytes } from '@/lib/domain/storage'
+import { createSender, type SendEmail } from '@/lib/email/send'
 import { createAdminDb } from '@/lib/supabase/admin'
 
-export type SendEmail = (msg: { from: string; to: string[]; subject: string; text: string }) => Promise<void>
-
 type Env = Record<string, string | undefined>
-
-/** Sends one email through Resend's sending API. */
-function resendSender(apiKey: string): SendEmail {
-  return async (msg) => {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(msg),
-    })
-    if (!res.ok) throw new Error(`resend send failed: ${res.status} ${await res.text()}`)
-  }
-}
 
 async function rpcNumber(db: SupabaseClient, fn: string, firmId: string): Promise<number> {
   const { data, error } = await db.rpc(fn, { p_firm: firmId })
@@ -28,7 +15,8 @@ async function rpcNumber(db: SupabaseClient, fn: string, firmId: string): Promis
 
 /**
  * Call after anything is stored for a firm. Emails the firm's admins once when usage crosses 95%
- * (the database latch re-arms below 90%). Needs NOTIFY_FROM and RESEND_API_KEY; without them it
+ * (the database latch re-arms below 90%). Needs NOTIFY_FROM and a mail transport (RESEND_API_KEY,
+ * or EMAIL_TRANSPORT=mailpit locally); without them it
  * does nothing and the in-app banners are the only warning. Never throws.
  */
 export async function afterStore(
@@ -37,8 +25,8 @@ export async function afterStore(
 ): Promise<void> {
   const env = deps.env ?? process.env
   const from = env.NOTIFY_FROM
-  const apiKey = env.RESEND_API_KEY
-  if (!from || !apiKey) return
+  const sender = deps.send ?? createSender(env)
+  if (!from || !sender) return
   try {
     const db = deps.db ?? createAdminDb()
     const { data: send, error } = await db.rpc('storage_alert_check', { p_firm: firmId })
@@ -60,7 +48,7 @@ export async function afterStore(
     if (to.length === 0) return
 
     const site = (env.NEXT_PUBLIC_SITE_URL ?? '').replace(/\/$/, '')
-    await (deps.send ?? resendSender(apiKey))({
+    await sender({
       from,
       to,
       subject: `${name} is using 95% of its ${PRODUCT_NAME} storage`,

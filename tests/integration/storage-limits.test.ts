@@ -154,6 +154,7 @@ describe('afterStore with the real database', () => {
     const env = { NOTIFY_FROM: 'FirmSync <alerts@example.test>', RESEND_API_KEY: 're_test', NEXT_PUBLIC_SITE_URL: 'http://x' }
     const send = async (m: { to: string[]; subject: string }) => {
       sent.push(m)
+      return { id: null }
     }
     await afterStore(f.firmId, { db: adminDb(), send, env })
     await afterStore(f.firmId, { db: adminDb(), send, env })
