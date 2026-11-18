@@ -191,6 +191,10 @@ The hosted project must mirror the local `supabase/config.toml` auth settings:
 
 Also set `NEXT_PUBLIC_SITE_URL` to the deployed URL in the app's environment (an `https://` origin with no path; in production anything else is logged, and inviting users or sending sign-in links answers "The app's address isn't set up correctly" until it is fixed).
 
+### Test site marker (`NEXT_PUBLIC_APP_ENV`)
+
+Set `NEXT_PUBLIC_APP_ENV=test` on the **Test** site (`test.veritreo.com`, `firmsync.vercel.app`) only. Every page then shows an amber "TEST SITE — fictional data only" bar at the top, the browser tab title starts with "[TEST] ", and invoice emails and storage alerts get "[TEST] " in front of the subject (invoice email history keeps the subject as typed). On **Prod** (`app.veritreo.com`) and locally, leave it unset: nothing changes. It is read in one place (`src/lib/app-env.ts`). Being a `NEXT_PUBLIC_` variable it is built into the app, so a change takes effect only after a redeploy (locally: restart `npm run dev`, or rebuild).
+
 ### Moving to app.veritreo.com
 
 The app moves from `firmsync.vercel.app` to `app.veritreo.com` by configuration only. The step-by-step runbook (Resend, Vercel, Supabase Auth, environment variables, smoke test and rollback) is in [docs/superpowers/specs/2026-11-18-custom-domain-design.md](docs/superpowers/specs/2026-11-18-custom-domain-design.md), section 4. `firmsync.vercel.app` stays a second address for 1–2 weeks after the switch, then redirects. A unit test (`src/lib/no-hard-coded-hosts.test.ts`) fails if a host is written into the code.

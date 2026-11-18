@@ -1,4 +1,5 @@
 import 'server-only'
+import { testPrefixed } from '@/lib/app-env'
 import { PRODUCT_NAME } from '@/lib/brand'
 import { cleanDisplayName, formatFrom, isValidEmail, parseAddressList, singleLine, validateRecipients } from '@/lib/email/addresses'
 import { createSender, emailConfig, invoiceEmailReady, MailNoResponseError, type SendEmail } from '@/lib/email/send'
@@ -118,7 +119,8 @@ export async function sendInvoiceEmail(deps: SendDeps, input: SendInput): Promis
       to: recipients.data.to,
       cc: recipients.data.cc,
       replyTo: replyTo ?? undefined,
-      subject,
+      // History keeps the user's wording; only the outgoing email is marked on the Test site.
+      subject: testPrefixed(subject, deps.env.NEXT_PUBLIC_APP_ENV),
       text: body,
       attachments: [{ filename: pdfFileName(ctx.data.invoiceNumber), content: pdf.data, contentType: 'application/pdf' }],
       idempotencyKey: id,
