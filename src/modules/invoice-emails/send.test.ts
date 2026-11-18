@@ -12,7 +12,7 @@ import {
   type SendDeps,
 } from './send'
 
-const ENV = { EMAIL_TRANSPORT: 'mailpit', INVOICE_EMAIL_FROM: 'invoices@firmsync.test' }
+const ENV = { EMAIL_TRANSPORT: 'mailpit', INVOICE_EMAIL_FROM: 'invoices@veritreo.test' }
 const PDF = new Uint8Array([37, 80, 68, 70])
 
 const CTX: SendContext = {
@@ -75,7 +75,7 @@ describe('sendInvoiceEmail', () => {
       body: 'Please find it attached.',
     })
     const msg = vi.mocked(d.send).mock.calls[0][0]
-    expect(msg.from).toBe('"Demo Consulting via FirmSync" <invoices@firmsync.test>')
+    expect(msg.from).toBe('"Demo Consulting via VeriTreo" <invoices@veritreo.test>')
     expect(msg.replyTo).toBe('billing@demo-consulting.test')
     expect(msg.subject).toBe('Invoice INV-2026/0012 Bcc: x@evil.test')
     expect(msg.text).toBe('Please find it attached.')
@@ -186,7 +186,7 @@ describe('composeDefaults', () => {
     expect(d.to).toBe('ap@demo-client.test')
     expect(d.subject).toBe('Invoice INV-2026-0012 from Demo Consulting')
     expect(d.body).toContain('Hi Pat Payable,')
-    expect(d.from).toBe('"Demo Consulting via FirmSync" <invoices@firmsync.test>')
+    expect(d.from).toBe('"Demo Consulting via VeriTreo" <invoices@veritreo.test>')
     expect(d.replyTo).toBe('manager@demo-consulting.test')
   })
 

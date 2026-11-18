@@ -1,10 +1,10 @@
-# FirmSync
+# VeriTreo
 
 A multi-tenant web app for consulting firms to run their operations: each firm manages its own members, vendors, consultants (with hourly cost rates), clients, projects and consultant assignments (with client rates), and sees margin per hour. A platform owner creates firms and their first Admin. Built with Next.js 15 (App Router) and Supabase (Postgres, Auth, Storage) with row-level security for tenant isolation.
 
 ## Working with the AI launch team
 
-FirmSync is being taken to go-live with an AI team. Open a Claude session in this folder and it acts as the launch manager.
+VeriTreo (formerly FirmSync) is being taken to go-live with an AI team. Open a Claude session in this folder and it acts as the launch manager.
 - `CLAUDE.md`: the team rules, roles and what always needs the owner's approval.
 - `launch/checklist.md`: the go-live checklist.
 - `launch/decisions.md`: every launch decision, with the reasons.
@@ -76,7 +76,7 @@ npm run test:e2e    # Playwright; needs local Supabase running
 
 - **Who and what:** Admins and Managers can email an issued, partly paid or paid invoice from its page (**Email invoice**). Drafts and voided invoices can't be emailed. The stored PDF (the one made at issue, or by Regenerate PDF) is attached; an invoice without a PDF must have its PDF regenerated first.
 - **Recipients:** To starts as the client's current billing email (else the email on the invoice). Up to 5 To and 5 CC addresses, separated by commas; "Send me a copy" adds you to CC.
-- **The email:** plain text, from `"<firm name> via FirmSync" <INVOICE_EMAIL_FROM>`, with replies going to the firm's contact email in Settings (or the sender's own email when that's empty). The product name comes from `PRODUCT_NAME` in `src/lib/brand.ts`.
+- **The email:** plain text, from `"<firm name> via VeriTreo" <INVOICE_EMAIL_FROM>`, with replies going to the firm's contact email in Settings (or the sender's own email when that's empty). The product name comes from `PRODUCT_NAME` in `src/lib/brand.ts`.
 - **Wording:** Settings › Invoice email holds the firm's default subject and message, with placeholders such as `{invoice_number}`, `{amount_due}` and `{due_date}`; Reset to default goes back to the built-in wording. Both can be changed for each email.
 - **History:** the invoice page lists every email (when, sent by, to, subject, Sent / Failed / Unknown) and shows "Emailed <date> to <address>" for the latest one; the invoice list marks emailed invoices. Sending doesn't change the invoice's status. Every send is in the audit log.
 - **Limits:** the same invoice can't be sent again within 60 seconds, or more than 10 times a day; a firm can send 50 invoice emails an hour and 200 a day. Failed sends count.
@@ -136,7 +136,7 @@ Payment and expense files are uploaded from the browser straight to storage unde
 - **Warnings (admins and managers; consultants see nothing):** from 80%, a notice on the dashboard; from 95%, a banner on every page, and the firm's admins get one email (sent again only after usage drops below 90% and rises past 95% again).
 - **At 100%:** new payment, expense, vendor bill and vendor payment files and logo changes are refused with "Your firm has used all of its storage. Delete old files or add storage in Settings › Billing." Invoice PDFs are still made and emailed bills still arrive, even if that takes the firm over its allowance. The check happens when an upload starts, so two uploads at the same moment can take a firm slightly over.
 - **Setup › Storage** (`/f/{firmId}/settings/storage`, admins and managers): usage, a breakdown by type, and every file, largest or oldest first, linked to its record. Admins can select payment, expense and vendor files and delete them (this can't be undone). Invoice PDFs and the logo can't be deleted there; Bill-inbox files go when their inbox item is handled.
-- **Warning email:** sent through Resend only when `NOTIFY_FROM` (for example `FirmSync <alerts@yourdomain.com>`) and `RESEND_API_KEY` are set (locally, `EMAIL_TRANSPORT=mailpit` sends it to Mailpit instead). Resend only sends from a domain verified in your Resend account, so leave `NOTIFY_FROM` unset until you have one; the banners still work.
+- **Warning email:** sent through Resend only when `NOTIFY_FROM` (for example `VeriTreo <alerts@yourdomain.com>`) and `RESEND_API_KEY` are set (locally, `EMAIL_TRANSPORT=mailpit` sends it to Mailpit instead). Resend only sends from a domain verified in your Resend account, so leave `NOTIFY_FROM` unset until you have one; the banners still work.
 
 ## Bill inbox (Resend)
 
@@ -147,21 +147,21 @@ Resend receives the mail and posts `email.received` to `/api/inbound/resend`. Th
 **Setup (once, production only):**
 
 1. In Resend › Receiving, copy the account's `<id>.resend.app` domain.
-2. In Resend › Webhooks, add `https://firmsync.vercel.app/api/inbound/resend` for the `email.received` event, and copy its signing secret.
+2. In Resend › Webhooks, add `<site URL>/api/inbound/resend` (currently `https://firmsync.vercel.app/api/inbound/resend`) for the `email.received` event, and copy its signing secret.
 3. Create a Resend API key that can read received emails.
 4. In Vercel, add these variables, then redeploy:
    - `RESEND_API_KEY`
    - `RESEND_INBOUND_SECRET` (the `whsec_…` secret)
    - `INBOUND_DOMAINS=<id>.resend.app`
-5. In FirmSync, go to Settings › Bill inbox, choose Turn on, then send a test email to the address shown.
+5. In VeriTreo, go to Settings › Bill inbox, choose Turn on, then send a test email to the address shown.
 
 Without these variables, Settings says the inbox isn't set up, and the webhook answers 503.
 
 **Moving to your own domain later:**
 
-1. Verify the domain in Resend and enable receiving on a subdomain (e.g. `in.firmsync.app`).
+1. Verify the domain in Resend and enable receiving on a subdomain (e.g. `in.veritreo.com`).
 2. Add Resend's MX record for that subdomain at your DNS host.
-3. Set `INBOUND_DOMAINS=in.firmsync.app,<id>.resend.app` and redeploy. The first domain is the one shown to users, and both are accepted, with the same address code.
+3. Set `INBOUND_DOMAINS=in.veritreo.com,<id>.resend.app` and redeploy. The first domain is the one shown to users, and both are accepted, with the same address code.
 4. Once vendors have switched, remove the old domain from the list.
 
 ## Hosted Supabase

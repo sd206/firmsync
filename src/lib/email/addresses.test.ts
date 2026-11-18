@@ -71,20 +71,20 @@ describe('cleanDisplayName', () => {
 
 describe('addressOf', () => {
   it('reads the address from a display-name form or a bare address', () => {
-    expect(addressOf('FirmSync <alerts@x.test>')).toBe('alerts@x.test')
+    expect(addressOf('VeriTreo <alerts@x.test>')).toBe('alerts@x.test')
     expect(addressOf(' invoices@x.test ')).toBe('invoices@x.test')
   })
 
   it('returns null for something that is not an address', () => {
-    expect(addressOf('FirmSync')).toBeNull()
+    expect(addressOf('VeriTreo')).toBeNull()
     expect(addressOf(undefined)).toBeNull()
   })
 })
 
 describe('formatFrom', () => {
   it('quotes the display name', () => {
-    expect(formatFrom('Demo Consulting via FirmSync', 'invoices@x.test')).toBe(
-      '"Demo Consulting via FirmSync" <invoices@x.test>',
+    expect(formatFrom('Demo Consulting via VeriTreo', 'invoices@x.test')).toBe(
+      '"Demo Consulting via VeriTreo" <invoices@x.test>',
     )
   })
 })

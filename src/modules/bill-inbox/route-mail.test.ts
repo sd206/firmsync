@@ -3,7 +3,7 @@ import { bareAddress, classifySender, codesFor, inboundDomains, possibleDuplicat
 
 describe('inbound routing', () => {
   it('reads the domain list', () => {
-    expect(inboundDomains(' In.FirmSync.app, x.resend.app ,,')).toEqual(['in.firmsync.app', 'x.resend.app'])
+    expect(inboundDomains(' In.VeriTreo.com, x.resend.app ,,')).toEqual(['in.veritreo.com', 'x.resend.app'])
     expect(inboundDomains(undefined)).toEqual([])
   })
 

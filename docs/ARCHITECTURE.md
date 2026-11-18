@@ -1,6 +1,6 @@
-# FirmSync — Architecture
+# VeriTreo — Architecture
 
-FirmSync is a multi-tenant web app that lets consulting firms run their operations in one place: timesheets, invoices, client payments, vendor bills, expenses, bank statements and reports. This document explains how the system is built and why. The [README](../README.md) covers setup and the detailed business rules for each feature.
+VeriTreo (formerly FirmSync) is a multi-tenant web app that lets consulting firms run their operations in one place: timesheets, invoices, client payments, vendor bills, expenses, bank statements and reports. This document explains how the system is built and why. The [README](../README.md) covers setup and the detailed business rules for each feature.
 
 Last reviewed: 2026-11-18 (database migrations up to `20261118000049`).
 
@@ -27,7 +27,7 @@ flowchart LR
 
 | Piece | What it does |
 |---|---|
-| **Next.js 15 app** (App Router, React 19, TypeScript) | Pages, server actions, the PDF builder, the CSV routes and the inbound-email webhook. Hosted on Vercel at `firmsync.vercel.app`. |
+| **Next.js 15 app** (App Router, React 19, TypeScript) | Pages, server actions, the PDF builder, the CSV routes and the inbound-email webhook. Hosted on Vercel, currently at `firmsync.vercel.app` (the app moves to `app.veritreo.com`; see `docs/superpowers/specs/2026-11-18-custom-domain-design.md`). |
 | **Supabase Postgres** | Holds all data and most business rules: row-level security for tenant isolation, plus about 140 database functions (mostly `security definer`) for every multi-step change (issuing an invoice, approving a timesheet, recording a payment and so on). |
 | **Supabase Auth** | Email and password, magic links and invites. Public sign-up is disabled, so users only join by invitation. |
 | **Supabase Storage** | One private bucket, `firm-files` (10 MB per file), for logos, invoice PDFs, payment and expense files, vendor-bill files and bill-inbox attachments. |
