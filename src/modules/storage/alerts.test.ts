@@ -63,11 +63,14 @@ describe('afterStore', () => {
   })
 
   it('still sends, with the plain wording, when the site URL is invalid in production', async () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
     const send = vi.fn<SendEmail>(async () => ({ id: null }))
     const env = { ...ENV, VERCEL_ENV: 'production', NEXT_PUBLIC_SITE_URL: 'http://app.example.test' }
     await afterStore(FIRM, { db: fakeDb({ send: true }) as never, send, env })
     expect(send).toHaveBeenCalledTimes(1)
     expect(send.mock.calls[0][0].text).toContain('Open Settings › Storage in VeriTreo')
+    expect(err).toHaveBeenCalledWith(expect.stringContaining('NEXT_PUBLIC_SITE_URL'))
+    err.mockRestore()
   })
 
   it('sends nothing when the check says no', async () => {

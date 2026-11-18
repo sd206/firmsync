@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-11-18-custom-domain-design.md` (approved 2026-11-18, D1 (a), D2 later, D3 as proposed).
 
+**As built:** after the branch review, `siteUrl()` (which threw) was replaced by `siteUrlOrNull()` and `authCallbackUrl()`, and the invite and sign-in-link actions return a message instead of crashing; reviewed range `1327fb0..9d28dd1`. Task 1's `siteUrl()` steps below describe the first version.
+
 ## Global Constraints
 
 - Product name only via `PRODUCT_NAME` (`src/lib/brand.ts`), spelled `VeriTreo`.

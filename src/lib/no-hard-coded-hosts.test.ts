@@ -10,15 +10,24 @@ import { describe, expect, it } from 'vitest'
 const SRC = join(__dirname, '..')
 const SKIP = new Set(['lib/supabase/types.ts'])
 const FORBIDDEN = /vercel\.app|veritreo\.com|veritreo\.app|firmsync/i
-const ALLOWED_HOSTS = new Set(['api.resend.com', '127.0.0.1', 'localhost'])
+// Third-party hosts allowed anywhere. www.w3.org is only an XML namespace (SVG). Links to the marketing
+// site, when needed, must come from one named constant or an environment variable, not from literals.
+const ALLOWED_HOSTS = new Set(['api.resend.com', 'www.w3.org'])
+// Loopback hosts only where they are a development default: the Mailpit transport.
+const ALLOWED_IN_FILE: Record<string, Set<string>> = {
+  'lib/email/send.ts': new Set(['127.0.0.1', 'localhost']),
+}
 const URL_LITERAL = /https?:\/\/([a-z0-9.-]+)/gi
 
-/** Offending matches in one line of source. */
-function offences(line: string): string[] {
+/** Offending matches in one line of source; `file` is relative to src/, with forward slashes. */
+function offences(line: string, file = ''): string[] {
   const found: string[] = []
   const f = FORBIDDEN.exec(line)
   if (f) found.push(f[0])
-  for (const m of line.matchAll(URL_LITERAL)) if (!ALLOWED_HOSTS.has(m[1].toLowerCase())) found.push(m[0])
+  for (const m of line.matchAll(URL_LITERAL)) {
+    const host = m[1].toLowerCase()
+    if (!ALLOWED_HOSTS.has(host) && !ALLOWED_IN_FILE[file]?.has(host)) found.push(m[0])
+  }
   return found
 }
 
@@ -36,7 +45,14 @@ describe('no hard-coded hosts in src/', () => {
     expect(offences(`const u = 'https://evil.example/y'`)).toEqual(['https://evil.example'])
     expect(offences(`from: 'invoices@veritreo.com'`)).toEqual(['veritreo.com'])
     expect(offences(`const RESEND_URL = 'https://api.resend.com/emails'`)).toEqual([])
-    expect(offences(`const DEFAULT_MAILPIT = 'http://127.0.0.1:54424'`)).toEqual([])
+    expect(offences(`const DEFAULT_MAILPIT = 'http://127.0.0.1:54424'`, 'lib/email/send.ts')).toEqual([])
+    expect(offences(`<svg xmlns="http://www.w3.org/2000/svg">`)).toEqual([])
+  })
+
+  it('allows loopback hosts only in the Mailpit transport', () => {
+    expect(offences(`env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'`, 'lib/site-url.ts')).toEqual(['http://localhost'])
+    expect(offences(`const u = 'http://127.0.0.1:54424'`, 'modules/storage/alerts.ts')).toEqual(['http://127.0.0.1'])
+    expect(offences(`const u = 'http://localhost:54424'`, 'lib/email/send.ts')).toEqual([])
   })
 
   it('finds none in application code', () => {
@@ -45,7 +61,7 @@ describe('no hard-coded hosts in src/', () => {
       if (SKIP.has(rel)) return []
       return readFileSync(file, 'utf8')
         .split(/\r?\n/)
-        .flatMap((line, i) => offences(line).map((o) => `src/${rel}:${i + 1}: ${o}`))
+        .flatMap((line, i) => offences(line, rel).map((o) => `src/${rel}:${i + 1}: ${o}`))
     })
     expect(problems).toEqual([])
   })
