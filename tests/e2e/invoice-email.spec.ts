@@ -59,7 +59,7 @@ test('manager emails an issued invoice with its PDF and sees the history', async
   await expect(page.getByLabel('To', { exact: true })).toHaveValue(billing)
   await expect(page.getByLabel('Subject')).toHaveValue(/^Invoice INV-\d{4}-\d{4} from Demo Consulting$/)
   await expect(page.getByLabel('Message')).toHaveValue(/Hi Pat Payable,/)
-  await expect(page.getByTestId('email-from')).toHaveText('"Demo Consulting via FirmSync" <invoices@firmsync.test>')
+  await expect(page.getByTestId('email-from')).toHaveText('"Demo Consulting via VeriTreo" <invoices@veritreo.test>')
   await expect(page.getByTestId('email-reply-to')).toHaveText('billing@demo-consulting.test')
   await page.getByLabel('Send me a copy').check()
   await page.getByRole('button', { name: 'Send' }).click()
@@ -72,7 +72,7 @@ test('manager emails an issued invoice with its PDF and sees the history', async
   await expect.poll(async () => (await mailTo(billing)).length).toBe(1)
   const [summary] = await mailTo(billing)
   const msg = (await (await fetch(`${MAILPIT}/api/v1/message/${summary.ID}`)).json()) as MailpitMessage
-  expect(msg.From).toEqual({ Name: 'Demo Consulting via FirmSync', Address: 'invoices@firmsync.test' })
+  expect(msg.From).toEqual({ Name: 'Demo Consulting via VeriTreo', Address: 'invoices@veritreo.test' })
   expect(msg.ReplyTo.map((r) => r.Address)).toEqual(['billing@demo-consulting.test'])
   expect(msg.Text).toContain('Hi Pat Payable,')
   expect(msg.Attachments).toHaveLength(1)

@@ -46,7 +46,7 @@ export type SendInput = {
   body: string
 }
 
-/** `"Demo Consulting via FirmSync" <invoices@…>`; null when no from address is configured. */
+/** `"Demo Consulting via VeriTreo" <invoices@…>`; null when no from address is configured. */
 export function invoiceFrom(firmName: string, env: Env): string | null {
   const c = emailConfig(env)
   if (!c.ok || !c.fromAddress) return null

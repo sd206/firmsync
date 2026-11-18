@@ -14,7 +14,7 @@ const read = (rel) => {
 // CLAUDE.md: the team charter.
 const charter = read('CLAUDE.md')
 const HEADINGS = [
-  '## What FirmSync is',
+  ['## What VeriTreo is', '## What FirmSync is'], // either name while the rename lands
   '## Where things are',
   '## Standing rules',
   '## Always ask the owner',
@@ -23,7 +23,11 @@ const HEADINGS = [
 ]
 if (charter === null) fail('CLAUDE.md is missing')
 else {
-  for (const h of HEADINGS) if (!charter.split(/\r?\n/).includes(h)) fail(`CLAUDE.md lacks heading "${h}"`)
+  const lines = charter.split(/\r?\n/)
+  for (const h of HEADINGS) {
+    const options = Array.isArray(h) ? h : [h]
+    if (!options.some((o) => lines.includes(o))) fail(`CLAUDE.md lacks heading "${options[0]}"`)
+  }
   // Specialists must not act as the launch manager.
   for (const must of ['Only the launch manager edits `launch/checklist.md`', 'Commit freely on your own branch'])
     if (!charter.includes(must)) fail(`CLAUDE.md must say "${must}"`)

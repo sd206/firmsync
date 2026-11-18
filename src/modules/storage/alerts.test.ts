@@ -3,7 +3,7 @@ import type { SendEmail } from '@/lib/email/send'
 import { afterStore } from './alerts'
 
 const FIRM = '11111111-1111-4111-8111-111111111111'
-const ENV = { NOTIFY_FROM: 'FirmSync <alerts@example.test>', RESEND_API_KEY: 're_test', NEXT_PUBLIC_SITE_URL: 'https://app.example.test' }
+const ENV = { NOTIFY_FROM: 'VeriTreo <alerts@example.test>', RESEND_API_KEY: 're_test', NEXT_PUBLIC_SITE_URL: 'https://app.example.test' }
 
 /** A stand-in for the service-role client: just the calls afterStore makes. */
 function fakeDb(opts: { send: boolean; rpcError?: boolean }) {
@@ -42,7 +42,7 @@ describe('afterStore', () => {
     const msg = send.mock.calls[0][0]
     expect(msg.from).toBe(ENV.NOTIFY_FROM)
     expect(msg.to).toEqual(['a1@example.test', 'a2@example.test'])
-    expect(msg.subject).toBe('Demo Consulting is using 95% of its FirmSync storage')
+    expect(msg.subject).toBe('Demo Consulting is using 95% of its VeriTreo storage')
     expect(msg.text).toContain('4.7 GB of 5 GB')
     expect(msg.text).toContain(`https://app.example.test/f/${FIRM}/settings/storage`)
   })

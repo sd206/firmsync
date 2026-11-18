@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { createSender, emailConfig, invoiceEmailReady, MailNoResponseError, type MailMessage } from './send'
 
 const MSG: MailMessage = {
-  from: '"Demo Consulting via FirmSync" <invoices@x.test>',
+  from: '"Demo Consulting via VeriTreo" <invoices@x.test>',
   to: ['ap@demo-client.test'],
   cc: ['cc@demo-client.test'],
   replyTo: 'billing@demo-consulting.test',
@@ -28,7 +28,7 @@ describe('emailConfig', () => {
   })
 
   it('takes the from address from NOTIFY_FROM', () => {
-    expect(emailConfig({ RESEND_API_KEY: 're_x', NOTIFY_FROM: 'FirmSync <alerts@x.test>' })).toEqual({
+    expect(emailConfig({ RESEND_API_KEY: 're_x', NOTIFY_FROM: 'VeriTreo <alerts@x.test>' })).toEqual({
       ok: true,
       transport: 'resend',
       fromAddress: 'alerts@x.test',
@@ -88,7 +88,7 @@ describe('createSender', () => {
     const [url, init] = f.mock.calls[0]
     expect(url).toBe('http://127.0.0.1:54424/api/v1/send')
     expect(JSON.parse(init!.body as string)).toEqual({
-      From: { Email: 'invoices@x.test', Name: 'Demo Consulting via FirmSync' },
+      From: { Email: 'invoices@x.test', Name: 'Demo Consulting via VeriTreo' },
       To: [{ Email: 'ap@demo-client.test' }],
       Cc: [{ Email: 'cc@demo-client.test' }],
       ReplyTo: [{ Email: 'billing@demo-consulting.test' }],

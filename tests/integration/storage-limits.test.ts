@@ -151,7 +151,7 @@ describe('afterStore with the real database', () => {
     await adminDb().from('firms').update({ storage_included_bytes: 1000 }).eq('id', f.firmId)
     await expenseWithFile(f, 960)
     const sent: { to: string[]; subject: string }[] = []
-    const env = { NOTIFY_FROM: 'FirmSync <alerts@example.test>', RESEND_API_KEY: 're_test', NEXT_PUBLIC_SITE_URL: 'http://x' }
+    const env = { NOTIFY_FROM: 'VeriTreo <alerts@example.test>', RESEND_API_KEY: 're_test', NEXT_PUBLIC_SITE_URL: 'http://x' }
     const send = async (m: { to: string[]; subject: string }) => {
       sent.push(m)
       return { id: null }
@@ -160,6 +160,6 @@ describe('afterStore with the real database', () => {
     await afterStore(f.firmId, { db: adminDb(), send, env })
     expect(sent).toHaveLength(1)
     expect(sent[0].to).toEqual([f.admin.email])
-    expect(sent[0].subject).toBe('Storage Alert Mail Firm is using 95% of its FirmSync storage')
+    expect(sent[0].subject).toBe('Storage Alert Mail Firm is using 95% of its VeriTreo storage')
   })
 })
