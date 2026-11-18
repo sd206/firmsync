@@ -119,21 +119,68 @@ describe('createSender', () => {
     expect(f).toHaveBeenCalledTimes(2)
   })
 
-  it('does not retry when the service answered with an error', async () => {
-    const f = fakeFetch(422, 'bad')
+  it('does not retry when the service rejected the email (4xx)', async () => {
+    const f = fakeFetch(422, { name: 'validation_error', message: 'Invalid `to` field.' })
     const send = createSender({ RESEND_API_KEY: 're_secret' }, f as never)!
     const err = await send(MSG).catch((e: Error) => e)
     expect(err).not.toBeInstanceOf(MailNoResponseError)
     expect(f).toHaveBeenCalledTimes(1)
   })
 
-  it('rejects on an error response without leaking the key', async () => {
-    const f = fakeFetch(500, 'upstream exploded '.repeat(50))
+  it.each([
+    ['409 (Resend still processing the first request)', 409, { name: 'concurrent_idempotent_requests' }],
+    ['500', 500, { name: 'internal_server_error' }],
+  ])('treats a timeout followed by %s as unconfirmed', async (_label, status, body) => {
+    const f = vi
+      .fn<(url: string | URL | Request, init?: RequestInit) => Promise<Response>>()
+      .mockRejectedValueOnce(new DOMException('The operation timed out.', 'TimeoutError'))
+      .mockResolvedValueOnce(new Response(JSON.stringify(body), { status }))
     const send = createSender({ RESEND_API_KEY: 're_secret' }, f as never)!
-    const err = await send(MSG).catch((e: Error) => e)
-    expect(err).toBeInstanceOf(Error)
-    expect((err as Error).message).toMatch(/^resend send failed: 500/)
-    expect((err as Error).message).not.toContain('re_secret')
-    expect((err as Error).message.length).toBeLessThan(260)
+    await expect(send(MSG)).rejects.toBeInstanceOf(MailNoResponseError)
+    expect(f).toHaveBeenCalledTimes(2)
+  })
+
+  it('retries a first-attempt 5xx with the same key, and reports a second 5xx as unconfirmed', async () => {
+    const ok = vi
+      .fn<(url: string | URL | Request, init?: RequestInit) => Promise<Response>>()
+      .mockResolvedValueOnce(new Response('{}', { status: 503 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ id: 'resend-3' }), { status: 200 }))
+    await expect(createSender({ RESEND_API_KEY: 're_secret' }, ok as never)!(MSG)).resolves.toEqual({ id: 'resend-3' })
+    const keys = ok.mock.calls.map(([, init]) => (init!.headers as Record<string, string>)['Idempotency-Key'])
+    expect(keys).toEqual(['abc-123', 'abc-123'])
+
+    const down = fakeFetch(502, 'bad gateway')
+    await expect(createSender({ RESEND_API_KEY: 're_secret' }, down as never)!(MSG)).rejects.toBeInstanceOf(MailNoResponseError)
+    expect(down).toHaveBeenCalledTimes(2)
+  })
+
+  it('treats a 5xx as unconfirmed without retrying when there is no idempotency key', async () => {
+    const f = fakeFetch(500, 'oops')
+    const send = createSender({ RESEND_API_KEY: 're_secret' }, f as never)!
+    await expect(send({ ...MSG, idempotencyKey: undefined })).rejects.toBeInstanceOf(MailNoResponseError)
+    expect(f).toHaveBeenCalledTimes(1)
+  })
+
+  it('gives the retry a shorter timeout, so an unanswered send ends within 25 seconds', async () => {
+    const timeout = vi.spyOn(AbortSignal, 'timeout')
+    const f = vi.fn(async () => {
+      throw new TypeError('fetch failed')
+    })
+    await createSender({ RESEND_API_KEY: 're_secret' }, f as never)!(MSG).catch(() => {})
+    expect(timeout.mock.calls.map((c) => c[0])).toEqual([15_000, 10_000])
+    timeout.mockRestore()
+  })
+
+  it('keeps only the status and the error name in the error, never the body or the key', async () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const f = fakeFetch(422, { name: 'validation_error', message: 'The ap@demo-client.test address is on a suppression list.' })
+    const e = await createSender({ RESEND_API_KEY: 're_secret' }, f as never)!(MSG).catch((x: Error) => x)
+    expect((e as Error).message).toBe('resend send failed: 422 validation_error')
+
+    const plain = fakeFetch(400, 'not json at all '.repeat(40))
+    const e2 = await createSender({ RESEND_API_KEY: 're_secret' }, plain as never)!(MSG).catch((x: Error) => x)
+    expect((e2 as Error).message).toBe('resend send failed: 400')
+    expect(err).toHaveBeenCalled()
+    err.mockRestore()
   })
 })

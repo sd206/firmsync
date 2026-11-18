@@ -15,6 +15,10 @@ import { EmailInvoice } from './email-invoice'
 import { IssuedActions } from './issued-actions'
 import { PaymentsSection } from './payments-section'
 
+// The Email invoice action runs here: an unanswered send takes up to 25 s (15 s + a 10 s retry).
+// 60 s is within every Vercel plan, so the platform never cuts a send off mid-way.
+export const maxDuration = 60
+
 const th = 'py-2 pr-4 font-medium'
 const td = 'py-2 pr-4 align-top'
 const PDF_MISSING = "The PDF couldn't be created. Use Regenerate PDF."

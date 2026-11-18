@@ -22,6 +22,7 @@ export type EmailConfig = { ok: true; transport: 'resend' | 'mailpit'; fromAddre
 const RESEND_URL = 'https://api.resend.com/emails'
 const DEFAULT_MAILPIT = 'http://127.0.0.1:54424'
 const TIMEOUT_MS = 15_000
+const RETRY_TIMEOUT_MS = 10_000
 
 /** Mailpit is a local test inbox; never send to it anywhere but this machine. */
 function localMailpitUrl(env: Env): string | null {
@@ -58,8 +59,10 @@ function splitFrom(from: string): { Email: string; Name?: string } {
 }
 
 /**
- * The mail service never answered (timeout, dropped connection), so the email may or may not
- * have gone. Distinct from an error answer, which means it certainly didn't.
+ * Delivery is unconfirmed: the mail service never answered (timeout, dropped connection), had a
+ * server error (5xx), or answered a retry with an error (e.g. 409 while it is still processing the
+ * first attempt). The email may or may not have gone. A 4xx on the first attempt is a definite
+ * rejection and a plain Error instead.
  */
 export class MailNoResponseError extends Error {
   constructor(message: string) {
@@ -69,23 +72,48 @@ export class MailNoResponseError extends Error {
 }
 
 /**
- * One POST. With an idempotency key, a request that got no answer is tried once more with the
- * same key, so the service can't send it twice.
+ * The status and the provider's error name only (e.g. "422 validation_error"): the body can hold
+ * recipient details, so it goes to the server log, never into stored history.
  */
-async function post(name: string, url: string, init: RequestInit, fetchImpl: Fetch, retry: boolean): Promise<unknown> {
-  let res: Response
+async function describeFailure(name: string, res: Response): Promise<string> {
+  const text = await res.text().catch(() => '')
+  console.error(`${name} send failed`, res.status, text.slice(0, 1000))
+  let code = ''
   try {
-    res = await fetchImpl(url, { ...init, method: 'POST', signal: AbortSignal.timeout(TIMEOUT_MS) })
-  } catch (e) {
-    if (retry) return post(name, url, init, fetchImpl, false)
-    const reason = e instanceof Error ? e.name : 'unknown'
-    throw new MailNoResponseError(`${name}: no response (${reason})`)
+    const parsed = JSON.parse(text) as { name?: unknown }
+    if (typeof parsed.name === 'string' && /^[a-z_]{1,60}$/.test(parsed.name)) code = parsed.name
+  } catch {
+    // Not JSON: the status alone.
   }
-  if (!res.ok) {
-    const detail = (await res.text().catch(() => '')).slice(0, 200)
-    throw new Error(`${name} send failed: ${res.status} ${detail}`.trim())
+  return `${res.status}${code ? ` ${code}` : ''}`
+}
+
+/**
+ * One POST. With an idempotency key, an attempt without a confirmed outcome (no answer or 5xx) is
+ * tried once more with the same key, so the service can't send it twice; a non-2xx answer to that
+ * retry is still unconfirmed. The retry gets a shorter timeout so an unanswered send ends within
+ * 25 seconds (first try 15 s + retry 10 s).
+ */
+async function post(name: string, url: string, init: RequestInit, fetchImpl: Fetch, canRetry: boolean): Promise<unknown> {
+  const attempt = async (timeoutMs: number, isRetry: boolean): Promise<unknown> => {
+    let res: Response
+    try {
+      res = await fetchImpl(url, { ...init, method: 'POST', signal: AbortSignal.timeout(timeoutMs) })
+    } catch (e) {
+      if (canRetry && !isRetry) return attempt(RETRY_TIMEOUT_MS, true)
+      const reason = e instanceof Error ? e.name : 'unknown'
+      throw new MailNoResponseError(`${name}: no response (${reason})`)
+    }
+    if (res.ok) return res.json().catch(() => ({}))
+    if (res.status >= 500 && canRetry && !isRetry) {
+      await describeFailure(name, res)
+      return attempt(RETRY_TIMEOUT_MS, true)
+    }
+    const failure = await describeFailure(name, res)
+    if (isRetry || res.status >= 500) throw new MailNoResponseError(`${name}: unconfirmed (${failure})`)
+    throw new Error(`${name} send failed: ${failure}`)
   }
-  return res.json().catch(() => ({}))
+  return attempt(TIMEOUT_MS, false)
 }
 
 function resendSender(apiKey: string, fetchImpl: Fetch): SendEmail {
