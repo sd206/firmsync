@@ -147,7 +147,7 @@ Resend receives the mail and posts `email.received` to `/api/inbound/resend`. Th
 **Setup (once, production only):**
 
 1. In Resend › Receiving, copy the account's `<id>.resend.app` domain.
-2. In Resend › Webhooks, add `<site URL>/api/inbound/resend` (currently `https://firmsync.vercel.app/api/inbound/resend`) for the `email.received` event, and copy its signing secret.
+2. In Resend › Webhooks, add `<site URL>/api/inbound/resend` (currently `https://firmsync.vercel.app/api/inbound/resend`; `https://app.veritreo.com/api/inbound/resend` after the switch) for the `email.received` event, and copy its signing secret.
 3. Create a Resend API key that can read received emails.
 4. In Vercel, add these variables, then redeploy:
    - `RESEND_API_KEY`
@@ -179,7 +179,7 @@ The profile row is created automatically when the user is added.
 ### Email
 
 - Hosted Supabase's built-in email service only delivers to members of the Supabase project's team, and at a very low rate. Configure custom SMTP (Dashboard → Authentication → Emails → SMTP Settings) before inviting real users.
-- Invite, magic-link and password-recovery emails must link to `/auth/confirm` with a token hash, not the default links. Set the hosted templates to match `supabase/templates/invite.html`, `magic_link.html` and `recovery.html` (Dashboard → Authentication → Email Templates, or `npx supabase config push`, which pushes `supabase/config.toml` including the templates). With the default templates, invite links put the session in the URL fragment and sign-in fails with "That sign-in link is invalid or has expired."
+- Invite, magic-link and password-recovery emails must link to `/auth/confirm` with a token hash, not the default links. Set the hosted templates to match `supabase/templates/invite.html`, `magic_link.html` and `recovery.html`, with the subjects from `supabase/config.toml`, by pasting them in Dashboard → Authentication → Email Templates. Don't use `npx supabase config push` for this: it pushes the whole local auth config, including `site_url = "http://localhost:3000"` and the localhost redirect URLs, which would break every link in production. With the default templates, invite links put the session in the URL fragment and sign-in fails with "That sign-in link is invalid or has expired."
 
 ### Auth settings
 
@@ -187,6 +187,10 @@ The hosted project must mirror the local `supabase/config.toml` auth settings:
 
 - Sign-ups disabled (`enable_signup = false`); users are added only by invitation.
 - Minimum password length 10 (`minimum_password_length = 10`).
-- Site URL set to the deployed app URL (the email templates build their links from it), and the redirect URLs `<site URL>/auth/callback` and `<site URL>/auth/confirm` added to the allowed redirect list.
+- Site URL set to the deployed app URL (the email templates build their links from it), and the redirect URLs `<site URL>/auth/callback` and `<site URL>/auth/confirm` added to the allowed redirect list. Every address users sign in on needs its own pair (the sign-in form sends them back to the address they are on).
 
-Also set `NEXT_PUBLIC_SITE_URL` to the deployed URL in the app's environment.
+Also set `NEXT_PUBLIC_SITE_URL` to the deployed URL in the app's environment (an `https://` origin with no path; in production the app refuses anything else).
+
+### Moving to app.veritreo.com
+
+The app moves from `firmsync.vercel.app` to `app.veritreo.com` by configuration only. The step-by-step runbook (Resend, Vercel, Supabase Auth, environment variables, smoke test and rollback) is in [docs/superpowers/specs/2026-11-18-custom-domain-design.md](docs/superpowers/specs/2026-11-18-custom-domain-design.md), section 4. `firmsync.vercel.app` stays a second address for 1–2 weeks after the switch, then redirects. A unit test (`src/lib/no-hard-coded-hosts.test.ts`) fails if a host is written into the code.

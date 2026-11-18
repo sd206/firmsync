@@ -304,6 +304,8 @@ Every report has a CSV download from a `csv/route.ts` beside its page. The CSVs 
 
 **Environment variables:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server only), `NEXT_PUBLIC_SITE_URL`, for the bill inbox `RESEND_API_KEY`, `RESEND_INBOUND_SECRET` and `INBOUND_DOMAINS`, optionally `NOTIFY_FROM` for storage warning emails, and `INVOICE_EMAIL_FROM` (falls back to the address in `NOTIFY_FROM`) for emailing invoices; locally `EMAIL_TRANSPORT=mailpit` sends all app email to Mailpit. Without a from address, Email invoice is shown disabled. Without the bill-inbox variables, that feature switches itself off: the webhook answers 503 and Settings says the inbox isn't set up.
 
+**Host-neutral:** no host is written into the code (a unit test checks `src/`). Links in emails come from `siteUrl()` (`NEXT_PUBLIC_SITE_URL`, which must be an `https://` origin when `VERCEL_ENV=production`); the auth routes redirect to the request's own origin. Moving to `app.veritreo.com` is configuration only: see the runbook in `docs/superpowers/specs/2026-11-18-custom-domain-design.md`.
+
 **Release order:** apply the database migration before deploying code that depends on it. Migrations use `create or replace` for functions, and changes only add to the schema, so the running app keeps working while the migration is applied.
 
 ---
