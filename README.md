@@ -189,7 +189,7 @@ The hosted project must mirror the local `supabase/config.toml` auth settings:
 - Minimum password length 10 (`minimum_password_length = 10`).
 - Site URL set to the deployed app URL (the email templates build their links from it), and the redirect URLs `<site URL>/auth/callback` and `<site URL>/auth/confirm` added to the allowed redirect list. Every address users sign in on needs its own pair (the sign-in form sends them back to the address they are on).
 
-Also set `NEXT_PUBLIC_SITE_URL` to the deployed URL in the app's environment (an `https://` origin with no path; in production the app refuses anything else).
+Also set `NEXT_PUBLIC_SITE_URL` to the deployed URL in the app's environment (an `https://` origin with no path; in production anything else is logged, and inviting users or sending sign-in links answers "The app's address isn't set up correctly" until it is fixed).
 
 ### Moving to app.veritreo.com
 

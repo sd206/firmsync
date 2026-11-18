@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { requireFirmRole, requireUser } from '@/lib/auth/context'
 import { fail, type Result } from '@/lib/result'
-import { siteUrl } from '@/lib/site-url'
+import { authCallbackUrl, SITE_URL_PROBLEM } from '@/lib/site-url'
 import { createAdminDb } from '@/lib/supabase/admin'
 import { createFirmWithAdmin, setStorageGrant, updateFirmSettings, uploadFirmLogo } from './data'
 import { createFirmSchema, firmSettingsSchema } from './schemas'
@@ -76,11 +76,9 @@ export async function createFirmAction(formData: FormData): Promise<Result<{ fir
   })
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? 'Check the form and try again.')
 
-  const result = await createFirmWithAdmin(
-    createAdminDb(),
-    parsed.data,
-    `${siteUrl()}/auth/callback`,
-  )
+  const redirectTo = authCallbackUrl()
+  if (!redirectTo) return fail(SITE_URL_PROBLEM)
+  const result = await createFirmWithAdmin(createAdminDb(), parsed.data, redirectTo)
   if (result.ok) revalidatePath('/platform/firms')
   return result
 }

@@ -3,7 +3,8 @@ import { join, relative } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 // The app must move between hosts (firmsync.vercel.app, app.veritreo.com) by configuration only:
-// build links from siteUrl() and senders from environment variables, never from literals.
+// build links from siteUrlOrNull()/authCallbackUrl() and senders from environment variables, never from
+// literals; auth email templates link from Supabase's {{ .SiteURL }}.
 // See docs/superpowers/specs/2026-11-18-custom-domain-design.md.
 
 const SRC = join(__dirname, '..')
@@ -25,7 +26,7 @@ function sourceFiles(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
     const p = join(dir, e.name)
     if (e.isDirectory()) return sourceFiles(p)
-    return /\.tsx?$/.test(e.name) && !/\.test\.tsx?$/.test(e.name) ? [p] : []
+    return /\.(tsx?|jsx?|mjs|cjs|json)$/.test(e.name) && !/\.test\.tsx?$/.test(e.name) ? [p] : []
   })
 }
 
@@ -45,6 +46,19 @@ describe('no hard-coded hosts in src/', () => {
       return readFileSync(file, 'utf8')
         .split(/\r?\n/)
         .flatMap((line, i) => offences(line).map((o) => `src/${rel}:${i + 1}: ${o}`))
+    })
+    expect(problems).toEqual([])
+  })
+
+  it('auth email templates link only through {{ .SiteURL }}', () => {
+    const dir = join(SRC, '..', 'supabase', 'templates')
+    const files = readdirSync(dir).filter((f) => f.endsWith('.html'))
+    expect(files.length).toBeGreaterThan(0)
+    const problems = files.flatMap((f) => {
+      const html = readFileSync(join(dir, f), 'utf8')
+      const hrefs = [...html.matchAll(/href="([^"]*)"/g)].map((m) => m[1])
+      if (hrefs.length === 0) return [`${f}: no link`]
+      return hrefs.filter((h) => !h.startsWith('{{ .SiteURL }}/')).map((h) => `${f}: ${h}`)
     })
     expect(problems).toEqual([])
   })

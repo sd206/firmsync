@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { requireFirmRole } from '@/lib/auth/context'
 import { fieldErrorsOf, type FormResult, str } from '@/lib/form'
-import { siteUrl } from '@/lib/site-url'
+import { authCallbackUrl, SITE_URL_PROBLEM } from '@/lib/site-url'
 import { emailSignIn } from '@/lib/auth/sign-in-email'
 import { createAdminDb } from '@/lib/supabase/admin'
 import {
@@ -100,18 +100,14 @@ export async function inviteConsultantAction(
   consultantId: string,
 ): Promise<FormResult<{ outcome: LoginOutcome; emailed?: boolean }>> {
   const { db } = await requireFirmRole(firmId, ['admin'])
-  const result = await linkOrInviteConsultant(
-    db,
-    createAdminDb(),
-    firmId,
-    consultantId,
-    `${siteUrl()}/auth/callback`,
-  )
+  const redirectTo = authCallbackUrl()
+  if (!redirectTo) return { ok: false, error: SITE_URL_PROBLEM }
+  const result = await linkOrInviteConsultant(db, createAdminDb(), firmId, consultantId, redirectTo)
   if (result.ok) revalidatePath(`/f/${firmId}/users`)
   if (result.ok && result.data.outcome === 'added') {
     // An existing login was added to the firm: no invitation goes out, so send a sign-in link.
     const c = await getConsultant(db, firmId, consultantId)
-    const emailed = c.ok ? (await emailSignIn(createAdminDb(), c.data.email, `${siteUrl()}/auth/callback`)).ok : false
+    const emailed = c.ok ? (await emailSignIn(createAdminDb(), c.data.email, redirectTo)).ok : false
     return done(firmId, { ok: true, data: { outcome: 'added', emailed } }, consultantId)
   }
   return done(firmId, result, consultantId)

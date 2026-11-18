@@ -1,9 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { siteUrl, siteUrlOrNull } from './site-url'
+import { authCallbackUrl, siteUrlOrNull } from './site-url'
 
 const PROD = { VERCEL_ENV: 'production' }
 
 describe('siteUrlOrNull', () => {
+  afterEach(() => vi.restoreAllMocks())
+
   it('is null when unset or blank', () => {
     expect(siteUrlOrNull({})).toBeNull()
     expect(siteUrlOrNull({ NEXT_PUBLIC_SITE_URL: '  ' })).toBeNull()
@@ -16,33 +18,29 @@ describe('siteUrlOrNull', () => {
   })
 
   it('in production, accepts an https origin, trimmed and without trailing slash', () => {
-    for (const v of ['https://app.veritreo.com', 'https://app.veritreo.com/', ' https://app.veritreo.com '])
+    for (const v of ['https://app.veritreo.com', 'https://app.veritreo.com/', ' https://app.veritreo.com \n', 'https://APP.veritreo.com'])
       expect(siteUrlOrNull({ ...PROD, NEXT_PUBLIC_SITE_URL: v })).toBe('https://app.veritreo.com')
   })
 
-  it('in production, rejects http, paths, queries and values without a scheme', () => {
-    for (const v of ['http://app.veritreo.com', 'https://app.veritreo.com/app', 'app.veritreo.com', 'https://app.veritreo.com?x=1'])
-      expect(siteUrlOrNull({ ...PROD, NEXT_PUBLIC_SITE_URL: v })).toBeNull()
+  it('in production, rejects and logs http, paths, queries, fragments, credentials and values without a scheme', () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const bad = [
+      'http://app.veritreo.com',
+      'https://app.veritreo.com/app',
+      'app.veritreo.com',
+      'https://app.veritreo.com?x=1',
+      'https://app.veritreo.com/?',
+      'https://app.veritreo.com/#',
+      'https://user:pw@app.veritreo.com',
+    ]
+    for (const v of bad) expect(siteUrlOrNull({ ...PROD, NEXT_PUBLIC_SITE_URL: v }), v).toBeNull()
+    expect(err).toHaveBeenCalledTimes(bad.length)
   })
 })
 
-describe('siteUrl', () => {
-  afterEach(() => vi.unstubAllEnvs())
-
-  it('throws when unset', () => {
-    vi.stubEnv('NEXT_PUBLIC_SITE_URL', '')
-    expect(() => siteUrl()).toThrow(/is not set/)
-  })
-
-  it('throws in production for a value that is not an https origin', () => {
-    vi.stubEnv('VERCEL_ENV', 'production')
-    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'http://app.veritreo.com')
-    expect(() => siteUrl()).toThrow(/https:\/\/ origin/)
-  })
-
-  it('returns the checked value in production', () => {
-    vi.stubEnv('VERCEL_ENV', 'production')
-    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://app.veritreo.com/')
-    expect(siteUrl()).toBe('https://app.veritreo.com')
+describe('authCallbackUrl', () => {
+  it('appends /auth/callback, or is null when the site URL is unusable', () => {
+    expect(authCallbackUrl({ NEXT_PUBLIC_SITE_URL: 'http://localhost:3000/' })).toBe('http://localhost:3000/auth/callback')
+    expect(authCallbackUrl({})).toBeNull()
   })
 })
