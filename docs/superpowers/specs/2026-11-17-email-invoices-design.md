@@ -158,7 +158,7 @@ Counted from `invoice_emails` (index on `firm_id, created_at`), enforced inside 
 
 Other protections: only signed-in admins/managers of a paying firm; only real issued invoices; plain text body; every send is audited with full recipients and text; Resend's own suppression list stops repeated sends to bounced or complaining addresses. **Kill switch:** unsetting `INVOICE_EMAIL_FROM`/`NOTIFY_FROM` turns sending off platform-wide with an environment change and redeploy, no code change.
 
-"Paying firm" holds once billing (item 9 onwards) is live; until then any firm the platform owner created can send.
+"Paying firm" holds once Stripe billing is live; until then any firm the platform owner created can send.
 
 Bounce/complaint webhooks and a platform-owner view of send volumes are left for later (non-goal).
 
