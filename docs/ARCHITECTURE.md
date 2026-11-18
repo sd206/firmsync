@@ -2,7 +2,7 @@
 
 FirmSync is a multi-tenant web app that lets consulting firms run their operations in one place: timesheets, invoices, client payments, vendor bills, expenses, bank statements and reports. This document explains how the system is built and why. The [README](../README.md) covers setup and the detailed business rules for each feature.
 
-Last reviewed: 2026-11-16 (database migrations up to `20261116000047`).
+Last reviewed: 2026-11-18 (database migrations up to `20261118000049`).
 
 ---
 
@@ -31,7 +31,7 @@ flowchart LR
 | **Supabase Postgres** | Holds all data and most business rules: row-level security for tenant isolation, plus about 140 database functions (mostly `security definer`) for every multi-step change (issuing an invoice, approving a timesheet, recording a payment and so on). |
 | **Supabase Auth** | Email and password, magic links and invites. Public sign-up is disabled, so users only join by invitation. |
 | **Supabase Storage** | One private bucket, `firm-files` (10 MB per file), for logos, invoice PDFs, payment and expense files, vendor-bill files and bill-inbox attachments. |
-| **Resend** | Receives email sent to each firm's bill-inbox address and posts it to the app. |
+| **Resend** | Receives email sent to each firm's bill-inbox address and posts it to the app; sends invoice emails and storage warnings (`src/lib/email/send.ts`; local Mailpit in development and e2e). |
 
 Production uses the Supabase project `consult-flow`. Local development runs the whole Supabase stack in Docker (ports moved up by 100, so 54421 to 54424).
 
@@ -72,7 +72,7 @@ src/
     result.ts, form.ts, db-errors.ts   Result type, form helpers, mapping Postgres errors to messages
   components/ui/           shadcn-style components (Base UI + Tailwind 4)
 supabase/
-  migrations/              47 ordered SQL migrations: the schema and server-side logic
+  migrations/              49 ordered SQL migrations: the schema and server-side logic
   templates/               Auth email templates (must also be set on the hosted project)
   seed.sql                 Local platform owner only
 scripts/                   Demo-data seeders (local)
@@ -215,6 +215,14 @@ flowchart LR
 - **Issuing** runs in a single database function with row locks. It takes the next number from the firm's pattern (`{YYYY}`, `{SEQ:n}` …; the sequence never rewinds), copies the firm and client details onto the invoice, and locks the time entries.
 - **The PDF is made after issuing, outside the transaction.** If it fails, the invoice stays issued and "Regenerate PDF" retries. The PDF is built with `@react-pdf/renderer` on the Node runtime; `next.config.ts` ships pdfkit's font files with every route.
 
+### 6.1a Emailing an invoice
+
+1. `invoice_email_start` (security definer) checks the role, that the invoice is issued, partly paid or paid with a stored PDF, the addresses, and the rate limits (same invoice not within 60 s, 10 a day; 50 per firm an hour, 200 a day; serialised per firm with an advisory lock), then writes an `invoice_emails` row as `sending`.
+2. The server action reads the stored PDF and sends it through `src/lib/email/send.ts` (Resend, with the row id as the idempotency key), from `"<firm> via <PRODUCT_NAME>" <INVOICE_EMAIL_FROM>` with Reply-To the firm's contact email.
+3. `invoice_email_finish` marks the row `sent` or `failed`. A row left `sending` for over 10 minutes shows as "Unknown".
+
+`invoice_emails` is the history (audited, readable by admins and managers, no direct writes). The firm's default wording is `firms.invoice_email_subject` / `invoice_email_body` (null = built-in default). Sending doesn't change the invoice status and stores no files.
+
 ### 6.2 Vendor bills and the bill inbox
 
 ```mermaid
@@ -294,7 +302,7 @@ Every report has a CSV download from a `csv/route.ts` beside its page. The CSVs 
 | Migrations | `npm run db:reset` / `npx supabase migration up` | `npx supabase db push --linked` (dry run first, applied deliberately) |
 | Email | Mailpit (:54424) | Custom SMTP for auth; Resend for the inbound bill inbox |
 
-**Environment variables:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server only), `NEXT_PUBLIC_SITE_URL`, for the bill inbox `RESEND_API_KEY`, `RESEND_INBOUND_SECRET` and `INBOUND_DOMAINS`, and optionally `NOTIFY_FROM` for storage warning emails. Without the bill-inbox variables, that feature switches itself off: the webhook answers 503 and Settings says the inbox isn't set up.
+**Environment variables:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server only), `NEXT_PUBLIC_SITE_URL`, for the bill inbox `RESEND_API_KEY`, `RESEND_INBOUND_SECRET` and `INBOUND_DOMAINS`, optionally `NOTIFY_FROM` for storage warning emails, and `INVOICE_EMAIL_FROM` (falls back to the address in `NOTIFY_FROM`) for emailing invoices; locally `EMAIL_TRANSPORT=mailpit` sends all app email to Mailpit. Without a from address, Email invoice is shown disabled. Without the bill-inbox variables, that feature switches itself off: the webhook answers 503 and Settings says the inbox isn't set up.
 
 **Release order:** apply the database migration before deploying code that depends on it. Migrations use `create or replace` for functions, and changes only add to the schema, so the running app keeps working while the migration is applied.
 
