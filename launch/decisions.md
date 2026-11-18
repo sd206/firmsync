@@ -49,3 +49,6 @@ Three changes: (1) routine local commands (tests, lint, typecheck, build, local 
 
 ## 2026-11-18 — Rebrand to VeriTreo
 The product will be renamed from FirmSync to VeriTreo (checklist item 23). **Why:** FINSYNC, Inc. holds a live US trademark for online business-management software, sells invoicing, payments and bills to small businesses, and reaches them through CPAs; "FirmSync" differs by one letter and overlaps on product and channel. A web and trademark-aggregator search on 2026-11-18 found no product, company or mark named VeriTreo; the nearest are VERITREE (tree-planting verification, a different field), VERITREAD (freight) and Veriato (employee monitoring). A trademark attorney's clearance check comes before the domain is bought.
+
+## 2026-11-18 — Domains: veritreo.com and veritreo.app
+The owner holds `veritreo.com` and `veritreo.app`. `veritreo.com` is the main domain: the Framer website on it, the app on `app.veritreo.com`, support at `support@veritreo.com`. `veritreo.app` redirects to `veritreo.com`. **Why:** a `.com` is what small-business buyers type by habit; holding `.app` too protects the name.
