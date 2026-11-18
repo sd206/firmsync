@@ -18,6 +18,9 @@ Everything that has to be true on launch day: FirmSync on its own domain, with t
 22. Email invoices from the app — Owner: Developer · Depends: — (sending from the real domain needs 11) · Status: Done
    Built and merged into local main 2026-11-18 (all gates green, Reviewer's Important finding fixed). Live in production since 2026-11-18 (migration 049 applied, pushed). Sending works now from one of your existing domains, verified in Resend, as a stopgap; switch `INVOICE_EMAIL_FROM` (and `NOTIFY_FROM`) to the product's own domain under item 11.
 
+23. Rebrand FirmSync to VeriTreo — Owner: Developer + Website & copy writer + You · Depends: — · Status: Waiting on you
+   You: trademark attorney's clearance check, then buy the domain (item 10). Developer: `PRODUCT_NAME`, README, docs, email sender name. Writer: everything in `marketing/`. Launch manager: `CLAUDE.md`, `launch/`, role files. Later, with the domain: Vercel project and URL, Resend sender, Supabase project name.
+
 ## Website
 
 5. Site map and page-by-page copy — Owner: Website & copy writer · Depends: — · Status: Done
