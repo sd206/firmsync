@@ -1,3 +1,5 @@
+import 'server-only'
+
 type Env = Record<string, string | undefined>
 
 /** Shown when an action needs the app's address to send an email and it isn't usable. */

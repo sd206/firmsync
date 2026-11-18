@@ -61,7 +61,7 @@ Before: items 10 and 11 done far enough that you can add DNS records; a quiet ti
 
 1. **Resend — sending domain.** Add `veritreo.com`, add the DNS records it lists, wait for "Verified". Nothing in the app changes yet.
 2. **Resend — receiving.** Enable receiving on `in.veritreo.com`; add its MX record; wait for "Verified".
-3. **Vercel — domain.** Add `app.veritreo.com` to the project, add the CNAME at the DNS host, wait for the certificate. Open `https://app.veritreo.com/login`: the sign-in page shows. Test only password sign-in here; magic links requested from this address are refused until step 4. Do **not** set `firmsync.vercel.app` to redirect.
+3. **Vercel — domain.** Add `app.veritreo.com` to the project, add the CNAME at the DNS host, wait for the certificate. Open `https://app.veritreo.com/login`: the sign-in page shows. Test only password sign-in here: magic links and resets still open on `firmsync.vercel.app` until step 6 (Site URL), because the email templates link from the Site URL. Do **not** set `firmsync.vercel.app` to redirect.
 4. **Supabase — redirect URLs.** Add the two `app.veritreo.com` URLs. Leave the old ones.
 5. **Supabase — templates and SMTP sender.** First make sure your SMTP provider can send from `veritreo.com` (if it is Resend, step 1 did this; otherwise verify the domain with that provider and add its DNS records). Note the current sender. Then update the three templates and subjects, and the sender to `VeriTreo <no-reply@veritreo.com>`, and send yourself a password reset to check it arrives.
 6. **Supabase — Site URL.** Change to `https://app.veritreo.com`. From now on every invite, sign-in and reset email links to the new address.
