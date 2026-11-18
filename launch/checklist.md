@@ -16,7 +16,7 @@ Everything that has to be true on launch day: FirmSync on its own domain, with t
 4. Custom-domain readiness — Owner: Developer · Depends: — · Status: Not started
    App works on `app.<domain>`; sign-in redirect URLs, email links and `NEXT_PUBLIC_SITE_URL` switch by configuration.
 22. Email invoices from the app — Owner: Developer · Depends: — (sending from the real domain needs 11) · Status: Done
-   Built and merged into local main 2026-11-18 (all gates green, Reviewer's Important finding fixed). Before it sends in production: item 11's verified domain, `INVOICE_EMAIL_FROM` and `RESEND_API_KEY` in Vercel, and migration 049 applied (dry run, then your yes).
+   Built and merged into local main 2026-11-18 (all gates green, Reviewer's Important finding fixed). Live in production since 2026-11-18 (migration 049 applied, pushed). Sending works now from one of your existing domains, verified in Resend, as a stopgap; switch `INVOICE_EMAIL_FROM` (and `NOTIFY_FROM`) to the product's own domain under item 11.
 
 ## Website
 
@@ -36,7 +36,7 @@ Everything that has to be true on launch day: FirmSync on its own domain, with t
 10. Buy the domain; point it at Framer and `app.` at the app — Owner: You · Depends: — · Status: Waiting on you
     The launch manager gives step-by-step DNS instructions.
 11. Email on the domain — Owner: You · Depends: 10 · Status: Waiting on you
-    `support@` mailbox (e.g. Google Workspace); sending domain verified in Resend (SPF/DKIM); Supabase SMTP; `NOTIFY_FROM`.
+    `support@` mailbox (e.g. Google Workspace); sending domain verified in Resend (SPF/DKIM); Supabase SMTP; `NOTIFY_FROM`; move `INVOICE_EMAIL_FROM` off the temporary domain (item 22).
 12. Stripe account, Stripe Tax decision, live mode at launch — Owner: You · Depends: — · Status: Waiting on you
 13. Production environment for the custom domain — Owner: Developer + You · Depends: 4, 10, 12 · Status: Not started
     Its own Supabase project and live keys; the launch manager prepares the runbook.
