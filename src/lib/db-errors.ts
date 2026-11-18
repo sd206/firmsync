@@ -129,6 +129,15 @@ const BY_MATCH: [string, string][] = [
   ['other_income_source_chk', 'Enter who paid (up to 120 characters).'],
   ['other_income_notes_len_chk', 'Keep notes to 1000 characters or fewer.'],
   ['PNL_GROUP_INVALID', 'Choose how to group the report.'],
+  ['INVOICE_NOT_SENDABLE', 'Only issued, partly paid or paid invoices can be emailed.'],
+  ['INVOICE_NO_PDF', 'This invoice has no PDF yet. Use Regenerate PDF first.'],
+  ['EMAIL_ADDRESS_INVALID', "One of the email addresses isn't valid."],
+  ['EMAIL_RATE_LIMITED', 'Too many invoice emails. Try again in a few minutes.'],
+  ['EMAIL_STATE', 'This email was already recorded.'],
+  ['EMAIL_NOT_FOUND', 'Email not found.'],
+  ['invoice_emails_', 'Check the recipients, subject and message.'],
+  ['firms_invoice_email_subject_chk', 'Keep the email subject to one line of up to 200 characters.'],
+  ['firms_invoice_email_body_chk', 'Keep the email message to 5,000 characters or fewer.'],
 ]
 
 /**
