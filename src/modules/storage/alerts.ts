@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { PRODUCT_NAME } from '@/lib/brand'
 import { formatBytes } from '@/lib/domain/storage'
 import { createSender, type SendEmail } from '@/lib/email/send'
+import { siteUrlOrNull } from '@/lib/site-url'
 import { createAdminDb } from '@/lib/supabase/admin'
 
 type Env = Record<string, string | undefined>
@@ -47,7 +48,7 @@ export async function afterStore(
       .filter(Boolean)
     if (to.length === 0) return
 
-    const site = (env.NEXT_PUBLIC_SITE_URL ?? '').replace(/\/$/, '')
+    const site = siteUrlOrNull(env)
     await sender({
       from,
       to,
@@ -56,7 +57,9 @@ export async function afterStore(
         `${name} is using ${formatBytes(used)} of ${formatBytes(allowance)} of storage.`,
         'When storage is full, new uploads stop until files are deleted or more storage is added.',
         '',
-        `See what is using space: ${site}/f/${firmId}/settings/storage`,
+        site
+          ? `See what is using space: ${site}/f/${firmId}/settings/storage`
+          : `Open Settings › Storage in ${PRODUCT_NAME} to see what is using space.`,
       ].join('\n'),
     })
   } catch (e) {

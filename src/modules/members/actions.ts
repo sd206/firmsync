@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { requireFirmRole } from '@/lib/auth/context'
 import { fail, type Result } from '@/lib/result'
-import { siteUrl } from '@/lib/site-url'
+import { authCallbackUrl, SITE_URL_PROBLEM } from '@/lib/site-url'
 import { createAdminDb } from '@/lib/supabase/admin'
 import { emailSignIn, type SignInEmail } from '@/lib/auth/sign-in-email'
 import { changeMemberRole, inviteMember, removeMember } from './data'
@@ -27,8 +27,9 @@ export async function inviteMemberAction(
   })
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? CHECK_FORM)
 
+  const redirectTo = authCallbackUrl()
+  if (!redirectTo) return fail(SITE_URL_PROBLEM)
   const admin = createAdminDb()
-  const redirectTo = `${siteUrl()}/auth/callback`
   const added = await inviteMember(db, admin, firmId, parsed.data, redirectTo)
   if (!added.ok) return added
   // Someone who already had a login gets no invitation email, so send them a sign-in link.
@@ -52,7 +53,9 @@ export async function resendSignInAction(firmId: string, formData: FormData): Pr
   const profile = data ? (Array.isArray(data.profiles) ? data.profiles[0] : data.profiles) : null
   const email = (profile as { email?: string } | null)?.email
   if (error || !email) return fail('That person is not a member of this firm.')
-  return done(firmId, await emailSignIn(createAdminDb(), email, `${siteUrl()}/auth/callback`).then((r) => (r.ok ? { ok: true as const, data: { sent: r.data } } : r)))
+  const redirectTo = authCallbackUrl()
+  if (!redirectTo) return fail(SITE_URL_PROBLEM)
+  return done(firmId, await emailSignIn(createAdminDb(), email, redirectTo).then((r) => (r.ok ? { ok: true as const, data: { sent: r.data } } : r)))
 }
 
 export async function changeMemberRoleAction(firmId: string, formData: FormData): Promise<Result<void>> {
