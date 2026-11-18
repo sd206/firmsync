@@ -3,8 +3,8 @@
 **Path:** `/help` *(owner to confirm; see the site map)*
 **Purpose:** the front door to the help articles: let customers find an answer by category or search, and show how to reach support when they can't. This file covers the index page only. The articles themselves, and the Framer CMS import file for them, are checklist item 9 (Support writer); the titles below are placeholders for that work, not final.
 
-**SEO title (42 chars):** FirmSync help centre: guides and answers
-**Meta description (148 chars):** Step-by-step help for FirmSync: getting started, timesheets, invoices, payments, expenses, reports, storage and billing. Or email us for a reply.
+**SEO title (40 chars):** VeriTreo help centre: guides and answers
+**Meta description (145 chars):** Step-by-step help for VeriTreo: getting started, timesheets, invoices, payments, expenses, reports, storage and billing. Or email us for a reply.
 
 ---
 
@@ -12,7 +12,7 @@
 
 **Headline:** How can we help?
 
-**Body:** Guides for every part of FirmSync. Can't find it? Email us and we'll reply within one business day.
+**Body:** Guides for every part of VeriTreo. Can't find it? Email us and we'll reply within one business day.
 
 **Search box:** placeholder text "Search the help centre". *(Framer site search, limited to `/help` pages if possible.)*
 
@@ -87,10 +87,10 @@ Show 4 links, chosen by the owner after launch. Starting set:
 **Body:** Email us with your firm's name and what you were trying to do. We reply within one business day.
 
 **Buttons:**
-- **Email support** (primary) → `mailto:support@<domain>`
+- **Email support** (primary) → `mailto:support@veritreo.com`
 - Contact page (secondary) → `/contact`
 
-*(Once checklist item 3 is live, add: "Signed in? Use Help → Contact support in the app." with a [Log in](https://app.<domain>/login) link.)*
+*(Once checklist item 3 is live, add: "Signed in? Use Help → Contact support in the app." with a [Log in](https://app.veritreo.com/login) link.)*
 
 ---
 
@@ -99,4 +99,4 @@ Show 4 links, chosen by the owner after launch. Starting set:
 - Category and article slugs above are suggestions; the import file in item 9 sets the final ones. Keep the category slugs if possible so this page's links still work.
 - Category and article pages share the `/help/` path, so every slug must be unique across both.
 - Screenshots in articles: Demo Consulting only.
-- Placeholders: `<domain>`; whether the help centre lives at `/help`.
+- Placeholder: whether the help centre lives at `/help`.
