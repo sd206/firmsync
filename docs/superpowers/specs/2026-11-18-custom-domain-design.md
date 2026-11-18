@@ -1,7 +1,7 @@
 # Custom domain readiness (`app.veritreo.com`) — design
 
 Date: 2026-11-18 · Checklist item 4 (readiness). The switch itself is item 13 and needs item 10 (DNS) and item 11 (email on the domain).
-Status: **design, waiting for the owner's approval.** Nothing in this document has been built.
+Status: **approved by the owner on 2026-11-18 as proposed** (decisions recorded in section 6). Plan: `docs/superpowers/plans/2026-11-18-custom-domain.md`.
 
 ## Goal
 
@@ -81,6 +81,13 @@ Before: items 10 and 11 done far enough that you can add DNS records; a quiet ti
 - Switch day: the runbook's step 9 smoke test, done by the owner (it needs the real accounts and DNS). No automated test can cover DNS, certificates, Resend verification or Supabase dashboard settings.
 
 ## 6. Decisions for the owner
+
+**Decided 2026-11-18 (owner, "Approve as proposed"):**
+- **D1: option (a).** `firmsync.vercel.app` stays a second address to the live app for 1–2 weeks after the switch, then redirects to `app.veritreo.com`. No separate test site for now.
+- **D2: later**, together with the D1 redirect.
+- **D3: as proposed.** `invoices@veritreo.com`, `VeriTreo <alerts@veritreo.com>`, `VeriTreo <no-reply@veritreo.com>`, bill inbox on `in.veritreo.com`.
+
+The options as they were put to the owner:
 
 - **D1. What `firmsync.vercel.app` becomes.** The brief calls it "the test site", but today it is the production deployment on the production database (`consult-flow`); after the switch it would be a second address for the same live data, still showing the old name. Options:
   - **(a, recommended for now)** Keep it as a second address to the same production app until the webhook and links have moved and nothing breaks for a week or two, then make it redirect to `app.veritreo.com`. No real test site.
