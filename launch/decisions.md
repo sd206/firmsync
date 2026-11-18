@@ -52,3 +52,6 @@ The product will be renamed from FirmSync to VeriTreo (checklist item 23). **Why
 
 ## 2026-11-18 — Domains: veritreo.com and veritreo.app
 The owner holds `veritreo.com` and `veritreo.app`. `veritreo.com` is the main domain: the Framer website on it, the app on `app.veritreo.com`, support at `support@veritreo.com`. `veritreo.app` redirects to `veritreo.com`. **Why:** a `.com` is what small-business buyers type by habit; holding `.app` too protects the name.
+
+## 2026-11-18 — UI and accounting audit: what we act on
+From the owner's consolidated UI, UX and accounting audit, checked against the code: pre-launch fixes (checklist item 24) and a polish pass (item 25). Not acted on: a "Deposit to" bank account with bank and book balances (it would make VeriTreo a ledger, against the "not accounting software" position; revisit with live bank connections, item 21); moving owner contributions out of the P&L (they are already not in it); "Start a free trial" (no free trial: the 30-day money-back guarantee stands). Later: side-by-side PDF preview on bills, auto-suggested categories, drill-down from P&L totals. **Why:** fix what is wrong or confusing before launch, keep the polish to styling and convenience, and keep the product's scope.
