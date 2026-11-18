@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createSender, emailConfig, invoiceEmailReady, type MailMessage } from './send'
+import { createSender, emailConfig, invoiceEmailReady, MailNoResponseError, type MailMessage } from './send'
 
 const MSG: MailMessage = {
   from: '"Demo Consulting via FirmSync" <invoices@x.test>',
@@ -96,6 +96,35 @@ describe('createSender', () => {
       Text: 'Hello',
       Attachments: [{ Filename: 'INV-1.pdf', Content: 'JVBERg==', ContentType: 'application/pdf' }],
     })
+  })
+
+  it('retries once with the same idempotency key when the service gives no answer', async () => {
+    const f = vi
+      .fn<(url: string | URL | Request, init?: RequestInit) => Promise<Response>>()
+      .mockRejectedValueOnce(new DOMException('The operation timed out.', 'TimeoutError'))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ id: 'resend-2' }), { status: 200 }))
+    const send = createSender({ RESEND_API_KEY: 're_secret' }, f as never)!
+    await expect(send(MSG)).resolves.toEqual({ id: 'resend-2' })
+    expect(f).toHaveBeenCalledTimes(2)
+    const keys = f.mock.calls.map(([, init]) => (init!.headers as Record<string, string>)['Idempotency-Key'])
+    expect(keys).toEqual(['abc-123', 'abc-123'])
+  })
+
+  it('reports no answer as MailNoResponseError after the retry', async () => {
+    const f = vi.fn(async () => {
+      throw new TypeError('fetch failed')
+    })
+    const send = createSender({ RESEND_API_KEY: 're_secret' }, f as never)!
+    await expect(send(MSG)).rejects.toBeInstanceOf(MailNoResponseError)
+    expect(f).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not retry when the service answered with an error', async () => {
+    const f = fakeFetch(422, 'bad')
+    const send = createSender({ RESEND_API_KEY: 're_secret' }, f as never)!
+    const err = await send(MSG).catch((e: Error) => e)
+    expect(err).not.toBeInstanceOf(MailNoResponseError)
+    expect(f).toHaveBeenCalledTimes(1)
   })
 
   it('rejects on an error response without leaking the key', async () => {

@@ -57,8 +57,30 @@ function splitFrom(from: string): { Email: string; Name?: string } {
   return m ? { Email: m[2].trim(), Name: m[1].trim() || undefined } : { Email: from.trim() }
 }
 
-async function post(name: string, url: string, init: RequestInit, fetchImpl: Fetch): Promise<unknown> {
-  const res = await fetchImpl(url, { ...init, method: 'POST', signal: AbortSignal.timeout(TIMEOUT_MS) })
+/**
+ * The mail service never answered (timeout, dropped connection), so the email may or may not
+ * have gone. Distinct from an error answer, which means it certainly didn't.
+ */
+export class MailNoResponseError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'MailNoResponseError'
+  }
+}
+
+/**
+ * One POST. With an idempotency key, a request that got no answer is tried once more with the
+ * same key, so the service can't send it twice.
+ */
+async function post(name: string, url: string, init: RequestInit, fetchImpl: Fetch, retry: boolean): Promise<unknown> {
+  let res: Response
+  try {
+    res = await fetchImpl(url, { ...init, method: 'POST', signal: AbortSignal.timeout(TIMEOUT_MS) })
+  } catch (e) {
+    if (retry) return post(name, url, init, fetchImpl, false)
+    const reason = e instanceof Error ? e.name : 'unknown'
+    throw new MailNoResponseError(`${name}: no response (${reason})`)
+  }
   if (!res.ok) {
     const detail = (await res.text().catch(() => '')).slice(0, 200)
     throw new Error(`${name} send failed: ${res.status} ${detail}`.trim())
@@ -79,7 +101,9 @@ function resendSender(apiKey: string, fetchImpl: Fetch): SendEmail {
       text: msg.text,
       attachments: msg.attachments?.map((a) => ({ filename: a.filename, content: base64(a.content) })),
     }
-    const data = (await post('resend', RESEND_URL, { headers, body: JSON.stringify(body) }, fetchImpl)) as { id?: string }
+    const data = (await post('resend', RESEND_URL, { headers, body: JSON.stringify(body) }, fetchImpl, !!msg.idempotencyKey)) as {
+      id?: string
+    }
     return { id: data.id ?? null }
   }
 }
@@ -97,7 +121,8 @@ function mailpitSender(baseUrl: string, fetchImpl: Fetch): SendEmail {
       Attachments: msg.attachments?.map((a) => ({ Filename: a.filename, Content: base64(a.content), ContentType: a.contentType })),
     }
     const headers = { 'Content-Type': 'application/json' }
-    const data = (await post('mailpit', `${baseUrl}/api/v1/send`, { headers, body: JSON.stringify(body) }, fetchImpl)) as {
+    // Mailpit has no idempotency keys, so no retry: a local test inbox can live with that.
+    const data = (await post('mailpit', `${baseUrl}/api/v1/send`, { headers, body: JSON.stringify(body) }, fetchImpl, false)) as {
       ID?: string
     }
     return { id: data.ID ?? null }

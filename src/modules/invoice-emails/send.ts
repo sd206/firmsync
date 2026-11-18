@@ -1,15 +1,18 @@
 import 'server-only'
 import { PRODUCT_NAME } from '@/lib/brand'
 import { cleanDisplayName, formatFrom, isValidEmail, parseAddressList, singleLine, validateRecipients } from '@/lib/email/addresses'
-import { createSender, emailConfig, invoiceEmailReady, type SendEmail } from '@/lib/email/send'
+import { createSender, emailConfig, invoiceEmailReady, MailNoResponseError, type SendEmail } from '@/lib/email/send'
 import type { FieldErrors, FormResult } from '@/lib/form'
 import { fail, ok, type Result } from '@/lib/result'
+import { NO_RESPONSE_PREFIX } from './history'
 import { DEFAULT_BODY, DEFAULT_SUBJECT, renderTemplate, templateValues } from './template'
 
 type Env = Record<string, string | undefined>
 
 export const NOT_SET_UP = "Emailing invoices isn't set up yet. Download the PDF and attach it to your own email."
 export const SEND_FAILED = "The email couldn't be sent. Nothing was delivered; you can try again in a minute."
+export const UNCONFIRMED =
+  "We couldn't confirm the email went out: the mail service didn't answer. Check with the client before sending it again."
 
 const MAX_SUBJECT = 200
 const MAX_BODY = 5000
@@ -124,8 +127,10 @@ export async function sendInvoiceEmail(deps: SendDeps, input: SendInput): Promis
   } catch (e) {
     console.error('invoice email send failed', e)
     const message = e instanceof Error ? e.message : 'Unknown error'
-    await deps.finish(id, { ok: false, providerId: null, error: message.slice(0, 500) })
-    return fail(SEND_FAILED)
+    const noAnswer = e instanceof MailNoResponseError
+    const error = `${noAnswer ? NO_RESPONSE_PREFIX : ''}${message}`.slice(0, 500)
+    await deps.finish(id, { ok: false, providerId: null, error })
+    return fail(noAnswer ? UNCONFIRMED : SEND_FAILED)
   }
 
   // The email went; a failure to record that is logged, not shown as a failed send.

@@ -1,7 +1,16 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { SendEmail } from '@/lib/email/send'
+import { MailNoResponseError, type SendEmail } from '@/lib/email/send'
 import { fail, ok } from '@/lib/result'
-import { composeDefaults, NOT_SET_UP, SEND_FAILED, sendInvoiceEmail, type SendContext, type SendDeps } from './send'
+import { NO_RESPONSE_PREFIX } from './history'
+import {
+  composeDefaults,
+  NOT_SET_UP,
+  SEND_FAILED,
+  sendInvoiceEmail,
+  UNCONFIRMED,
+  type SendContext,
+  type SendDeps,
+} from './send'
 
 const ENV = { EMAIL_TRANSPORT: 'mailpit', INVOICE_EMAIL_FROM: 'invoices@firmsync.test' }
 const PDF = new Uint8Array([37, 80, 68, 70])
@@ -123,6 +132,22 @@ describe('sendInvoiceEmail', () => {
     })
     expect(await sendInvoiceEmail(d, INPUT)).toEqual({ ok: false, error: SEND_FAILED })
     expect(d.finish).toHaveBeenCalledWith('email-1', { ok: false, providerId: null, error: 'resend send failed: 500' })
+    err.mockRestore()
+  })
+
+  it("says it couldn't confirm delivery, and records that, when the provider gives no answer", async () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { d } = deps({
+      send: vi.fn<SendEmail>(async () => {
+        throw new MailNoResponseError('resend: no response (TimeoutError)')
+      }),
+    })
+    expect(await sendInvoiceEmail(d, INPUT)).toEqual({ ok: false, error: UNCONFIRMED })
+    expect(d.finish).toHaveBeenCalledWith('email-1', {
+      ok: false,
+      providerId: null,
+      error: `${NO_RESPONSE_PREFIX}resend: no response (TimeoutError)`,
+    })
     err.mockRestore()
   })
 
