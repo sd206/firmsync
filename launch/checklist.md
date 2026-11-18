@@ -21,6 +21,11 @@ Everything that has to be true on launch day: VeriTreo on its own domain, with t
 23. Rebrand FirmSync to VeriTreo — Owner: Developer + Website & copy writer + You · Depends: — · Status: In progress
    You: trademark attorney's clearance check (domains `veritreo.com` and `veritreo.app` already owned). Developer: `PRODUCT_NAME`, README, docs, email sender name. Writer: everything in `marketing/`. Launch manager: `CLAUDE.md`, `launch/`, role files. Later, with the domain: Vercel project and URL, Resend sender, Supabase project name.
 
+24. Pre-launch fixes from the UI and accounting audit — Owner: Developer · Depends: 23 · Status: Not started
+   Bill-created expenses count the bill's PDF and show a "From bill" badge (no more false "No receipt"); Record payment opens the form in one click from Unpaid invoices; dashboard "Finish setup" hides once done; one date format everywhere, US style (Nov 16, 2026), invoice PDF included; tooltip defining "Avg days to pay"; confirm contractor bill lines are left out of the P&L on purpose. The sign-up path is item 1, the Help menu item 3.
+25. UI polish pass from the audit — Owner: Developer · Depends: 24 · Status: Not started
+   Dashboard quick actions, wider layout and clickable cards; status pills and tabs with counts; ageing cards as filters; invoice toolbar (PDF, Email, Void); timesheet placeholders, week navigation, today highlight, one-click Approve; drag-and-drop uploads and a copy button for the bill-inbox address; Billing menu grouped; filters on one row; consistent "Export CSV" labels; "Categorize"; P&L "hide empty months"; Transactions labelled cash only. Styling and convenience only.
+
 ## Website
 
 5. Site map and page-by-page copy — Owner: Website & copy writer · Depends: — · Status: Done
