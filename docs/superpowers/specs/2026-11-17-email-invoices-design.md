@@ -1,6 +1,6 @@
 # Email invoices from the app — design
 
-Checklist item 22. Status: **design, waiting for the owner's decisions** (section 12). Nothing is planned or built yet.
+Checklist item 22. Status: **approved by the owner on 2026-11-17** with all five recommended answers (section 12).
 
 ## 1. Why
 
@@ -180,6 +180,15 @@ Bounce/complaint webhooks and a platform-owner view of send volumes are left for
 **Audit:** `invoice_emails` gets the standard `audit_row()` trigger, so the audit log holds who sent what to whom, when, and the start→sent/failed update. The invoice row itself is not changed by sending (unless Q4 says otherwise), so no extra invoice audit noise.
 
 ## 12. Decisions for the owner
+
+**Decided 2026-11-17 (owner: "Approve all five"):**
+1. Sender display name: "<Firm name> via <PRODUCT_NAME>", e.g. "Demo Consulting via FirmSync".
+2. Reply-To: the firm's contact email from Settings, falling back to the sender's login email.
+3. Editable wording: a firm default in Settings (with Reset to default) plus per-send edits.
+4. No new "sent" invoice status: "Emailed <date> to <address>" on the invoice and an Emailed marker in the invoices list.
+5. Attach the stored PDF; no link.
+
+The options as they were put to the owner:
 
 1. **Sender display name.** Recommended: **"Demo Consulting via FirmSync"** — leads with the firm, is honest about who's sending (the address is on our domain, not theirs), and is the pattern Stripe/FreshBooks use. Alternative: **"Demo Consulting"** alone — cleaner, but a client may wonder why the address isn't the firm's own, and the product gets no mention. Either way the product part is the one `PRODUCT_NAME` value.
 2. **Reply-to.** Recommended: the firm's contact email from Settings, falling back to the sender's own login email. Alternative: always the sender's login email (replies go to whoever pressed Send, not the shared billing address).
