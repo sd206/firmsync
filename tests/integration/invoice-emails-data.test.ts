@@ -3,6 +3,7 @@ import {
   finishInvoiceEmail,
   lastEmails,
   listInvoiceEmails,
+  loadComposeData,
   loadSendContext,
   saveEmailTemplate,
   startInvoiceEmail,
@@ -82,6 +83,26 @@ describe('invoice email data', () => {
     expect(await startInvoiceEmail(f.manager.db, invoiceId, START)).toEqual({
       ok: false,
       error: 'Too many invoice emails. Try again in a few minutes.',
+    })
+  })
+
+  it("loads the firm wording and the client's current billing details", async () => {
+    const f = await newFirm('Demo Consulting')
+    const { clientId } = await issueManualInvoice(f)
+    await adminDb()
+      .from('clients')
+      .update({ billing_email: 'ap@demo-client.test', billing_contact_name: 'Pat Payable' })
+      .eq('id', clientId)
+    await adminDb()
+      .from('firms')
+      .update({ contact_email: 'billing@demo-consulting.test', invoice_email_subject: 'Bill {invoice_number}' })
+      .eq('id', f.firmId)
+    expect(await loadComposeData(f.manager.db, f.firmId, clientId)).toEqual({
+      ok: true,
+      data: {
+        firm: { name: 'Demo Consulting', contactEmail: 'billing@demo-consulting.test', emailSubject: 'Bill {invoice_number}', emailBody: null },
+        client: { billingEmail: 'ap@demo-client.test', contactName: 'Pat Payable' },
+      },
     })
   })
 

@@ -2,11 +2,16 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireFirmRole } from '@/lib/auth/context'
 import { formatMoney } from '@/lib/domain/money'
+import { invoiceEmailReady } from '@/lib/email/send'
+import { listInvoiceEmails, loadComposeData } from '@/modules/invoice-emails/data'
+import { composeDefaults, NOT_SET_UP, pdfFileName } from '@/modules/invoice-emails/send'
 import { listTemplates } from '@/modules/invoice-templates/data'
 import { getInvoice, listCandidates } from '@/modules/invoices/data'
 import { listPayments } from '@/modules/payments/data'
 import { INVOICE_STATUS_LABEL } from '../status-label'
 import { DraftEditor, type ConsultantOption } from './draft-editor'
+import { EmailHistory, formatWhen } from './email-history'
+import { EmailInvoice } from './email-invoice'
 import { IssuedActions } from './issued-actions'
 import { PaymentsSection } from './payments-section'
 
@@ -16,7 +21,7 @@ const PDF_MISSING = "The PDF couldn't be created. Use Regenerate PDF."
 
 export default async function InvoicePage({ params }: { params: Promise<{ firmId: string; id: string }> }) {
   const { firmId, id } = await params
-  const { db } = await requireFirmRole(firmId, ['admin', 'manager'])
+  const { db, email } = await requireFirmRole(firmId, ['admin', 'manager'])
   const res = await getInvoice(db, firmId, id)
   if (!res.ok) notFound()
   const inv = res.data
@@ -61,8 +66,43 @@ export default async function InvoicePage({ params }: { params: Promise<{ firmId
     )
   }
 
-  const paymentsRes = await listPayments(db, firmId, id)
+  const [paymentsRes, emailsRes, composeRes] = await Promise.all([
+    listPayments(db, firmId, id),
+    listInvoiceEmails(db, firmId, id),
+    loadComposeData(db, firmId, inv.clientId),
+  ])
   const m = (v: string) => formatMoney(v, inv.currency)
+  const emails = emailsRes.ok ? emailsRes.data : []
+  const lastSent = emails.find((e) => e.status === 'sent')
+  const number = inv.number ?? 'invoice'
+  const defaults = composeRes.ok
+    ? composeDefaults({
+        invoice: {
+          number,
+          clientName: inv.clientName,
+          billToName: inv.billTo?.name ?? null,
+          billToContactName: inv.billTo?.contactName ?? null,
+          billToEmail: inv.billTo?.email ?? null,
+          total: inv.total,
+          balanceDue: inv.balanceDue,
+          currency: inv.currency,
+          issueDate: inv.issueDate,
+          dueDate: inv.dueDate,
+          subject: inv.subject,
+        },
+        firm: composeRes.data.firm,
+        client: composeRes.data.client,
+        senderEmail: email,
+        env: process.env,
+      })
+    : null
+  const blockedReason = !invoiceEmailReady(process.env)
+    ? NOT_SET_UP
+    : !inv.pdfPath
+      ? 'This invoice has no PDF yet. Use Regenerate PDF first.'
+      : !composeRes.ok
+        ? composeRes.error
+        : null
   const cell = 'flex flex-col gap-0.5 text-sm'
   return (
     <div className="max-w-5xl">
@@ -71,6 +111,11 @@ export default async function InvoicePage({ params }: { params: Promise<{ firmId
       <p className="mt-1 text-sm">
         Status: <span data-testid="status">{INVOICE_STATUS_LABEL[inv.status]}</span>
       </p>
+      {lastSent && (
+        <p className="mt-1 text-sm" data-testid="last-emailed">
+          Emailed {formatWhen(lastSent.sentAt ?? lastSent.createdAt)} to {lastSent.to.join(', ')}
+        </p>
+      )}
       {inv.subject && <p className="mt-1 text-sm">{inv.subject}</p>}
       <p className="mt-1 text-sm text-muted-foreground">
         Period {inv.periodStart} to {inv.periodEnd}. Issued {inv.issueDate}, due {inv.dueDate}.
@@ -166,6 +211,18 @@ export default async function InvoicePage({ params }: { params: Promise<{ firmId
       />
 
       <IssuedActions firmId={firmId} invoiceId={inv.id} status={inv.status} hasPdf={!!inv.pdfPath} />
+
+      {inv.status !== 'void' && (
+        <EmailInvoice
+          firmId={firmId}
+          invoiceId={inv.id}
+          blockedReason={blockedReason}
+          defaults={defaults ?? { to: '', subject: '', body: '', from: null, replyTo: null }}
+          attachmentName={pdfFileName(number)}
+          missingBillingEmail={composeRes.ok && !composeRes.data.client.billingEmail}
+        />
+      )}
+      <EmailHistory rows={emails} error={emailsRes.ok ? null : emailsRes.error} now={new Date()} />
     </div>
   )
 }

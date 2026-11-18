@@ -13,8 +13,8 @@ const MSG: MailMessage = {
 }
 
 function fakeFetch(status: number, body: unknown) {
-  return vi.fn(async (_url: string | URL | Request, _init?: RequestInit) =>
-    new Response(typeof body === 'string' ? body : JSON.stringify(body), { status }),
+  return vi.fn<(url: string | URL | Request, init?: RequestInit) => Promise<Response>>(
+    async () => new Response(typeof body === 'string' ? body : JSON.stringify(body), { status }),
   )
 }
 

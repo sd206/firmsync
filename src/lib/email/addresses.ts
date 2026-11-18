@@ -34,7 +34,6 @@ export function validateRecipients(to: string[], cc: string[]): Result<{ to: str
 /** A firm name made safe for an email From display name. */
 export function cleanDisplayName(name: string): string {
   return name
-    // eslint-disable-next-line no-control-regex
     .replace(/["<>,;\\\u0000-\u001f\u007f]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()

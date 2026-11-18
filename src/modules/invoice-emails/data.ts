@@ -40,6 +40,34 @@ export async function loadSendContext(db: SupabaseClient, firmId: string, invoic
   })
 }
 
+export type ComposeData = {
+  firm: { name: string; contactEmail: string; emailSubject: string | null; emailBody: string | null }
+  client: { billingEmail: string | null; contactName: string | null }
+}
+
+/** The firm's wording and the client's current billing details, for the Email invoice panel. */
+export async function loadComposeData(db: SupabaseClient, firmId: string, clientId: string): Promise<Result<ComposeData>> {
+  const [firm, client] = await Promise.all([
+    db.from('firms').select('name, contact_email, invoice_email_subject, invoice_email_body').eq('id', firmId).maybeSingle(),
+    db.from('clients').select('billing_email, billing_contact_name').eq('firm_id', firmId).eq('id', clientId).maybeSingle(),
+  ])
+  if (firm.error) return fail(mapDbError(firm.error))
+  if (client.error) return fail(mapDbError(client.error))
+  if (!firm.data) return fail(NOT_FOUND)
+  return ok({
+    firm: {
+      name: firm.data.name as string,
+      contactEmail: (firm.data.contact_email as string | null) ?? '',
+      emailSubject: (firm.data.invoice_email_subject as string | null) ?? null,
+      emailBody: (firm.data.invoice_email_body as string | null) ?? null,
+    },
+    client: {
+      billingEmail: (client.data?.billing_email as string | null | undefined) ?? null,
+      contactName: (client.data?.billing_contact_name as string | null | undefined) ?? null,
+    },
+  })
+}
+
 export async function startInvoiceEmail(db: SupabaseClient, invoiceId: string, input: StartInput): Promise<Result<string>> {
   const { data, error } = await db.rpc('invoice_email_start', {
     p_invoice: invoiceId,
