@@ -1,5 +1,6 @@
 import 'server-only'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { PRODUCT_NAME } from '@/lib/brand'
 import { formatBytes } from '@/lib/domain/storage'
 import { createAdminDb } from '@/lib/supabase/admin'
 
@@ -62,7 +63,7 @@ export async function afterStore(
     await (deps.send ?? resendSender(apiKey))({
       from,
       to,
-      subject: `${name} is using 95% of its FirmSync storage`,
+      subject: `${name} is using 95% of its ${PRODUCT_NAME} storage`,
       text: [
         `${name} is using ${formatBytes(used)} of ${formatBytes(allowance)} of storage.`,
         'When storage is full, new uploads stop until files are deleted or more storage is added.',
