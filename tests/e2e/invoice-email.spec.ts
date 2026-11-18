@@ -102,8 +102,12 @@ test('the send panel checks recipients before sending', async ({ page }) => {
   await makePdf(page)
   await page.getByRole('button', { name: 'Email invoice' }).click()
   await page.getByLabel('To', { exact: true }).fill('not-an-address')
+  await page.getByLabel('Message').fill('Hello Pat,\n\nOur bank details changed: see the invoice.')
   await page.getByRole('button', { name: 'Send' }).click()
   await expect(page.locator('#email-to-error')).toHaveText("not-an-address isn't a valid email address.")
+  // What the user typed survives the error.
+  await expect(page.getByLabel('To', { exact: true })).toHaveValue('not-an-address')
+  await expect(page.getByLabel('Message')).toHaveValue('Hello Pat,\n\nOur bank details changed: see the invoice.')
   await expect(page.getByText("This invoice hasn't been emailed yet.")).toBeVisible()
 })
 

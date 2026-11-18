@@ -34,8 +34,12 @@ function FieldError({ id, message }: { id: string; message?: string }) {
 
 export function EmailInvoice({ firmId, invoiceId, blockedReason, defaults, attachmentName, missingBillingEmail }: Props) {
   const [open, setOpen] = useState(false)
-  // Remounting the form after a successful send resets it to the defaults.
-  const [formKey, setFormKey] = useState(0)
+  // Controlled fields: React resets uncontrolled ones after every form action, which would
+  // throw away what the user typed whenever a send is refused. Reset only after a success.
+  const initial = { to: defaults.to, cc: '', copyMe: false, subject: defaults.subject, body: defaults.body }
+  const [values, setValues] = useState(initial)
+  const set = (k: 'to' | 'cc' | 'subject' | 'body') => (e: { target: { value: string } }) =>
+    setValues((v) => ({ ...v, [k]: e.target.value }))
   const [sent, setSent] = useState<string | null>(null)
   const [state, action, pending] = useActionState<SendResult | null, FormData>(async (_prev, fd) => {
     let r: SendResult
@@ -48,7 +52,7 @@ export function EmailInvoice({ firmId, invoiceId, blockedReason, defaults, attac
     if (r.ok) {
       setSent(`Invoice ${r.data.number} sent to ${r.data.to.join(', ')}.`)
       setOpen(false)
-      setFormKey((k) => k + 1)
+      setValues(initial)
     }
     return r
   }, null)
@@ -82,14 +86,15 @@ export function EmailInvoice({ firmId, invoiceId, blockedReason, defaults, attac
         </div>
       )}
       {open && (
-        <form key={formKey} action={action} className="flex max-w-2xl flex-col gap-4 rounded-lg border p-4">
+        <form action={action} className="flex max-w-2xl flex-col gap-4 rounded-lg border p-4">
           <h3 className="font-medium">Email invoice</h3>
           <div className={field}>
             <Label htmlFor="email-to">To</Label>
             <Input
               id="email-to"
               name="to"
-              defaultValue={defaults.to}
+              value={values.to}
+              onChange={set('to')}
               aria-invalid={!!fe.to}
               aria-describedby={fe.to ? 'email-to-error' : 'email-to-hint'}
             />
@@ -101,11 +106,16 @@ export function EmailInvoice({ firmId, invoiceId, blockedReason, defaults, attac
           </div>
           <div className={field}>
             <Label htmlFor="email-cc">CC</Label>
-            <Input id="email-cc" name="cc" aria-invalid={!!fe.cc} aria-describedby={fe.cc ? 'email-cc-error' : undefined} />
+            <Input id="email-cc" name="cc" value={values.cc} onChange={set('cc')} aria-invalid={!!fe.cc} aria-describedby={fe.cc ? 'email-cc-error' : undefined} />
             <FieldError id="email-cc-error" message={fe.cc} />
           </div>
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="copyMe" />
+            <input
+              type="checkbox"
+              name="copyMe"
+              checked={values.copyMe}
+              onChange={(e) => setValues((v) => ({ ...v, copyMe: e.target.checked }))}
+            />
             Send me a copy
           </label>
           <div className={field}>
@@ -113,7 +123,8 @@ export function EmailInvoice({ firmId, invoiceId, blockedReason, defaults, attac
             <Input
               id="email-subject"
               name="subject"
-              defaultValue={defaults.subject}
+              value={values.subject}
+              onChange={set('subject')}
               maxLength={200}
               aria-invalid={!!fe.subject}
               aria-describedby={fe.subject ? 'email-subject-error' : undefined}
@@ -127,7 +138,8 @@ export function EmailInvoice({ firmId, invoiceId, blockedReason, defaults, attac
               name="body"
               rows={10}
               maxLength={5000}
-              defaultValue={defaults.body}
+              value={values.body}
+              onChange={set('body')}
               aria-invalid={!!fe.body}
               aria-describedby={fe.body ? 'email-body-error' : undefined}
               className={area}
