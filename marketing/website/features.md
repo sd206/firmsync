@@ -1,10 +1,10 @@
 # Features page
 
 **Path:** `/features`
-**Purpose:** for a visitor who likes the home page and wants to check the detail: does FirmSync handle the way we work? Walk the time-to-cash flow in order, one section per area, plainly. Every claim here is in `README.md`; items not yet in `README.md` are held back at the end.
+**Purpose:** for a visitor who likes the home page and wants to check the detail: does VeriTreo handle the way we work? Walk the time-to-cash flow in order, one section per area, plainly. Every claim here is in `README.md`; items not yet in `README.md` are held back at the end.
 
-**SEO title (57 chars):** Features: timesheets, invoicing, payments, P&L | FirmSync
-**Meta description (154 chars):** Weekly timesheets with approval, invoices built from approved hours, payment tracking with ageing, expenses and a profit & loss report by client and project.
+**SEO title (57 chars):** Features: timesheets, invoicing, payments, P&L | VeriTreo
+**Meta description (157 chars):** Weekly timesheets with approval, invoices built from approved hours, payment tracking with ageing, expenses and a profit & loss report by client and project.
 
 ---
 
@@ -12,10 +12,10 @@
 
 **Headline:** Everything from the timesheet to the bank.
 
-**Body:** FirmSync covers the money side of a consulting firm: time, approvals, invoices, payments, expenses and profit. Here's what each part does.
+**Body:** VeriTreo covers the money side of a consulting firm: time, approvals, invoices, payments, expenses and profit. Here's what each part does.
 
 **Buttons:**
-- **Start now** (primary) → `https://app.<domain>/signup?plan=monthly`
+- **Start now** (primary) → `https://app.veritreo.com/signup?plan=monthly`
 - See pricing (secondary) → `/pricing`
 
 **Jump links (anchor menu):** Timesheets (`#timesheets`) · Invoices (`#invoices`) · Payments (`#payments`) · Expenses (`#expenses`) · Reports (`#reports`) · Bill inbox (`#bill-inbox`) · Team and access (`#team`) · Files and storage (`#storage`)
@@ -44,7 +44,7 @@
 
 **Headline:** Invoices built from the hours you've already approved.
 
-**Body:** Choose a client, a period and a template. FirmSync gathers the approved hours not yet invoiced and groups them into one line per consultant, project and rate, using the task notes as the description. Untick anyone you want to leave out, and add manual lines for fees or rebilled costs.
+**Body:** Choose a client, a period and a template. VeriTreo gathers the approved hours not yet invoiced and groups them into one line per consultant, project and rate, using the task notes as the description. Untick anyone you want to leave out, and add manual lines for fees or rebilled costs.
 
 **Points:**
 - Classic, Modern or Compact layout, your accent colour, the columns you want, payment terms and footer text
@@ -71,7 +71,7 @@
 - A payment that would take an invoice past its total is refused
 - Attach PDF, PNG, JPEG or HEIC files, up to 10 MB each
 
-**Note under the section (small text):** FirmSync records payments; it doesn't take them. Your clients pay you the way they do today.
+**Note under the section (small text):** VeriTreo records payments; it doesn't take them. Your clients pay you the way they do today.
 
 **Image:** screenshot of the Demo Consulting unpaid invoices list with ageing.
 
@@ -113,7 +113,7 @@
 
 **Headline:** A mailbox for your vendors' bills.
 
-**Body:** Turn on your firm's bill inbox address and ask vendors to send bills there. Each email shows up in FirmSync with its PDF and image files. A manager decides what happens next: create a bill, ignore it or mark it as a duplicate. Nothing turns into a bill without a person choosing to.
+**Body:** Turn on your firm's bill inbox address and ask vendors to send bills there. Each email shows up in VeriTreo with its PDF and image files. A manager decides what happens next: create a bill, ignore it or mark it as a duplicate. Nothing turns into a bill without a person choosing to.
 
 **Image:** screenshot of the Demo Consulting bill inbox with two fictional vendor emails.
 
@@ -149,9 +149,9 @@
 
 ---
 
-## 10. What FirmSync doesn't do
+## 10. What VeriTreo doesn't do
 
-**Headline:** What FirmSync isn't.
+**Headline:** What VeriTreo isn't.
 
 **Body (short list):**
 - **Not a full PSA suite.** No resource scheduling, capacity planning, CRM or proposals.
@@ -170,8 +170,8 @@
 **Body:** Sign up, invite your team and bill from approved hours. If it isn't right within 30 days, you get your money back.
 
 **Buttons:**
-- **Start monthly** (primary) → `https://app.<domain>/signup?plan=monthly`
-- Start annual (secondary) → `https://app.<domain>/signup?plan=annual`
+- **Start monthly** (primary) → `https://app.veritreo.com/signup?plan=monthly`
+- Start annual (secondary) → `https://app.veritreo.com/signup?plan=annual`
 - See pricing (text link) → `/pricing`
 
 ---
@@ -190,6 +190,5 @@ Do **not** place these until `README.md` (or the owner) confirms them; they're b
 
 ## Placeholders for the owner
 
-- `<domain>` everywhere.
 - Screenshots: one per section as listed, all Demo Consulting.
 - Bill inbox address: the live address format depends on the email domain (item 11); the copy above avoids showing it.

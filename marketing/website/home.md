@@ -1,10 +1,10 @@
 # Home page (also the landing page)
 
 **Path:** `/`
-**Purpose:** in one screen, tell the owner of a small consulting firm what FirmSync does (approved hours → invoices → payments → profit) and what it costs, then send them to sign up. Campaign traffic from LinkedIn and outreach lands here, so the page has to stand on its own.
+**Purpose:** in one screen, tell the owner of a small consulting firm what VeriTreo does (approved hours → invoices → payments → profit) and what it costs, then send them to sign up. Campaign traffic from LinkedIn and outreach lands here, so the page has to stand on its own.
 
-**SEO title (55 chars):** FirmSync: timesheets to paid invoices for small firms
-**Meta description (152 chars):** Timesheets, invoices, payments, expenses and profit by client in one place, for consulting firms under 50 people. $29/month plus seats. 30-day guarantee.
+**SEO title (53 chars):** VeriTreo: timesheets to paid invoices for small firms
+**Meta description (153 chars):** Timesheets, invoices, payments, expenses and profit by client in one place, for consulting firms under 50 people. $29/month plus seats. 30-day guarantee.
 
 ---
 
@@ -12,10 +12,10 @@
 
 **Headline:** From timesheet to paid invoice, in one place.
 
-**Subheadline:** FirmSync is time-to-cash for consulting firms with fewer than 50 people. Approved hours become invoices without retyping, payments show who still owes you, and you see the real margin on every client and project.
+**Subheadline:** VeriTreo is time-to-cash for consulting firms with fewer than 50 people. Approved hours become invoices without retyping, payments show who still owes you, and you see the real margin on every client and project.
 
 **Buttons:**
-- **Start now** (primary) → `https://app.<domain>/signup?plan=monthly`
+- **Start now** (primary) → `https://app.veritreo.com/signup?plan=monthly`
 - See pricing (secondary) → `/pricing`
 
 **Small print under the buttons:** $29/month plus seats. 30-day money-back guarantee.
@@ -25,7 +25,7 @@
 
 **Image:** screenshot of the Demo Consulting dashboard showing the outstanding and overdue totals, framed in a browser window. Fictional data only.
 
-**Campaign versions:** for links shared on LinkedIn or in outreach, point at this page with `utm_*` values, e.g. `https://<domain>/?utm_source=linkedin&utm_medium=social&utm_campaign=launch`. If Framer is set to pass them on, the Start now button becomes `https://app.<domain>/signup?plan=monthly&utm_source=linkedin&utm_medium=social&utm_campaign=launch`.
+**Campaign versions:** for links shared on LinkedIn or in outreach, point at this page with `utm_*` values, e.g. `https://veritreo.com/?utm_source=linkedin&utm_medium=social&utm_campaign=launch`. If Framer is set to pass them on, the Start now button becomes `https://app.veritreo.com/signup?plan=monthly&utm_source=linkedin&utm_medium=social&utm_campaign=launch`.
 
 ---
 
@@ -63,7 +63,7 @@
 
 **Headline:** Approved hours become invoices, without retyping.
 
-**Body:** Pick the client and the period. FirmSync pulls in every approved hour not yet invoiced and groups it into one line per consultant, project and rate. Leave out anyone you want, add fees or rebilled costs, and issue. Issued hours are locked, so nothing is billed twice.
+**Body:** Pick the client and the period. VeriTreo pulls in every approved hour not yet invoiced and groups it into one line per consultant, project and rate. Leave out anyone you want, add fees or rebilled costs, and issue. Issued hours are locked, so nothing is billed twice.
 
 **Points:**
 - Classic, Modern or Compact layouts, with your colour and payment terms
@@ -108,7 +108,7 @@
 
 **Headline:** Everything between the timesheet and the bank. Nothing you won't use.
 
-**Body:** FirmSync covers time-to-cash: timesheets, approvals, invoices, payments, expenses and profit reports. There's no resource scheduling, CRM or proposals to set up. It isn't accounting software either: your accountant keeps the books, and you send them clean numbers.
+**Body:** VeriTreo covers time-to-cash: timesheets, approvals, invoices, payments, expenses and profit reports. There's no resource scheduling, CRM or proposals to set up. It isn't accounting software either: your accountant keeps the books, and you send them clean numbers.
 
 **Image:** none.
 
@@ -120,10 +120,10 @@
 
 **Body:** $29 a month for your firm, with 2 core seats and 5 GB of storage. $15 for each extra admin or manager, $5 for each consultant. A 10-person firm (2 core + 8 consultants) pays $69 a month. Pay annually and you pay for 10 months, not 12.
 
-**Guarantee line:** If FirmSync isn't right for you within 30 days, cancel and get all your money back.
+**Guarantee line:** If VeriTreo isn't right for you within 30 days, cancel and get all your money back.
 
 **Buttons:**
-- **Start now** (primary) → `https://app.<domain>/signup?plan=monthly`
+- **Start now** (primary) → `https://app.veritreo.com/signup?plan=monthly`
 - See full pricing (secondary) → `/pricing`
 
 **Image:** none, or a simple price card.
@@ -157,16 +157,15 @@
 **Body:** Sign up with your card, invite your team and issue your first invoice from approved hours. 30-day money-back guarantee.
 
 **Buttons:**
-- **Start monthly** (primary) → `https://app.<domain>/signup?plan=monthly`
-- Start annual, 2 months free (secondary) → `https://app.<domain>/signup?plan=annual`
+- **Start monthly** (primary) → `https://app.veritreo.com/signup?plan=monthly`
+- Start annual, 2 months free (secondary) → `https://app.veritreo.com/signup?plan=annual`
 
-**Small print:** Already have an account? [Log in](https://app.<domain>/login)
+**Small print:** Already have an account? [Log in](https://app.veritreo.com/login)
 
 ---
 
 ## Placeholders for the owner
 
-- `<domain>` everywhere (item 10).
 - Founding-offer end date, if any: "[END DATE]" in section 1.
 - Customer quotes / logos (section 10): none yet; section stays hidden.
 - Screenshots: all from Demo Consulting (`marketing/media/`), one per section as listed.

@@ -1,6 +1,12 @@
-# FirmSync positioning (draft for the owner)
+# VeriTreo positioning (draft for the owner)
 
 Checklist item 15. The source for the website copy (item 5), comparison pages, LinkedIn and outreach. Prices and offers come from `launch/decisions.md`; features from `README.md` unless marked *(ARCHITECTURE)*.
+
+## Brand note
+
+- **Spelling:** VeriTreo: capital V, capital T, one word. Never "Veritreo", "VERITREO" or "Veri Treo".
+- **Pronunciation:** **[PLACEHOLDER: owner to confirm, e.g. "VAIR-ee-TRAY-oh"]**
+- **Domain:** `veritreo.com` (website); the app at `app.veritreo.com`; support at `support@veritreo.com`. `veritreo.app` redirects to `veritreo.com`.
 
 ## Who
 
@@ -25,14 +31,14 @@ Checklist item 15. The source for the website copy (item 5), comparison pages, L
 
 ## Promise
 
-**Positioning statement:** For consulting firms with fewer than 50 people, FirmSync takes approved hours to issued invoices, recorded payments and a profit report in one place, without the setup and cost of a full PSA suite.
+**Positioning statement:** For consulting firms with fewer than 50 people, VeriTreo takes approved hours to issued invoices, recorded payments and a profit report in one place, without the setup and cost of a full PSA suite.
 
 **Headline options:**
 1. "From timesheet to paid invoice, in one place."
 2. "Know what every client and project really earns."
 3. "Run the money side of your firm. Skip the PSA suite."
 
-**Elevator pitch:** FirmSync gives small consulting firms one place for timesheets, invoices, payments and expenses, so approved hours become invoices without retyping and you can see profit by client and project. It's $29 a month plus seats ($69 for a 10-person firm), with a 30-day money-back guarantee.
+**Elevator pitch:** VeriTreo gives small consulting firms one place for timesheets, invoices, payments and expenses, so approved hours become invoices without retyping and you can see profit by client and project. It's $29 a month plus seats ($69 for a 10-person firm), with a 30-day money-back guarantee.
 
 ## Key messages and proof
 
@@ -55,8 +61,8 @@ Supporting features (built, but not yet in `README.md`, so not headline claims u
 
 ## Objections and answers
 
-- **"We use Harvest and QuickBooks."** FirmSync puts time, invoices, payments, expenses and profit in one place, with no copying between apps. It doesn't replace your books.
-- **"BigTime or Productive do more."** They do. If you need scheduling and resource planning, they fit. If you need time-to-cash, FirmSync is less to set up and pay for.
+- **"We use Harvest and QuickBooks."** VeriTreo puts time, invoices, payments, expenses and profit in one place, with no copying between apps. It doesn't replace your books.
+- **"BigTime or Productive do more."** They do. If you need scheduling and resource planning, they fit. If you need time-to-cash, VeriTreo is less to set up and pay for.
 - **"Why no free trial?"** Use it for real: if it isn't right within 30 days, you get your money back.
 - **"Will the price jump?"** Founding prices last 12 months, then list prices. We'll say so at sign-up and email you 60 and 30 days ahead.
 - **"What if we stop paying?"** The firm goes read-only; data is deleted 120 days later.
@@ -71,9 +77,8 @@ Supporting features (built, but not yet in `README.md`, so not headline claims u
 ## Proof gaps (for the owner)
 
 - Customer quotes, firm logos or a named case study (none yet).
-- Numbers: time saved at month-end, firms using FirmSync.
+- Numbers: time saved at month-end, firms using VeriTreo.
 - Founding-offer end date (decisions say "or until a set date").
-- The domain name.
 - A full data export when a firm leaves (today: report CSVs only).
 - `README.md` sections for vendor bills, bank import and receivables/payables reports, so they can become headline claims.
 - Where data is hosted (region), for a security answer.

@@ -3,8 +3,8 @@
 **Path:** `/pricing`
 **Purpose:** show exactly what a firm pays, make the per-seat maths easy, present the founding offer honestly (who gets it, for how long, what happens after), and remove the risk with the 30-day money-back guarantee. Every figure here comes from `launch/decisions.md` (Pricing; Launch offer: founding prices) and the billing design (`docs/superpowers/specs/2026-11-16-saas-billing-storage-design.md` §3, §7).
 
-**SEO title (52 chars):** FirmSync pricing: $29/month plus seats, plain prices
-**Meta description (150 chars):** $29/month with 2 core seats and 5 GB, $15 per extra core seat, $5 per consultant. Annual: 2 months free. 30-day money-back guarantee. Prices in USD.
+**SEO title (52 chars):** VeriTreo pricing: $29/month plus seats, plain prices
+**Meta description (148 chars):** $29/month with 2 core seats and 5 GB, $15 per extra core seat, $5 per consultant. Annual: 2 months free. 30-day money-back guarantee. Prices in USD.
 
 **Owner decision:** this draft leads with **list prices** and shows the founding price on each line as an offer for the first 25 firms. The alternative is to lead with founding prices while the offer is open. See the report.
 
@@ -17,8 +17,8 @@
 **Body:** One platform fee for your firm, then a price per person. No tiers, no modules to add, no setup fee. Every feature is included.
 
 **Monthly / Annual toggle** (default: Monthly). Label on Annual: "2 months free".
-- When Monthly is selected, every sign-up button on this page links to `https://app.<domain>/signup?plan=monthly`
-- When Annual is selected, every sign-up button links to `https://app.<domain>/signup?plan=annual`
+- When Monthly is selected, every sign-up button on this page links to `https://app.veritreo.com/signup?plan=monthly`
+- When Annual is selected, every sign-up button links to `https://app.veritreo.com/signup?plan=annual`
 
 *(If Framer can't switch the button link with the toggle, show two buttons instead: "Start monthly" and "Start annual".)*
 
@@ -26,7 +26,7 @@
 
 ## 2. Price card `#prices`
 
-**Card title:** FirmSync
+**Card title:** VeriTreo
 
 **Big price:** $29 /month · *(Annual: $290 /year)*
 
@@ -52,7 +52,7 @@
 - Bill inbox for vendor bills
 - Help centre and email support, reply within one business day
 
-**Button:** **Start now** (primary) → `https://app.<domain>/signup?plan=monthly` *(or `?plan=annual` when the toggle is on Annual)*
+**Button:** **Start now** (primary) → `https://app.veritreo.com/signup?plan=monthly` *(or `?plan=annual` when the toggle is on Annual)*
 
 **Small print under the button:** Card required. 30-day money-back guarantee. Prices in US dollars.
 
@@ -102,9 +102,9 @@ After 12 months your firm moves to list prices. We'll show the date in your bill
 
 **Offer end:** Open to the first 25 firms or until **[OWNER: END DATE, or delete this phrase if there's no date]**, whichever comes first.
 
-**Button:** **Claim a founding price** (primary) → `https://app.<domain>/signup?plan=monthly`
+**Button:** **Claim a founding price** (primary) → `https://app.veritreo.com/signup?plan=monthly`
 
-**Campaign version:** for the founding-offer push, share `https://<domain>/pricing?utm_source=linkedin&utm_medium=social&utm_campaign=founding#founding`, or link straight to sign-up: `https://app.<domain>/signup?plan=monthly&utm_source=linkedin&utm_medium=social&utm_campaign=founding`.
+**Campaign version:** for the founding-offer push, share `https://veritreo.com/pricing?utm_source=linkedin&utm_medium=social&utm_campaign=founding#founding`, or link straight to sign-up: `https://app.veritreo.com/signup?plan=monthly&utm_source=linkedin&utm_medium=social&utm_campaign=founding`.
 
 ---
 
@@ -114,7 +114,7 @@ After 12 months your firm moves to list prices. We'll show the date in your bill
 
 **Body:** Annual billing costs 10 times the monthly price. Every price on your plan, including seats and storage, follows the same interval. You can switch between monthly and annual from your billing settings.
 
-**Button:** **Start annual** → `https://app.<domain>/signup?plan=annual`
+**Button:** **Start annual** → `https://app.veritreo.com/signup?plan=annual`
 
 ---
 
@@ -130,7 +130,7 @@ After 12 months your firm moves to list prices. We'll show the date in your bill
 
 **Headline:** 30-day money-back guarantee.
 
-**Body:** Use FirmSync for real, with your own team and clients. If it isn't right for you, cancel within 30 days of your first payment and you get everything you've paid back, in full. Cancelling in your billing settings refunds you automatically.
+**Body:** Use VeriTreo for real, with your own team and clients. If it isn't right for you, cancel within 30 days of your first payment and you get everything you've paid back, in full. Cancelling in your billing settings refunds you automatically.
 
 **Small print:** One guarantee per firm. Cancelling under the guarantee ends access straight away and your firm becomes read-only.
 
@@ -139,10 +139,10 @@ After 12 months your firm moves to list prices. We'll show the date in your bill
 ## 9. Pricing FAQ
 
 **Is there a free trial?**
-No. Instead there's a 30-day money-back guarantee: sign up, use FirmSync on real work, and if it isn't right, cancel within 30 days for a full refund.
+No. Instead there's a 30-day money-back guarantee: sign up, use VeriTreo on real work, and if it isn't right, cancel within 30 days for a full refund.
 
 **Do I need a card to sign up?**
-Yes. You pay when you sign up, and your firm is created once the payment goes through. Card payments are handled by Stripe; FirmSync never sees your card details.
+Yes. You pay when you sign up, and your firm is created once the payment goes through. Card payments are handled by Stripe; VeriTreo never sees your card details.
 
 **What happens when we add or remove people?**
 Your bill follows your seats automatically. Adding or removing a seat partway through a billing period is prorated.
@@ -167,7 +167,7 @@ US dollars.
 No. The prices on this page are the prices. *(Owner: if the CPA referral programme is live, replace with: "If your accountant referred you, sign up through their link and your firm gets a $100 credit.")*
 
 **Still have a question?**
-Email [support@<domain>](mailto:support@<domain>). We reply within one business day.
+Email [support@veritreo.com](mailto:support@veritreo.com). We reply within one business day.
 
 ---
 
@@ -176,17 +176,16 @@ Email [support@<domain>](mailto:support@<domain>). We reply within one business 
 **Headline:** Start with your next month-end.
 
 **Buttons:**
-- **Start monthly** (primary) → `https://app.<domain>/signup?plan=monthly`
-- Start annual, 2 months free (secondary) → `https://app.<domain>/signup?plan=annual`
+- **Start monthly** (primary) → `https://app.veritreo.com/signup?plan=monthly`
+- Start annual, 2 months free (secondary) → `https://app.veritreo.com/signup?plan=annual`
 
-**Small print:** 30-day money-back guarantee. Already have an account? [Log in](https://app.<domain>/login)
+**Small print:** 30-day money-back guarantee. Already have an account? [Log in](https://app.veritreo.com/login)
 
 ---
 
 ## Placeholders and notes for the owner
 
-- `<domain>` everywhere.
 - **[END DATE]** for the founding offer (section 5), or delete the phrase.
 - Sales tax sentence (FAQ), once Stripe Tax is decided.
-- CPA referral line (FAQ): only once the partner agreement exists and the programme is live. Partner links take the form `https://app.<domain>/signup?plan=monthly&ref=<code>`; they belong in partner material, not on this page.
+- CPA referral line (FAQ): only once the partner agreement exists and the programme is live. Partner links take the form `https://app.veritreo.com/signup?plan=monthly&ref=<code>`; they belong in partner material, not on this page.
 - The app's sign-up page shows the actual price from Stripe before payment; this page is copy. If prices ever change, update both.
