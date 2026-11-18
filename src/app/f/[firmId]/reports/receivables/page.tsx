@@ -17,6 +17,14 @@ const td = 'py-2 pr-4 align-top'
 const num = 'py-2 pr-4 text-right whitespace-nowrap'
 const button = 'inline-flex h-8 items-center rounded-lg px-2.5 text-sm font-medium'
 
+// Must match receivables_report's `paid` step (20261116000047_ar_ap_reports.sql): status paid,
+// last payment within the last 365 days; days to pay = last payment date − issue date,
+// days late = last payment date − due date (0 if on time).
+const AVG_DAYS_TO_PAY_HELP =
+  'Average days from issue to final payment, for invoices fully paid in the last 12 months.'
+const AVG_DAYS_LATE_HELP =
+  'Average days from due date to final payment (0 when paid on time), for the same invoices.'
+
 export default async function ReceivablesPage({
   params,
   searchParams,
@@ -126,8 +134,12 @@ export default async function ReceivablesPage({
                     <th scope="col" className={`${th} text-right`}>Over 90 days</th>
                     <th scope="col" className={`${th} text-right`}>Total owed</th>
                     <th scope="col" className={`${th} text-right`}>Oldest overdue (days)</th>
-                    <th scope="col" className={`${th} text-right`}>Avg days to pay</th>
-                    <th scope="col" className={`${th} text-right`}>Avg days late</th>
+                    <th scope="col" className={`${th} text-right`} title={AVG_DAYS_TO_PAY_HELP}>
+                      Avg days to pay
+                    </th>
+                    <th scope="col" className={`${th} text-right`} title={AVG_DAYS_LATE_HELP}>
+                      Avg days late
+                    </th>
                     <th scope="col" className={`${th} text-right`}>Open invoices</th>
                   </tr>
                 </thead>
@@ -168,8 +180,9 @@ export default async function ReceivablesPage({
                   </tr>
                 </tfoot>
               </table>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Days to pay and days late are averages over invoices fully paid in the last 12 months.
+              <p className="mt-2 text-xs text-muted-foreground" data-testid="avg-days-help">
+                <strong className="font-medium">Avg days to pay:</strong> {AVG_DAYS_TO_PAY_HELP}{' '}
+                <strong className="font-medium">Avg days late:</strong> {AVG_DAYS_LATE_HELP}
               </p>
             </div>
           )}

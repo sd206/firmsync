@@ -62,6 +62,9 @@ test('receivables: client row, drill-down and invoice download', async ({ page }
 
   const row = page.getByRole('row').filter({ hasText: 'Slowpay Ltd' })
   await expect(row.getByRole('cell').nth(1)).toHaveText('$500.00') // 1–30 days
+  const help = 'Average days from issue to final payment, for invoices fully paid in the last 12 months.'
+  await expect(page.getByRole('columnheader', { name: 'Avg days to pay' })).toHaveAttribute('title', help)
+  await expect(page.getByTestId('avg-days-help')).toContainText(`Avg days to pay: ${help}`)
   await row.getByRole('link', { name: 'Slowpay Ltd' }).click()
   await expect(page.getByRole('heading', { name: 'Open invoices — Slowpay Ltd' })).toBeVisible()
   await expect(page.getByRole('link', { name: number })).toBeVisible()

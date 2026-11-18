@@ -6,6 +6,32 @@ import { getDashboardSummary } from '@/modules/firms/dashboard'
 import { getStorageStatus } from '@/modules/storage/data'
 import { formatBytes, usagePercent } from '@/lib/domain/storage'
 
+type SetupStep = { label: string; done: boolean; href: string | null }
+
+/** The setup checklist; not shown at all once every step is done. */
+function FinishSetup({ steps }: { steps: SetupStep[] }) {
+  if (steps.every((s) => s.done)) return null
+  return (
+    <>
+      <h2 className="mt-8 text-lg font-medium">Finish setup</h2>
+      <ul className="mt-2 space-y-2 text-sm">
+        {steps.map((item) => (
+          <li key={item.label}>
+            {item.href ? (
+              <Link href={item.href} className="underline underline-offset-4">
+                {item.label}
+              </Link>
+            ) : (
+              <span>{item.label}</span>
+            )}
+            <span className="ml-2 text-muted-foreground">{item.done ? '(Done)' : '(Not done)'}</span>
+          </li>
+        ))}
+      </ul>
+    </>
+  )
+}
+
 export default async function FirmDashboard({ params }: { params: Promise<{ firmId: string }> }) {
   const { firmId } = await params
   const { firmName, role, db } = await requireFirmRole(firmId, ['admin', 'manager', 'consultant'])
@@ -108,26 +134,14 @@ export default async function FirmDashboard({ params }: { params: Promise<{ firm
             </Link>
           </p>
 
-          <h2 className="mt-8 text-lg font-medium">Finish setup</h2>
-          <ul className="mt-2 space-y-2 text-sm">
-            {[
+          <FinishSetup
+            steps={[
               { label: 'Add your firm logo', done: summary.data.hasLogo, href: canEditSettings ? `/f/${firmId}/settings` : null },
               { label: 'Add a client', done: summary.data.clients > 0, href: `/f/${firmId}/clients` },
               { label: 'Add a project', done: summary.data.projects > 0, href: `/f/${firmId}/projects` },
               { label: 'Assign a consultant to a project', done: summary.data.assignments > 0, href: `/f/${firmId}/projects` },
-            ].map((item) => (
-              <li key={item.label}>
-                {item.href ? (
-                  <Link href={item.href} className="underline underline-offset-4">
-                    {item.label}
-                  </Link>
-                ) : (
-                  <span>{item.label}</span>
-                )}
-                <span className="ml-2 text-muted-foreground">{item.done ? '(Done)' : '(Not done)'}</span>
-              </li>
-            ))}
-          </ul>
+            ]}
+          />
         </>
       )}
     </div>

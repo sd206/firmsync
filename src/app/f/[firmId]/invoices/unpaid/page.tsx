@@ -121,7 +121,10 @@ export default async function UnpaidInvoicesPage({
                   <td className={td}>{formatMoney(r.balanceDue, currency)}</td>
                   <td className={td}>{Number(r.amountPaid) > 0 ? 'Partly paid' : 'Issued'}</td>
                   <td className={td}>
-                    <Link href={`${base}/${r.invoiceId}#payments`} className="underline underline-offset-4">
+                    <Link
+                      href={`/f/${firmId}/payments/record?invoice=${r.invoiceId}`}
+                      className="underline underline-offset-4"
+                    >
                       Record payment
                     </Link>
                   </td>
