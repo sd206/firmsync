@@ -1,10 +1,10 @@
-# FirmSync — team charter
+# VeriTreo — team charter
 
-This file is read by every Claude session in this folder. It says what FirmSync is, how the AI launch team works, and what always needs the owner's approval.
+This file is read by every Claude session in this folder. It says what VeriTreo is, how the AI launch team works, and what always needs the owner's approval.
 
-## What FirmSync is
+## What VeriTreo is
 
-FirmSync is a multi-tenant web app for consulting firms with fewer than 50 people: timesheets and approvals, invoicing, client payments, vendor bills, expenses, bank statements and reports, without a full professional-services suite. It is built with Next.js 15 and Supabase (Postgres, Auth, Storage) and runs at firmsync.vercel.app, which becomes the test site once FirmSync moves to its own domain. It is being taken to go-live as a paid product.
+VeriTreo (called FirmSync until 2026-11-18; the folder and repository keep the old name) is a multi-tenant web app for consulting firms with fewer than 50 people: timesheets and approvals, invoicing, client payments, vendor bills, expenses, bank statements and reports, without a full professional-services suite. It is built with Next.js 15 and Supabase (Postgres, Auth, Storage) and runs at firmsync.vercel.app, which becomes the test site once VeriTreo moves to its own domain. It is being taken to go-live as a paid product.
 
 Read before working:
 - `README.md` — setup, business rules, environment variables.

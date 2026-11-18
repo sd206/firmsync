@@ -14,7 +14,7 @@ const read = (rel) => {
 // CLAUDE.md: the team charter.
 const charter = read('CLAUDE.md')
 const HEADINGS = [
-  '## What FirmSync is',
+  '## What VeriTreo is',
   '## Where things are',
   '## Standing rules',
   '## Always ask the owner',
