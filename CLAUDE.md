@@ -31,6 +31,11 @@ marketing/media/             videos and images (on this computer only; not in gi
 ## Standing rules
 
 - Always work on a branch, never directly on main. Commit freely on your own branch as part of work the owner has approved (a brief or plan they said go to); push and merge only when the owner asks. (Owner's decision, 2026-11-17.)
+- Fewer approvals (owner's decision, 2026-11-18):
+  - Routine local commands (tests, lint, typecheck, build, local Supabase, git status/diff/log/add/commit, new branches) are allowed in `.claude/settings.json` and run without asking. Push, merge, production and Vercel commands still ask.
+  - The launch manager may merge, on this computer only, branches that change nothing but `launch/` or `marketing/` drafts, without asking. Pushing still needs the owner's yes.
+  - When the owner approves a feature design, that also approves merging the finished branch into local main, if all test gates pass and the Reviewer finds nothing serious (no blocking or important issues). Otherwise the launch manager asks. Pushing still needs the owner's yes.
+  - Questions that can wait are batched into one list at each check-in.
 - Production database migrations: run `npx supabase db push --linked --dry-run` first, show the result, and apply with `--yes` only after the owner says yes.
 - Never type passwords or API keys into production sites; the owner pastes secrets into Vercel, Stripe, Supabase and other services.
 - Public material (videos, screenshots, website images) uses only the fictional local "Demo Consulting" firm, never real customer data.
@@ -41,7 +46,7 @@ marketing/media/             videos and images (on this computer only; not in gi
 ## Always ask the owner
 
 The owner decides and approves, every time:
-- merging and pushing code; anything that changes production (database, Vercel, Stripe, Supabase settings, DNS);
+- pushing code, and merging except where the standing rules above allow it; anything that changes production (database, Vercel, Stripe, Supabase settings, DNS);
 - anything published or sent: website changes, LinkedIn posts, emails, replies to customers;
 - purchases, subscriptions and new accounts;
 - legal text, prices and offers;
