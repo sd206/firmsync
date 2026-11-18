@@ -13,13 +13,13 @@ Everything that has to be true on launch day: VeriTreo on its own domain, with t
    Also: `invoice_email_start` must refuse firms that aren't paying or are read-only (left for this item by item 22).
 3. In-app Help menu and Contact support form — Owner: Developer · Depends: — · Status: Not started
    Help-centre link; the form emails `support@` with firm, user, page and browser.
-4. Custom-domain readiness — Owner: Developer · Depends: — · Status: In progress
+4. Custom-domain readiness — Owner: Developer · Depends: — · Status: Done
    App works on `app.<domain>`; sign-in redirect URLs, email links and `NEXT_PUBLIC_SITE_URL` switch by configuration.
 22. Email invoices from the app — Owner: Developer · Depends: — (sending from the real domain needs 11) · Status: Done
    Built and merged into local main 2026-11-18 (all gates green, Reviewer's Important finding fixed). Live in production since 2026-11-18 (migration 049 applied, pushed). Sending works now from one of your existing domains, verified in Resend, as a stopgap; switch `INVOICE_EMAIL_FROM` (and `NOTIFY_FROM`) to the product's own domain under item 11.
 
-23. Rebrand FirmSync to VeriTreo — Owner: Developer + Website & copy writer + You · Depends: — · Status: In progress
-   You: trademark attorney's clearance check (domains `veritreo.com` and `veritreo.app` already owned). Developer: `PRODUCT_NAME`, README, docs, email sender name. Writer: everything in `marketing/`. Launch manager: `CLAUDE.md`, `launch/`, role files. Later, with the domain: Vercel project and URL, Resend sender, Supabase project name.
+23. Rebrand FirmSync to VeriTreo — Owner: Developer + Website & copy writer + You · Depends: — · Status: Waiting on you
+   App, docs, marketing, charter and launch files renamed and merged locally (2026-11-18). Left for you: trademark attorney's clearance check (domains `veritreo.com` and `veritreo.app` already owned); the Supabase auth email subjects and templates, the Vercel project, Resend sender and Supabase project name change with the domain switch (item 13 runbook in `docs/superpowers/specs/2026-11-18-custom-domain-design.md`).
 
 24. Pre-launch fixes from the UI and accounting audit — Owner: Developer · Depends: 23 · Status: Not started
    Bill-created expenses count the bill's PDF and show a "From bill" badge (no more false "No receipt"); Record payment opens the form in one click from Unpaid invoices; dashboard "Finish setup" hides once done; one date format everywhere, US style (Nov 16, 2026), invoice PDF included; tooltip defining "Avg days to pay"; confirm contractor bill lines are left out of the P&L on purpose. The sign-up path is item 1, the Help menu item 3.
