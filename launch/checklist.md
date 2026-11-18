@@ -19,7 +19,7 @@ Everything that has to be true on launch day: FirmSync on its own domain, with t
    Built and merged into local main 2026-11-18 (all gates green, Reviewer's Important finding fixed). Live in production since 2026-11-18 (migration 049 applied, pushed). Sending works now from one of your existing domains, verified in Resend, as a stopgap; switch `INVOICE_EMAIL_FROM` (and `NOTIFY_FROM`) to the product's own domain under item 11.
 
 23. Rebrand FirmSync to VeriTreo — Owner: Developer + Website & copy writer + You · Depends: — · Status: Waiting on you
-   You: trademark attorney's clearance check, then buy the domain (item 10). Developer: `PRODUCT_NAME`, README, docs, email sender name. Writer: everything in `marketing/`. Launch manager: `CLAUDE.md`, `launch/`, role files. Later, with the domain: Vercel project and URL, Resend sender, Supabase project name.
+   You: trademark attorney's clearance check (domains `veritreo.com` and `veritreo.app` already owned). Developer: `PRODUCT_NAME`, README, docs, email sender name. Writer: everything in `marketing/`. Launch manager: `CLAUDE.md`, `launch/`, role files. Later, with the domain: Vercel project and URL, Resend sender, Supabase project name.
 
 ## Website
 
@@ -36,8 +36,8 @@ Everything that has to be true on launch day: FirmSync on its own domain, with t
 
 ## Accounts and setup
 
-10. Buy the domain; point it at Framer and `app.` at the app — Owner: You · Depends: — · Status: Waiting on you
-    The launch manager gives step-by-step DNS instructions.
+10. Domain: point `veritreo.com` at Framer and `app.veritreo.com` at the app — Owner: You · Depends: — · Status: Waiting on you
+    Bought: `veritreo.com` (main) and `veritreo.app` (redirects to `.com`). The launch manager gives step-by-step DNS instructions; the website part waits on item 6.
 11. Email on the domain — Owner: You · Depends: 10 · Status: Waiting on you
     `support@` mailbox (e.g. Google Workspace); sending domain verified in Resend (SPF/DKIM); Supabase SMTP; `NOTIFY_FROM`; move `INVOICE_EMAIL_FROM` off the temporary domain (item 22).
 12. Stripe account, Stripe Tax decision, live mode at launch — Owner: You · Depends: — · Status: Waiting on you
