@@ -26,6 +26,11 @@ Everything that has to be true on launch day: VeriTreo on its own domain, with t
 25. UI polish pass from the audit — Owner: Developer · Depends: 24 · Status: Not started
    Dashboard quick actions, wider layout and clickable cards; status pills and tabs with counts; ageing cards as filters; invoice toolbar (PDF, Email, Void); timesheet placeholders, week navigation, today highlight, one-click Approve; drag-and-drop uploads and a copy button for the bill-inbox address; Billing menu grouped; filters on one row; consistent "Export CSV" labels; "Categorize"; P&L "hide empty months"; Transactions labelled cash only. Styling and convenience only.
 
+26. Test site on `test.veritreo.com` — Owner: You + Launch manager · Depends: 4, 10 · Status: Waiting on you
+   Today's Vercel project and `consult-flow` (renamed `veritreo-test`) become Test: add `test.veritreo.com`, Supabase auth URLs and VeriTreo templates, `NEXT_PUBLIC_SITE_URL`, its own Resend sender. Fictional data only.
+27. "TEST SITE" bar on the Test app — Owner: Developer · Depends: — · Status: Not started
+   A visible bar on every page when the app runs as Test, driven by one setting, so Test and Prod can't be confused.
+
 ## Website
 
 5. Site map and page-by-page copy — Owner: Website & copy writer · Depends: — · Status: Done
@@ -46,8 +51,8 @@ Everything that has to be true on launch day: VeriTreo on its own domain, with t
 11. Email on the domain — Owner: You · Depends: 10 · Status: Waiting on you
     `support@` mailbox (e.g. Google Workspace); sending domain verified in Resend (SPF/DKIM); Supabase SMTP; `NOTIFY_FROM`; move `INVOICE_EMAIL_FROM` off the temporary domain (item 22).
 12. Stripe account, Stripe Tax decision, live mode at launch — Owner: You · Depends: — · Status: Waiting on you
-13. Production environment for the custom domain — Owner: Developer + You · Depends: 4, 10, 12 · Status: Not started
-    Its own Supabase project and live keys; the launch manager prepares the runbook.
+13. Prod site on `app.veritreo.com` — Owner: You + Launch manager · Depends: 4, 10, 12, 26 · Status: Not started
+    New Vercel project (Pro; deploys from `release`) and new Supabase project `veritreo-prod` (Pro): all migrations applied (dry run, then your yes), auth URLs, templates and SMTP, platform-owner login, live keys, Resend sender and bill inbox, `app.veritreo.com`. Runbook: `docs/superpowers/specs/2026-11-18-custom-domain-design.md` plus the launch manager's step-by-step guide.
 14. Terms of service, privacy policy, CPA partner agreement — Owner: You (lawyer) · Depends: — · Status: Waiting on you
     The writer can prepare first drafts for the lawyer.
 
