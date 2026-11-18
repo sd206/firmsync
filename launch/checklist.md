@@ -1,6 +1,6 @@
 # Go-live checklist
 
-Everything that has to be true on launch day: FirmSync on its own domain, with the website, the landing page, and self-serve sign-up with billing. The launch manager keeps this file current; decisions behind each item are in `launch/decisions.md`.
+Everything that has to be true on launch day: VeriTreo on its own domain, with the website, the landing page, and self-serve sign-up with billing. The launch manager keeps this file current; decisions behind each item are in `launch/decisions.md`.
 
 **Status:** Not started · Waiting on you (needs the owner before work can start) · In progress · Done
 **Owner:** the role doing the work, or **You** (the owner).
@@ -13,12 +13,12 @@ Everything that has to be true on launch day: FirmSync on its own domain, with t
    Also: `invoice_email_start` must refuse firms that aren't paying or are read-only (left for this item by item 22).
 3. In-app Help menu and Contact support form — Owner: Developer · Depends: — · Status: Not started
    Help-centre link; the form emails `support@` with firm, user, page and browser.
-4. Custom-domain readiness — Owner: Developer · Depends: — · Status: Not started
+4. Custom-domain readiness — Owner: Developer · Depends: — · Status: In progress
    App works on `app.<domain>`; sign-in redirect URLs, email links and `NEXT_PUBLIC_SITE_URL` switch by configuration.
 22. Email invoices from the app — Owner: Developer · Depends: — (sending from the real domain needs 11) · Status: Done
    Built and merged into local main 2026-11-18 (all gates green, Reviewer's Important finding fixed). Live in production since 2026-11-18 (migration 049 applied, pushed). Sending works now from one of your existing domains, verified in Resend, as a stopgap; switch `INVOICE_EMAIL_FROM` (and `NOTIFY_FROM`) to the product's own domain under item 11.
 
-23. Rebrand FirmSync to VeriTreo — Owner: Developer + Website & copy writer + You · Depends: — · Status: Waiting on you
+23. Rebrand FirmSync to VeriTreo — Owner: Developer + Website & copy writer + You · Depends: — · Status: In progress
    You: trademark attorney's clearance check (domains `veritreo.com` and `veritreo.app` already owned). Developer: `PRODUCT_NAME`, README, docs, email sender name. Writer: everything in `marketing/`. Launch manager: `CLAUDE.md`, `launch/`, role files. Later, with the domain: Vercel project and URL, Resend sender, Supabase project name.
 
 ## Website
@@ -60,7 +60,7 @@ Everything that has to be true on launch day: FirmSync on its own domain, with t
 
 ## After launch
 
-Not needed for launch day; started once FirmSync is live.
+Not needed for launch day; started once VeriTreo is live.
 
 20. Two-factor sign-in for admins and managers — Owner: Developer · Depends: 19 · Status: Not started
     Prerequisite for live bank connections. Reviewer pass required (sign-in).
