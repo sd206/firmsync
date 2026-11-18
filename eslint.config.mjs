@@ -20,6 +20,8 @@ const eslintConfig = [
       "next-env.d.ts",
       // Videos and their one-off build scripts; kept out of git.
       "marketing/media/**",
+      // Claude session worktrees: full copies of the repo, linted in their own folders.
+      ".claude/worktrees/**",
     ],
   },
 ];
