@@ -97,15 +97,20 @@ else {
   }
 }
 
-// Go-live checklist: 19 numbered items, each with owner, dependency and status.
+// Go-live checklist: at least the 19 go-live items, numbered 1..N with no gaps or repeats,
+// each with owner, dependency and status. Items added later may sit in another section, so order isn't checked.
 const checklist = read('launch/checklist.md')
 if (checklist === null) fail('launch/checklist.md is missing')
 else {
   const items = checklist.split(/\r?\n/).filter((l) => /^\d+\.\s/.test(l))
-  if (items.length !== 19) fail(`launch/checklist.md has ${items.length} numbered items, expected 19`)
-  items.forEach((l, i) => {
-    if (!l.startsWith(`${i + 1}. `)) fail(`launch/checklist.md item ${i + 1} is numbered "${l.split(' ')[0]}"`)
-    for (const f of ['Owner:', 'Depends:', 'Status:']) if (!l.includes(f)) fail(`launch/checklist.md item ${i + 1} lacks ${f}`)
+  if (items.length < 19) fail(`launch/checklist.md has ${items.length} numbered items, expected at least 19`)
+  const nums = items.map((l) => Number(l.split('.')[0])).sort((a, b) => a - b)
+  nums.forEach((n, i) => {
+    if (n !== i + 1) fail(`launch/checklist.md item numbers should run 1 to ${items.length} with no gaps or repeats (found ${n})`)
+  })
+  items.forEach((l) => {
+    const n = l.split('.')[0]
+    for (const f of ['Owner:', 'Depends:', 'Status:']) if (!l.includes(f)) fail(`launch/checklist.md item ${n} lacks ${f}`)
   })
 }
 
