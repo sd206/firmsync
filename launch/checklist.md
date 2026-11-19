@@ -31,6 +31,9 @@ Everything that has to be true on launch day: VeriTreo on its own domain, with t
 27. "TEST SITE" bar on the Test app — Owner: Developer · Depends: — · Status: Done
    Built and merged locally 2026-11-19. Turn it on by setting `NEXT_PUBLIC_APP_ENV=test` on the Test Vercel project (then redeploy); leave it unset on Prod.
 
+28. Contractor bill true-up in the P&L — Owner: Developer · Depends: 24 · Status: Not started
+   Contractor cost stays counted when time is approved (hours × cost rate). When a contractor's bill is approved, any difference from the approved hours' cost is counted as a "contractor cost adjustment" on the bill date, against its project or client; bill lines for contractors without timesheets count in full on approval. Design for your approval first; Reviewer pass required (P&L).
+
 ## Website
 
 5. Site map and page-by-page copy — Owner: Website & copy writer · Depends: — · Status: Done
