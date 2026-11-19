@@ -57,6 +57,26 @@ describe('P&L: contractor cost adjustment', () => {
     expect((data as Row[]).find((r) => r.project_id === c.projects.Website)).toMatchObject({ contractor_adj: '300.00', gross: '400.00' })
   })
 
+  it('by quarter: in the bill date\'s quarter', async () => {
+    const rows = await report(f, 'quarter', '2026-07-01', '2026-12-31')
+    expect(rows.find((r) => r.sort_key === '2026-Q3')).toMatchObject({ contractor_adj: '0.00' })
+    expect(rows.find((r) => r.sort_key === '2026-Q4')).toMatchObject({ labour: '800.00', contractor_adj: '300.00', gross: '400.00' })
+  })
+
+  it('client and project filters keep the adjustment on its client and project, and drop it elsewhere', async () => {
+    const call = (clients: string[] | null, projects: string[] | null) =>
+      f.manager.db.rpc('pnl_report', {
+        p_firm: f.firmId, p_from: '2026-11-01', p_to: '2026-11-30', p_group: 'month', p_clients: clients, p_projects: projects,
+      })
+    const total = (rows: Row[]) => rows.find((r) => r.row_kind === 'total')
+    const byClient = await call([c.clientId], null)
+    expect(total(byClient.data as Row[])).toMatchObject({ contractor_adj: '300.00', gross: '400.00' })
+    const byProject = await call(null, [c.projects.Website])
+    expect(total(byProject.data as Row[])).toMatchObject({ contractor_adj: '300.00' })
+    const other = await call(['00000000-0000-4000-8000-000000000000'], null)
+    expect(total(other.data as Row[])).toMatchObject({ labour: '0.00', contractor_adj: '0.00' })
+  })
+
   it('a bill dated outside the range is not counted', async () => {
     const rows = await report(f, 'month', '2026-10-01', '2026-10-31')
     expect(rows.find((r) => r.row_kind === 'total')).toMatchObject({ contractor_adj: '0.00' })

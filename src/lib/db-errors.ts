@@ -92,6 +92,7 @@ const BY_MATCH: [string, string][] = [
   ['BILL_STATUS', "A bill's status changes only by approving, rejecting, paying or voiding it."],
   ['BILL_CONSULTANT', 'Contractor lines can only name consultants supplied by this vendor.'],
   ['BILL_LINES_OVERLAP', 'Two contractor lines on this bill cover the same consultant, period and project.'],
+  ['BILL_LINE_CLIENT', "A contractor line's project belongs to another client. Choose the project's client, or no project."],
   ['BILL_CONTRACTOR_LEGACY', 'Edit the bill and choose who each contractor line is for, then approve.'],
   ['BILL_PERIOD_REQUIRED', 'Enter the service period: contractor lines are matched to approved hours in it.'],
   ['BILL_CONTRACTOR_TARGET', 'Choose a client or project for each contractor line not on timesheets.'],

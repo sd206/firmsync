@@ -56,8 +56,12 @@ test('a contractor bill is trued up against approved hours and shows in the P&L'
   const table = page.getByRole('table')
   await expect(table.getByRole('columnheader', { name: 'Contractor adj.' })).toBeVisible()
   const total = table.getByRole('row').filter({ has: page.getByRole('rowheader', { name: 'Total' }) })
-  await expect(total).toContainText('$800.00')
-  await expect(total).toContainText('$300.00')
+  // Cells after the row header: Revenue, Labour cost, Contractor adj., Gross profit.
+  const cells = total.getByRole('cell')
+  await expect(cells.nth(0)).toHaveText('$1,500.00')
+  await expect(cells.nth(1)).toHaveText('$800.00')
+  await expect(cells.nth(2)).toHaveText('$300.00')
+  await expect(cells.nth(3)).toHaveText('$400.00')
 })
 
 test('a line for someone not on timesheets counts in full against its project', async ({ page }) => {

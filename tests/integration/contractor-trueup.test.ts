@@ -188,6 +188,55 @@ describe('contractor true-up: rules', () => {
     expect(wrongVendor.error?.message).toContain('BILL_CONSULTANT')
   })
 
+  it('refuses another firm\'s consultant, project or client on a line', async () => {
+    const f = await newFirm('Trueup Cross A')
+    const g = await newFirm('Trueup Cross B')
+    const c = await vendorContractor(f)
+    const theirs = await vendorContractor(g)
+    const save = (number: string, line: Record<string, unknown>, period = true) =>
+      f.manager.db.rpc('save_vendor_bill', {
+        p_bill: null, p_firm: f.firmId, p_vendor: c.vendorId, p_number: number, p_bill_date: '2026-11-01', p_due_date: '2026-11-30',
+        p_period_start: period ? '2026-11-01' : null, p_period_end: period ? '2026-11-30' : null, p_notes: null,
+        p_lines: [{ kind: 'contractor', description: 'X', amount: '1.00', ...line }],
+      })
+    expect((await save('CF-1', { consultant_id: theirs.consultantId })).error?.message).toContain('BILL_CONSULTANT')
+    expect((await save('CF-2', { project_id: theirs.projects.Website }, false)).error).not.toBeNull()
+    expect((await save('CF-3', { client_id: theirs.clientId }, false)).error).not.toBeNull()
+    const { count } = await adminDb().from('vendor_bills').select('id', { count: 'exact', head: true }).eq('firm_id', f.firmId)
+    expect(count).toBe(0)
+  })
+
+  it('refuses a not-on-timesheets line whose client is not the project\'s client', async () => {
+    const f = await newFirm('Trueup Mismatch')
+    const c = await vendorContractor(f)
+    const other = await adminDb().from('clients').insert({ firm_id: f.firmId, name: 'Globex' }).select('id').single()
+    const r = await f.manager.db.rpc('save_vendor_bill', {
+      p_bill: null, p_firm: f.firmId, p_vendor: c.vendorId, p_number: 'MM-1', p_bill_date: '2026-11-01', p_due_date: '2026-11-30',
+      p_period_start: null, p_period_end: null, p_notes: null,
+      p_lines: [{ kind: 'contractor', description: 'X', amount: '1.00', client_id: other.data!.id, project_id: c.projects.Website }],
+    })
+    expect(r.error?.message).toContain('BILL_LINE_CLIENT')
+    // The matching client, or no client, is fine.
+    const ok = await saveBill(f, c.vendorId, 'MM-2', [
+      { kind: 'contractor', description: 'X', amount: '1.00', client_id: c.clientId, project_id: c.projects.Website },
+      { kind: 'contractor', description: 'Y', amount: '1.00', project_id: c.projects.Website },
+    ])
+    expect(ok).toBeTruthy()
+  })
+
+  it('keeps the deprecated vendor_bill_contractor_check working until a later release drops it', async () => {
+    const f = await newFirm('Trueup Deprecated Check')
+    const c = await vendorContractor(f, { consultantName: 'Dana Brooks' })
+    await approvedWeek(f, c, '2026-11-02', [{ project: 'Website', workDate: '2026-11-02', hours: '10' }])
+    const bill = await saveBill(f, c.vendorId, 'DC-1', [
+      { kind: 'contractor', description: 'November', amount: '1100.00', consultant_id: c.consultantId },
+    ], NOV)
+    const r = await f.manager.db.rpc('vendor_bill_contractor_check', { p_bill: bill })
+    expect(r.error).toBeNull()
+    expect(r.data).toEqual([expect.objectContaining({ consultant_name: 'Dana Brooks', hours: '10.00', expected: '800.00' })])
+    expect((await f.consultant.db.rpc('vendor_bill_contractor_check', { p_bill: bill })).error?.code).toBe('42501')
+  })
+
   it('refuses overlapping lines across bills and within a bill; halves and separate projects are fine', async () => {
     const f = await newFirm('Trueup Overlap')
     const c = await vendorContractor(f, { projects: ['Website', 'Audit'] })

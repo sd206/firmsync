@@ -341,6 +341,12 @@ export function BillForm({
                           {c.name}
                         </option>
                       ))}
+                      {/* A saved consultant who has since moved vendor stays visible, so the choice isn't silently wrong. */}
+                      {l.who !== '' && l.who !== 'none' && !vendorConsultants.some((c) => c.id === l.who) && (
+                        <option value={l.who}>
+                          {`${consultants.find((c) => c.id === l.who)?.name ?? 'Consultant'} (no longer with this vendor)`}
+                        </option>
+                      )}
                       <option value="none">Not on timesheets</option>
                     </select>
                   </div>
