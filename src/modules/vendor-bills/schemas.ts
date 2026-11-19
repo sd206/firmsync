@@ -52,11 +52,26 @@ export type ExpenseLine = {
   client_id: string | null
   project_id: string | null
 }
-export type ContractorLine = { kind: 'contractor'; description: string; amount: string }
+/**
+ * consultant_id: a consultant from the bill's vendor, whose approved hours in the period the line
+ * covers (on project_id, or all projects); null for someone not on timesheets, who needs a client
+ * or project.
+ */
+export type ContractorLine = {
+  kind: 'contractor'
+  description: string
+  amount: string
+  consultant_id: string | null
+  client_id: string | null
+  project_id: string | null
+}
 /** One line in the shape save_vendor_bill reads. */
 export type BillLine = ExpenseLine | ContractorLine
 
-/** The form sends lines as a JSON array of { kind, description, amount, categoryId?, clientId?, projectId? }. */
+/**
+ * The form sends lines as a JSON array of { kind, description, amount, categoryId?, clientId?, projectId?, who? };
+ * `who` (contractor lines) is a consultant id, 'none' (not on timesheets) or '' (not chosen).
+ */
 const lines = z.string().transform((raw, ctx): BillLine[] => {
   const issue = (message: string) => {
     ctx.addIssue({ code: 'custom', message })
@@ -79,7 +94,17 @@ const lines = z.string().transform((raw, ctx): BillLine[] => {
     const m = money(o.amount)
     if (!m.ok) return issue(`${at}${m.error}`)
     if (o.kind === 'contractor') {
-      out.push({ kind: 'contractor', description, amount: m.value })
+      if (o.who === 'none') {
+        const client_id = optUuid(o.clientId)
+        const project_id = optUuid(o.projectId)
+        if (!client_id && !project_id) return issue(`${at}Choose a client or project for someone not on timesheets.`)
+        out.push({ kind: 'contractor', description, amount: m.value, consultant_id: null, client_id, project_id })
+      } else if (isUuid(o.who)) {
+        // A named consultant's line takes its client from the project, if any.
+        out.push({ kind: 'contractor', description, amount: m.value, consultant_id: o.who, client_id: null, project_id: optUuid(o.projectId) })
+      } else {
+        return issue(`${at}Choose who this line is for.`)
+      }
     } else if (o.kind === 'expense') {
       if (!isUuid(o.categoryId)) return issue(`${at}Choose a category.`)
       out.push({
@@ -124,6 +149,18 @@ export const billInputSchema = z
       ctx.addIssue({ code: 'custom', path: ['periodEnd'], message: 'Enter both period dates, or neither.' })
     } else if (v.periodStart && v.periodEnd && v.periodEnd < v.periodStart) {
       ctx.addIssue({ code: 'custom', path: ['periodEnd'], message: 'The period must end on or after it starts.' })
+    }
+    if (
+      v.periodStart === null &&
+      v.periodEnd === null &&
+      Array.isArray(v.lines) &&
+      v.lines.some((l) => l.kind === 'contractor' && l.consultant_id !== null)
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['periodStart'],
+        message: 'Enter the service period: contractor lines are matched to approved hours in it.',
+      })
     }
   })
 

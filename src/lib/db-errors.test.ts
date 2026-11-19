@@ -27,6 +27,12 @@ describe('mapDbError', () => {
   const cases: [string, Parameters<typeof mapDbError>[0], string][] = [
     ['firm_members_firm_user_key', unique('firm_members_firm_user_key'), 'That person is already a member of this firm.'],
     ['LAST_ADMIN', { code: 'P0001', message: 'LAST_ADMIN' }, 'A firm needs at least one Admin.'],
+    ['BILL_CONTRACTOR_OVERLAP', { code: 'P0001', message: 'BILL_CONTRACTOR_OVERLAP', details: 'B-7' }, 'A contractor line overlaps bill B-7 for the same consultant, period and project.'],
+    ['BILL_LINES_OVERLAP', { code: 'P0001', message: 'BILL_LINES_OVERLAP' }, 'Two contractor lines on this bill cover the same consultant, period and project.'],
+    ['BILL_CONTRACTOR_LEGACY', { code: 'P0001', message: 'BILL_CONTRACTOR_LEGACY' }, 'Edit the bill and choose who each contractor line is for, then approve.'],
+    ['BILL_PERIOD_REQUIRED', { code: 'P0001', message: 'BILL_PERIOD_REQUIRED' }, 'Enter the service period: contractor lines are matched to approved hours in it.'],
+    ['BILL_CONTRACTOR_TARGET', { code: 'P0001', message: 'BILL_CONTRACTOR_TARGET' }, 'Choose a client or project for each contractor line not on timesheets.'],
+    ['vendor_bill_lines_contractor_chk', check('vendor_bill_lines_contractor_chk'), 'Choose who each contractor line is for, and a client or project for someone not on timesheets.'],
     ['consultants_vendor_required_chk', check('consultants_vendor_required_chk'), 'Vendor contractors must be linked to a vendor, and other types must not be.'],
     ['consultants_vendor_fk', fk('consultants_vendor_fk'), 'This vendor still has consultants. Reassign or remove them first.'],
     ['consultants_firm_email_key', unique('consultants_firm_email_key'), 'A consultant with that email already exists.'],

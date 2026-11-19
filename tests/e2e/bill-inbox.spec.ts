@@ -38,6 +38,7 @@ test('admin turns on the bill inbox; managers see the address only', async ({ pa
 test('a manager turns an emailed bill into a bill, and ignores, restores and marks duplicates', async ({ page }) => {
   const f = await newFirm('Inbox E2E Flow')
   const { data: v } = await adminDb().from('vendors').insert({ firm_id: f.firmId, name: 'Acme Staffing', email: 'ap@acme.test' }).select('id').single()
+  await adminDb().from('clients').insert({ firm_id: f.firmId, name: 'Globex' })
   await seedInboxItem(f, { vendorId: v!.id, subject: 'Invoice INV-9001', upload: true, receivedAt: new Date(Date.now() - 60_000).toISOString() })
   await seedInboxItem(f, { from: 'promo@spam.test', subject: 'Special offer', files: 0 })
   await seedInboxItem(f, { from: f.manager.email, subject: 'Paper bill, entered by hand', files: 0 })
@@ -62,6 +63,8 @@ test('a manager turns an emailed bill into a bill, and ignores, restores and mar
   await form.getByLabel('Line 1 type').selectOption({ label: 'Contractor' })
   await form.getByLabel('Line 1 description').fill('October hours')
   await form.getByLabel('Line 1 amount').fill('900')
+  await form.getByLabel('Line 1 who').selectOption({ label: 'Not on timesheets' })
+  await form.getByLabel('Line 1 client').selectOption({ label: 'Globex' })
   await form.getByRole('button', { name: 'Save bill' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Bill INV-9001' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'remittance.pdf' })).toBeVisible()

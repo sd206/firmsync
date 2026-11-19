@@ -5,7 +5,7 @@ import { requireFirmRole } from '@/lib/auth/context'
 import { formatMoney } from '@/lib/domain/money'
 import { rejectedFilesNotice, storageFullNotice } from '@/lib/domain/rejected-files'
 import { getFirm } from '@/modules/firms/data'
-import { BILL_STATUS_LABEL, getBill } from '@/modules/vendor-bills/data'
+import { BILL_STATUS_LABEL, getBill, type BillLineRow, type ContractorCost } from '@/modules/vendor-bills/data'
 import { ApprovalBox, BillFiles, VendorPayments } from './bill-actions'
 
 const th = 'py-2 pr-4 font-medium'
@@ -31,8 +31,10 @@ export default async function BillPage({
   const editable = b.status === 'pending_approval' || b.status === 'rejected'
   const payable = b.status === 'approved' || b.status === 'partly_paid'
   const fileWarning = [storageFullNotice(sp.storageFull, 'Bill'), rejectedFilesNotice(sp.filesRejected)].filter(Boolean).join(' ')
-  const check = b.contractorCheck
-  const diff = check ? Math.round(Number(check.contractorTotal) * 100 - Number(check.expectedTotal) * 100) / 100 : 0
+  const counted = b.status === 'approved' || b.status === 'partly_paid' || b.status === 'paid'
+  const signed = (v: string) => (Number(v) > 0 ? `+${m(v)}` : m(v))
+  const where = (p: { clientName: string | null; projectName: string | null }) =>
+    [p.clientName, p.projectName].filter(Boolean).join(' — ') || 'unallocated cost (no client)'
 
   return (
     <div className="max-w-5xl">
@@ -86,7 +88,7 @@ export default async function BillPage({
         <tbody>
           {b.lines.map((l) => (
             <tr key={l.id} className="border-b">
-              <td className={td}>{l.kind === 'expense' ? 'Expense' : 'Contractor'}</td>
+              <td className={td}>{lineType(l)}</td>
               <td className={td}>{l.description}</td>
               <td className={td}>{l.categoryName}</td>
               <td className={td}>{[l.clientName, l.projectName].filter(Boolean).join(' / ')}</td>
@@ -110,42 +112,61 @@ export default async function BillPage({
         </div>
       </dl>
 
-      {check && (
-        <section aria-labelledby="check-h" className="mt-8 max-w-2xl">
-          <h2 id="check-h" className="text-lg font-semibold">
-            Hours check
+      {b.contractorCosts.length > 0 && (
+        <section aria-labelledby="trueup-h" className="mt-8 max-w-2xl">
+          <h2 id="trueup-h" className="text-lg font-semibold">
+            Contractor cost true-up
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Approved hours from {b.vendorName}&apos;s consultants in the service period, at their cost rate.
+            Approved hours already count as labour at cost. The difference between each contractor line and those hours
+            {counted ? ' is' : ' will be'} counted as a contractor cost adjustment on the bill date
+            {b.status === 'void' ? ' (not for a void bill)' : ''}.
           </p>
-          {check.rows.length === 0 ? (
-            <p className="mt-2 text-sm">No approved hours from this vendor&apos;s consultants in the period.</p>
-          ) : (
-            <table className="mt-2 w-full text-left text-sm">
-              <thead>
-                <tr className="border-b">
-                  {['Consultant', 'Hours', 'Expected'].map((h) => (
-                    <th key={h} scope="col" className={th}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {check.rows.map((r) => (
-                  <tr key={r.consultantId} className="border-b">
-                    <td className={td}>{r.consultantName}</td>
-                    <td className={td}>{r.hours}</td>
-                    <td className={td}>{m(r.expected)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          <p className="mt-2 text-sm" data-testid="hours-check">
-            Contractor lines {m(check.contractorTotal)} vs expected {m(check.expectedTotal)}
-            {diff === 0 ? ' — matches.' : diff > 0 ? ` — ${m(diff.toFixed(2))} more than expected.` : ` — ${m((-diff).toFixed(2))} less than expected.`}
-          </p>
+          <ul className="mt-2 flex flex-col gap-3 text-sm">
+            {b.contractorCosts.map((c) => (
+              <li key={c.lineId} className="rounded-lg border p-3" data-testid="trueup-line">
+                <p className="font-medium">
+                  {costTitle(c)}
+                  {c.mode === 'trueup' && b.periodStart && b.periodEnd ? ` · ${formatDateRange(b.periodStart, b.periodEnd)}` : ''}
+                </p>
+                {c.mode === 'legacy' ? (
+                  <p className="mt-1">
+                    {b.status === 'pending_approval' || b.status === 'rejected'
+                      ? 'Edit the bill and choose who this line is for before it can be approved.'
+                      : 'Approved before contractor true-up: not in the P&L.'}
+                  </p>
+                ) : c.mode === 'full' ? (
+                  <p className="mt-1">
+                    Not on timesheets: {counted ? 'counted' : 'will be counted'} in full, {m(c.amount)}, against{' '}
+                    {where(c.parts[0] ?? { clientName: null, projectName: null })}.
+                  </p>
+                ) : (
+                  <>
+                    <p className="mt-1">
+                      {Number(c.hours) === 0
+                        ? 'No approved hours in this period'
+                        : `Approved hours: ${c.hours} h at cost = ${m(c.expected)}`}{' '}
+                      · This line: {m(c.amount)}
+                    </p>
+                    <p className="mt-1">
+                      Contractor cost adjustment: <span data-testid="trueup-adjustment">{signed(c.adjustment)}</span>
+                      {c.parts.length === 1 ? ` against ${where(c.parts[0])}` : ''}
+                      {b.status === 'void' ? '' : `, ${counted ? 'counted' : 'to be counted'} on ${formatDate(b.billDate)}`}.
+                    </p>
+                    {c.parts.length > 1 && (
+                      <ul className="mt-1 list-disc pl-5">
+                        {c.parts.map((p, i) => (
+                          <li key={i}>
+                            {where(p)}: {p.hours} h, {m(p.expected)}; adjustment {signed(p.adjustment)}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 
@@ -170,4 +191,16 @@ export default async function BillPage({
       </section>
     </div>
   )
+}
+
+function lineType(l: BillLineRow): string {
+  if (l.kind === 'expense') return 'Expense'
+  if (l.countMode === 'trueup') return `Contractor: ${l.consultantName ?? ''}`
+  if (l.countMode === 'full') return 'Contractor: not on timesheets'
+  return 'Contractor (who not chosen)'
+}
+
+function costTitle(c: ContractorCost): string {
+  const who = c.mode === 'trueup' ? (c.consultantName ?? 'Consultant') : c.mode === 'full' ? 'Not on timesheets' : 'Who not chosen'
+  return `${c.description} — ${who}`
 }

@@ -214,7 +214,7 @@ describe('contractor true-up: rules', () => {
       p_period_start: '2026-09-01', p_period_end: '2026-09-30', p_notes: null,
       p_lines: [line(), line({ project_id: c.projects.Website })],
     })
-    expect(mixed.error?.message).toContain('BILL_CONTRACTOR_OVERLAP')
+    expect(mixed.error?.message).toContain('BILL_LINES_OVERLAP')
   })
 
   it('two admins approving overlapping bills at once: exactly one succeeds', async () => {

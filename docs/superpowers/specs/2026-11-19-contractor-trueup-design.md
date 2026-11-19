@@ -295,6 +295,18 @@ then the owner's yes, per the charter.
 > after the bill, the adjustment updates itself; the total always matches the bill. For someone who
 > doesn't fill in timesheets, choose "Not on timesheets" and the whole line is counted when you approve.
 
+## Builder's calls (made while building, 2026-11-19)
+
+- A line naming a consultant may name a **project only**; its client comes from the project. A client
+  without a project is offered only for "Not on timesheets". So a consultant's line with no project and
+  no matching hours is counted as unallocated cost (Unallocated overhead row), not against a client.
+- Overlap within one bill is refused as `BILL_LINES_OVERLAP` ("Two contractor lines on this bill
+  cover…"); overlap with another approved bill as `BILL_CONTRACTOR_OVERLAP`, naming that bill.
+- `count_mode` is set by the line trigger from whether a consultant is named; callers can't choose
+  it, and only the migration could set `legacy`.
+- `vendor_bill_contractor_check` is replaced by `contractor_line_costs`, which the bill page and the
+  P&L both use.
+
 ## 10. Also to update when built
 
 - `README.md` P&L note (lines 113–118 say contractor lines never reach the P&L).

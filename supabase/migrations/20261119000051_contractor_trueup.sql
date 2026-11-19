@@ -13,7 +13,9 @@
 --      legacy  lines entered before this release: never counted; block approval until edited
 --    Derived by the line trigger (callers can't choose it). Contractor lines may now carry a
 --    project (client taken from it) or, when not on timesheets, a client.
--- 2. save_vendor_bill / approve_vendor_bill enforce: a named consultant needs a bill period and must
+-- 2. save_vendor_bill / approve_vendor_bill enforce (BILL_PERIOD_REQUIRED, BILL_CONSULTANT,
+--    BILL_CONTRACTOR_TARGET, BILL_LINES_OVERLAP within a bill, BILL_CONTRACTOR_OVERLAP with the
+--    other bill's number in the details, BILL_CONTRACTOR_LEGACY): a named consultant needs a bill period and must
 --    come from the bill's vendor; not-on-timesheets lines need a client or project; trueup lines
 --    may not overlap (same consultant, overlapping period, overlapping project scope) on the same
 --    bill or with an approved / part-paid / paid bill.
@@ -216,7 +218,7 @@ begin
   from jsonb_array_elements(p_lines) with ordinality as e(j, n);
 
   if public.vendor_bill_contractor_overlap(v_id, false) is not null then
-    raise exception 'BILL_CONTRACTOR_OVERLAP' using errcode = 'P0001', detail = p_number;
+    raise exception 'BILL_LINES_OVERLAP' using errcode = 'P0001';
   end if;
   return v_id;
 end;
@@ -261,6 +263,9 @@ begin
       and c.id in (select l.consultant_id from public.vendor_bill_lines l where l.bill_id = v.id and l.count_mode = 'trueup')
     order by c.id
     for update;
+    if public.vendor_bill_contractor_overlap(v.id, false) is not null then
+      raise exception 'BILL_LINES_OVERLAP' using errcode = 'P0001';
+    end if;
     v_conflict := public.vendor_bill_contractor_overlap(v.id, true);
     if v_conflict is not null then
       raise exception 'BILL_CONTRACTOR_OVERLAP' using errcode = 'P0001', detail = v_conflict;

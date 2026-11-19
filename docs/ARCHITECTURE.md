@@ -244,6 +244,8 @@ sequenceDiagram
 
 A manager then chooses **Create bill**, **Ignore** or **Mark duplicate**. A bill goes through approval (`approve_vendor_bill`) before it can be paid (`record_vendor_payment`).
 
+**Contractor true-up.** Expense lines become `expenses` on approval. Contractor lines never do; instead each has a `count_mode` set by the line trigger: `trueup` (a consultant from the bill's vendor is named, matched to their approved hours in the bill period), `full` (not on timesheets, against a client or project) or `legacy` (entered before 2026-11-19; not counted, blocks approval). `contractor_line_costs(firm, from, to, bill)` computes each line's expected cost (approved hours × frozen cost rate, exactly as `labour`) and the adjustment (amount − expected), split by project, live on every read. `pnl_facts` emits it as measure `contractor_adjustment` on the bill date, and `pnl_report` / `pnl_breakdown` show it as `contractor_adj`, included in gross. `approve_vendor_bill` locks the named consultants and refuses a line that overlaps an approved one (same consultant, overlapping period and project), so no hour is trued up twice. Design: `docs/superpowers/specs/2026-11-19-contractor-trueup-design.md`.
+
 ### 6.3 Bank statements
 
 1. Upload OFX, QFX or CSV (up to 4 MB and 5,000 lines). CSV needs a column mapping, which is saved per account (`save_csv_mapping`).

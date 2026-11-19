@@ -58,6 +58,8 @@ async function enterBill(page: Page, firmId: string, number: string) {
   await form.getByLabel('Line 2 type').selectOption({ label: 'Contractor' })
   await form.getByLabel('Line 2 description').fill('October hours')
   await form.getByLabel('Line 2 amount').fill('900')
+  await form.getByLabel('Line 2 who').selectOption({ label: 'Not on timesheets' })
+  await form.getByLabel('Line 2 client').selectOption({ label: 'Globex' })
   await form.getByLabel('Bill PDF').setInputFiles(PDF)
   await form.getByRole('button', { name: 'Save bill' }).click()
 }
@@ -66,6 +68,7 @@ test('enter, approve and pay a vendor bill from the bank', async ({ page }) => {
   const f = await newFirm('Vendor Bills E2E Firm')
   const { error } = await adminDb().from('vendors').insert({ firm_id: f.firmId, name: 'Acme Staffing' })
   expect(error).toBeNull()
+  expect((await adminDb().from('clients').insert({ firm_id: f.firmId, name: 'Globex' })).error).toBeNull()
 
   // A manager enters the bill; it waits for an admin.
   await login(page, f.manager.email)

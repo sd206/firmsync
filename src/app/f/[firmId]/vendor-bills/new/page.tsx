@@ -47,7 +47,7 @@ export default async function NewBillPage({
           .
         </p>
       )}
-      <BillForm firmId={firmId} vendors={opts.vendors} categories={opts.categories} clients={opts.clients} projects={opts.projects}
+      <BillForm firmId={firmId} vendors={opts.vendors} categories={opts.categories} clients={opts.clients} projects={opts.projects} consultants={opts.consultants}
         inboxFile={file && file.ok ? { id: file.data.attachmentId, fileName: file.data.fileName, vendorId: file.data.vendorId } : undefined}
       />
     </div>
