@@ -85,6 +85,13 @@ describe('sendInvoiceEmail', () => {
     expect(d.finish).toHaveBeenCalledWith('email-1', { ok: true, providerId: 'provider-1', error: null })
   })
 
+  it('prefixes the sent subject with [TEST] on the Test site, keeping the recorded wording', async () => {
+    const { d } = deps({ env: { ...ENV, NEXT_PUBLIC_APP_ENV: 'test' } })
+    await sendInvoiceEmail(d, { ...INPUT, subject: 'Invoice INV-2026/0012' })
+    expect(vi.mocked(d.send).mock.calls[0][0].subject).toBe('[TEST] Invoice INV-2026/0012')
+    expect(d.start).toHaveBeenCalledWith(expect.objectContaining({ subject: 'Invoice INV-2026/0012' }))
+  })
+
   it("replies to the sender when the firm has no contact email, and copies them when asked", async () => {
     const { d } = deps({ loadContext: vi.fn(async () => ok({ ...CTX, firmContactEmail: null })) })
     await sendInvoiceEmail(d, { ...INPUT, cc: 'boss@demo-client.test', copyMe: true })

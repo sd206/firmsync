@@ -47,6 +47,7 @@ No database migration, no change to cookies, buckets or the npm package name.
 | `INVOICE_EMAIL_FROM` | Vercel env | `invoices@veritreo.com` (decision D3) |
 | `NOTIFY_FROM` | Vercel env | `VeriTreo <alerts@veritreo.com>` (D3) |
 | `INBOUND_DOMAINS` | Vercel env | `in.veritreo.com,<id>.resend.app` (new first; old kept so existing vendor addresses keep working) |
+| `NEXT_PUBLIC_APP_ENV` | Vercel env, **Test** project only | `test` (shows the TEST SITE bar and puts "[TEST] " on tab titles and app email subjects). Leave it **unset** on Prod. Redeploy after changing it. |
 | Site URL | Supabase › Auth › URL configuration | `https://app.veritreo.com` |
 | Redirect URLs | Supabase › Auth › URL configuration | Add `https://app.veritreo.com/auth/callback` and `/auth/confirm`; **keep** the `firmsync.vercel.app` pair |
 | Email templates and subjects | Supabase › Auth › Email templates | Paste the VeriTreo versions from `supabase/templates/` and the subjects in `config.toml` |
@@ -65,7 +66,7 @@ Before: items 10 and 11 done far enough that you can add DNS records; a quiet ti
 4. **Supabase — redirect URLs.** Add the two `app.veritreo.com` URLs. Leave the old ones.
 5. **Supabase — templates and SMTP sender.** First make sure your SMTP provider can send from `veritreo.com` (if it is Resend, step 1 did this; otherwise verify the domain with that provider and add its DNS records). Note the current sender. Then update the three templates and subjects, and the sender to `VeriTreo <no-reply@veritreo.com>`, and send yourself a password reset to check it arrives.
 6. **Supabase — Site URL.** Change to `https://app.veritreo.com`. From now on every invite, sign-in and reset email links to the new address.
-7. **Vercel — environment variables** (Production): the four values in section 3. Note the current values first. Then **Redeploy** (Vercel applies variable changes only to new deployments).
+7. **Vercel — environment variables** (Production): the four values in section 3. Note the current values first. Then **Redeploy** (Vercel applies variable changes only to new deployments). On the **Test** project (today's project, `test.veritreo.com`), also set `NEXT_PUBLIC_APP_ENV=test` (all environments) and redeploy it: the TEST SITE bar appears on every page. Never set it on the Prod project.
 8. **Resend — webhook.** Edit the existing endpoint's URL to `https://app.veritreo.com/api/inbound/resend` (editing keeps the signing secret; if you create a new endpoint instead, copy its new `whsec_…` into `RESEND_INBOUND_SECRET` and redeploy before deleting the old one).
 9. **Smoke test** on `app.veritreo.com` with the Demo Consulting firm: sign in; request a magic link and a password reset (links open on `app.veritreo.com`); invite a test user; email an invoice to yourself (from shows `"Demo Consulting via VeriTreo" <invoices@veritreo.com>`); Settings › Bill inbox shows a `bills-…@in.veritreo.com` address; send a PDF to it and see it arrive; send one to the old `…resend.app` address too.
 10. **Tell the launch manager** it's done; item 13 is marked Done and any old-address mentions in help articles are updated.

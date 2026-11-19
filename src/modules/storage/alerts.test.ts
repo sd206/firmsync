@@ -47,6 +47,12 @@ describe('afterStore', () => {
     expect(msg.text).toContain(`https://app.example.test/f/${FIRM}/settings/storage`)
   })
 
+  it('prefixes the subject with [TEST] on the Test site', async () => {
+    const send = vi.fn<SendEmail>(async () => ({ id: null }))
+    await afterStore(FIRM, { db: fakeDb({ send: true }) as never, send, env: { ...ENV, NEXT_PUBLIC_APP_ENV: 'test' } })
+    expect(send.mock.calls[0][0].subject).toBe('[TEST] Demo Consulting is using 95% of its VeriTreo storage')
+  })
+
   it('builds the link without a double slash when the site URL ends in /', async () => {
     const send = vi.fn<SendEmail>(async () => ({ id: null }))
     await afterStore(FIRM, { db: fakeDb({ send: true }) as never, send, env: { ...ENV, NEXT_PUBLIC_SITE_URL: 'https://app.example.test/' } })

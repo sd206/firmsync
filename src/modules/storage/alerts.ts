@@ -1,5 +1,6 @@
 import 'server-only'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { testPrefixed } from '@/lib/app-env'
 import { PRODUCT_NAME } from '@/lib/brand'
 import { formatBytes } from '@/lib/domain/storage'
 import { createSender, type SendEmail } from '@/lib/email/send'
@@ -52,7 +53,7 @@ export async function afterStore(
     await sender({
       from,
       to,
-      subject: `${name} is using 95% of its ${PRODUCT_NAME} storage`,
+      subject: testPrefixed(`${name} is using 95% of its ${PRODUCT_NAME} storage`, env.NEXT_PUBLIC_APP_ENV),
       text: [
         `${name} is using ${formatBytes(used)} of ${formatBytes(allowance)} of storage.`,
         'When storage is full, new uploads stop until files are deleted or more storage is added.',
