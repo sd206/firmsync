@@ -1,24 +1,54 @@
-// Local demo data: run after `npm run db:reset` with the local Supabase stack up.
+// Demo data: creates the fictional "Demo Consulting" firm with sample people, hours, invoices,
+// payments, expenses, bank lines and vendor bills. Runs once per database (it stops if the firm
+// or its demo users already exist).
+//
+// Local (after `npx supabase db reset` with the local stack up; reads .env.local):
 //   node scripts/seed-demo.mjs
-// Creates "Demo Consulting" with sample people, hours, invoices, payments and expenses.
-// Local only — never point this at a hosted project.
-import { readFileSync } from 'node:fs'
+//
+// Hosted (test site only, run by the owner): the URL must be repeated in SEED_DEMO_ALLOW_HOSTED, the
+// firm's admin is an existing account (it must have signed in once), and the demo users get a
+// password you choose. Every setting comes from the environment; nothing hosted is read from files.
+//   NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY,
+//   SEED_DEMO_ALLOW_HOSTED, SEED_DEMO_ADMIN_EMAIL, SEED_DEMO_ADMIN_PASSWORD, SEED_DEMO_PASSWORD
+//
+// Writes go through the same row-level security and functions as the app: the admin sets up
+// vendors, consultants and cost rates and approves bills; the manager does the rest.
+import { existsSync, readFileSync } from 'node:fs'
 import { createClient } from '@supabase/supabase-js'
 import { seedDemoBank } from './seed-demo-bank.mjs'
 import { seedDemoBills } from './seed-demo-bills.mjs'
 
-const env = Object.fromEntries(
-  readFileSync(new URL('../.env.local', import.meta.url), 'utf8')
-    .split(/\r?\n/)
-    .filter((l) => l.includes('=') && !l.trim().startsWith('#'))
-    .map((l) => [l.slice(0, l.indexOf('=')).trim(), l.slice(l.indexOf('=') + 1).trim()]),
-)
-const URL_ = env.NEXT_PUBLIC_SUPABASE_URL
-if (!/^http:\/\/(127\.0\.0\.1|localhost)/.test(URL_)) throw new Error(`Refusing to seed a non-local Supabase: ${URL_}`)
+const envFile = new URL('../.env.local', import.meta.url)
+const fileEnv = existsSync(envFile)
+  ? Object.fromEntries(
+      readFileSync(envFile, 'utf8')
+        .split(/\r?\n/)
+        .filter((l) => l.includes('=') && !l.trim().startsWith('#'))
+        .map((l) => [l.slice(0, l.indexOf('=')).trim(), l.slice(l.indexOf('=') + 1).trim()]),
+    )
+  : {}
+const isLocal = (url) => /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?(\/|$)/.test(url ?? '')
+const URL_ = process.env.NEXT_PUBLIC_SUPABASE_URL || fileEnv.NEXT_PUBLIC_SUPABASE_URL
+if (!URL_) throw new Error('NEXT_PUBLIC_SUPABASE_URL is not set.')
+const LOCAL = isLocal(URL_)
+// .env.local is used only for a local run; a hosted run takes everything from the environment.
+const env = LOCAL ? { ...fileEnv, ...process.env } : process.env
+if (!LOCAL && env.SEED_DEMO_ALLOW_HOSTED !== URL_) {
+  throw new Error(`Refusing to seed a non-local Supabase (${URL_}). To seed it on purpose, set SEED_DEMO_ALLOW_HOSTED to that exact URL.`)
+}
+function setting(name, localDefault) {
+  const v = env[name] || (LOCAL ? localDefault : undefined)
+  if (!v) throw new Error(`${name} is required to seed a hosted Supabase.`)
+  return v
+}
+for (const k of ['NEXT_PUBLIC_SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY']) if (!env[k]) throw new Error(`${k} is not set.`)
+const ADMIN_EMAIL = setting('SEED_DEMO_ADMIN_EMAIL', 'owner@local.test') // local seed user (supabase/seed.sql)
+const ADMIN_PASSWORD = setting('SEED_DEMO_ADMIN_PASSWORD', 'owner-password-123')
+const PASSWORD = setting('SEED_DEMO_PASSWORD', 'demo-password-123')
+if (!LOCAL && PASSWORD.length < 12) throw new Error('SEED_DEMO_PASSWORD must be at least 12 characters.')
 
 const opts = { auth: { persistSession: false, autoRefreshToken: false } }
 const admin = createClient(URL_, env.SUPABASE_SERVICE_ROLE_KEY, opts)
-const PASSWORD = 'demo-password-123'
 
 function must(res, what) {
   if (res.error) throw new Error(`${what}: ${res.error.message}`)
@@ -47,7 +77,10 @@ const addDays = (iso, n) => {
 }
 
 // ---------------------------------------------------------------- firm and people
-const ownerId = must(await admin.from('profiles').select('user_id').eq('email', 'owner@local.test').single(), 'owner').user_id
+if (must(await admin.from('firms').select('id').eq('name', 'Demo Consulting'), 'existing firm').length > 0) {
+  throw new Error('A firm named "Demo Consulting" already exists; nothing to do. Reset the local database to seed again.')
+}
+const ownerId = must(await admin.from('profiles').select('user_id').eq('email', ADMIN_EMAIL).single(), `admin ${ADMIN_EMAIL}`).user_id
 const mayaId = await newUser('maya@demo.test', 'Maya Patel')
 const danaUserId = await newUser('dana@demo.test', 'Dana Brooks')
 
@@ -80,21 +113,23 @@ must(
 )
 
 const maya = await signIn('maya@demo.test', PASSWORD)
+// Vendors, consultants and cost rates are admin-only (20261112000038), so the firm's admin sets them up.
+const owner = await signIn(ADMIN_EMAIL, ADMIN_PASSWORD)
 
 const vendor = must(
-  await maya.from('vendors').insert({ firm_id: firmId, name: 'Northwind Talent', contact_name: 'Sam Reyes', email: 'sam@northwind.test' }).select('id').single(),
+  await owner.from('vendors').insert({ firm_id: firmId, name: 'Northwind Talent', contact_name: 'Sam Reyes', email: 'sam@northwind.test' }).select('id').single(),
   'vendor',
 )
 const dana = must(
-  await maya.from('consultants').insert({ firm_id: firmId, name: 'Dana Brooks', email: 'dana@demo.test', type: 'employee', user_id: danaUserId }).select('id').single(),
+  await owner.from('consultants').insert({ firm_id: firmId, name: 'Dana Brooks', email: 'dana@demo.test', type: 'employee', user_id: danaUserId }).select('id').single(),
   'Dana',
 )
 const lee = must(
-  await maya.from('consultants').insert({ firm_id: firmId, name: 'Lee Chen', email: 'lee@northwind.test', type: 'vendor', vendor_id: vendor.id }).select('id').single(),
+  await owner.from('consultants').insert({ firm_id: firmId, name: 'Lee Chen', email: 'lee@northwind.test', type: 'vendor', vendor_id: vendor.id }).select('id').single(),
   'Lee',
 )
 must(
-  await maya.from('consultant_cost_rates').insert([
+  await owner.from('consultant_cost_rates').insert([
     { firm_id: firmId, consultant_id: dana.id, hourly_cost: 85, effective_from: '2026-01-01' },
     { firm_id: firmId, consultant_id: lee.id, hourly_cost: 110, effective_from: '2026-01-01' },
   ]),
@@ -214,10 +249,9 @@ must(
 const bank = await seedDemoBank(maya, firmId)
 
 // ---------------------------------------------------------------- vendor bills
-const owner = await signIn('owner@local.test', 'owner-password-123') // local seed user (supabase/seed.sql)
 await seedDemoBills({ maya, owner, firmId, vendorId: vendor.id, leeId: lee.id, checkingId: bank.checking, categories: cats })
 
 console.log(`Demo Consulting ready (firm ${firmId}).`)
 console.log(`Invoices issued: ${i1.number} (paid), plus an overdue one and a part-paid one; one draft.`)
 console.log('Vendor bills: NW-1042 approved (its bank payment is waiting in Main checking review), NW-1051 awaiting approval.')
-console.log('Logins (password demo-password-123): maya@demo.test (Manager), dana@demo.test (Consultant). Owner: owner@local.test.')
+console.log(`Logins: maya@demo.test (Manager), dana@demo.test (Consultant), password ${LOCAL ? PASSWORD : 'from SEED_DEMO_PASSWORD'}. Admin: ${ADMIN_EMAIL}.`)

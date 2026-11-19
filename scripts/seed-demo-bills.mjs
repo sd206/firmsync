@@ -1,5 +1,5 @@
 // Demo vendor bills for "Demo Consulting". Called at the end of seed-demo.mjs, after the bank seed.
-// Local only — never point this at a hosted project.
+// Uses the clients seed-demo.mjs passes in; it has no connection settings of its own.
 
 function must(res, what) {
   if (res.error) throw new Error(`${what}: ${res.error.message}`)
