@@ -152,7 +152,7 @@ export default async function BillPage({
                     <p className="mt-1">
                       Contractor cost adjustment: <span data-testid="trueup-adjustment">{signed(c.adjustment)}</span>
                       {c.parts.length === 1 ? ` against ${where(c.parts[0])}` : ''}
-                      {b.status === 'void' ? '' : `, ${counted ? 'counted' : 'to be counted'} on ${formatDate(b.billDate)}`}.
+                      , {counted ? 'counted' : 'to be counted'} on {formatDate(b.billDate)}.
                     </p>
                     {c.parts.length > 1 && (
                       <ul className="mt-1 list-disc pl-5">
