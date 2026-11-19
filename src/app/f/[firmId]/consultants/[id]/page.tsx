@@ -75,7 +75,7 @@ export default async function ConsultantPage({ params }: { params: Promise<{ fir
                 <td className="py-2 pr-4">{formatDate(r.effectiveFrom)}</td>
                 <td className="py-2 pr-4">{formatMoney(r.hourlyCost, currency)}</td>
                 <td className="py-2">
-                  <DeleteRateForm firmId={firmId} consultantId={c.id} rateId={r.id} label={r.effectiveFrom} />
+                  <DeleteRateForm firmId={firmId} consultantId={c.id} rateId={r.id} label={formatDate(r.effectiveFrom)} />
                 </td>
               </tr>
             ))}

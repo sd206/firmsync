@@ -89,7 +89,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ firmId
           </thead>
           <tbody>
             {p.assignments.map((a) => {
-              const label = `${a.consultantName} from ${a.effectiveFrom}`
+              const label = `${a.consultantName} from ${formatDate(a.effectiveFrom)}`
               const isCurrent = rateOn([{ rate: a.clientRate, ...a }], today) !== null
               return (
                 <tr key={a.id} className="border-b align-top">
