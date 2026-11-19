@@ -1,7 +1,8 @@
+import { formatDate } from '@/lib/domain/format-date'
 import Link from 'next/link'
 import { requireFirmRole } from '@/lib/auth/context'
 import { isIsoDate } from '@/lib/domain/dates'
-import { addDays, currentWeekStart, formatDayLabel, isFutureWeek, weekStartOf } from '@/lib/domain/weeks'
+import { addDays, currentWeekStart, isFutureWeek, weekStartOf } from '@/lib/domain/weeks'
 import { listAwaitingApproval, listWeekStatus } from '@/modules/timesheets/data'
 import { STATUS_LABEL } from '../timesheet/status-label'
 
@@ -67,9 +68,9 @@ export default async function TimesheetsPage({
                       {r.consultantName}
                     </Link>
                   </th>
-                  <td className="py-2 pr-4">{formatDayLabel(r.weekStart)}</td>
+                  <td className="py-2 pr-4">{formatDate(r.weekStart)}</td>
                   <td className="py-2 pr-4 tabular-nums">{r.totalHours}</td>
-                  <td className="py-2">{r.submittedAt.slice(0, 10)}</td>
+                  <td className="py-2">{formatDate(r.submittedAt)}</td>
                 </tr>
               ))}
             </tbody>
@@ -81,7 +82,7 @@ export default async function TimesheetsPage({
         <h2 id="week-h" className="text-lg font-medium">
           Week status
         </h2>
-        <p className="mt-1 text-sm">Week of {formatDayLabel(weekStart)}</p>
+        <p className="mt-1 text-sm">Week of {formatDate(weekStart)}</p>
         <p className="mt-2 flex gap-4 text-sm">
           <Link href={`${base}?week=${addDays(weekStart, -7)}`} className="underline underline-offset-4">
             Previous week

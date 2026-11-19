@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDate } from '@/lib/domain/format-date'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
@@ -88,7 +89,7 @@ export function RecordBillPaymentPanel({
                   <tbody>
                     {withdrawals.map((w) => (
                       <tr key={w.lineId} className="border-b">
-                        <td className={`${td} whitespace-nowrap`}>{w.postedOn}</td>
+                        <td className={`${td} whitespace-nowrap`}>{formatDate(w.postedOn)}</td>
                         <td className={td}>{w.accountName}</td>
                         <th scope="row" className={`${td} font-normal`}>
                           {w.description}
@@ -104,13 +105,13 @@ export function RecordBillPaymentPanel({
                             disabled={bank.pending}
                             onClick={async () => {
                               const ok = await askConfirm(
-                                `Record ${m(w.amount)} from ${w.accountName} on ${w.postedOn} as a payment on ${billLabel}?`,
+                                `Record ${m(w.amount)} from ${w.accountName} on ${formatDate(w.postedOn)} as a payment on ${billLabel}?`,
                                 { confirmLabel: 'Record payment' },
                               )
                               if (ok) bank.run(() => recordVendorPaymentFromWithdrawalAction(firmId, billId, w.lineId, notes), done)
                             }}
                           >
-                            Record this payment<span className="sr-only"> of {m(w.amount)} on {w.postedOn}</span>
+                            Record this payment<span className="sr-only"> of {m(w.amount)} on {formatDate(w.postedOn)}</span>
                           </Button>
                         </td>
                       </tr>

@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/domain/format-date'
 import Link from 'next/link'
 import { requireFirmRole } from '@/lib/auth/context'
 import { todayIso } from '@/lib/domain/dates'
@@ -221,8 +222,8 @@ export default async function ReceivablesPage({
                               {i.number}
                             </Link>
                           </th>
-                          <td className={`${td} whitespace-nowrap`}>{i.issueDate}</td>
-                          <td className={`${td} whitespace-nowrap`}>{i.dueDate}</td>
+                          <td className={`${td} whitespace-nowrap`}>{formatDate(i.issueDate)}</td>
+                          <td className={`${td} whitespace-nowrap`}>{formatDate(i.dueDate)}</td>
                           <td className={num}>{money(i.total)}</td>
                           <td className={num}>{money(i.amountPaid)}</td>
                           <td className={`${num} font-medium`}>{money(i.balance)}</td>

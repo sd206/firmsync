@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/domain/format-date'
 import { formatMoneyCode } from '@/lib/domain/money'
 import type { InvoiceLayout } from '@/lib/db-types'
 import type { TemplateRow } from '@/modules/invoice-templates/data'
@@ -58,11 +59,9 @@ export type DetailEntry = {
   note: string | null
 }
 
-const DATE_FMT = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
-
-/** `2026-11-09` -> `9 Nov 2026` (UTC, so the server's timezone never shifts the day). */
+/** `2026-11-09` -> `Nov 9, 2026` (the app's one date format; UTC, so the server's timezone never shifts the day). */
 export function formatPdfDate(iso: string): string {
-  return DATE_FMT.format(new Date(`${iso.slice(0, 10)}T00:00:00Z`)).replace('Sept', 'Sep')
+  return formatDate(iso.slice(0, 10))
 }
 
 const lines = (text: string | null): string[] =>

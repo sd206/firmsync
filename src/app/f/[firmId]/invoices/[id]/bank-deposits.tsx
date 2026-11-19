@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDate } from '@/lib/domain/format-date'
 import Link from 'next/link'
 import { useState } from 'react'
 import { askConfirm } from '@/components/confirm-dialog'
@@ -12,10 +13,6 @@ import type { InvoiceDeposit } from '@/modules/bank/data'
 
 const th = 'py-2 pr-4 font-medium'
 const td = 'py-2 pr-4 align-top'
-
-function day(iso: string) {
-  return new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })
-}
 
 /** Imported deposits that can be recorded as a payment on this invoice in one click. */
 export function BankDeposits({
@@ -75,7 +72,7 @@ export function BankDeposits({
               <tbody>
                 {deposits.map((d) => (
                   <tr key={d.lineId} className="border-b">
-                    <td className={`${td} whitespace-nowrap`}>{d.postedOn}</td>
+                    <td className={`${td} whitespace-nowrap`}>{formatDate(d.postedOn)}</td>
                     <td className={td}>{d.accountName}</td>
                     <th scope="row" className={`${td} font-normal`}>
                       {d.description}
@@ -91,7 +88,7 @@ export function BankDeposits({
                         disabled={pending}
                         onClick={async () => {
                           const ok = await askConfirm(
-                            `Record ${m(d.amount)} from ${d.accountName} on ${day(d.postedOn)} as a payment on ${invoiceLabel}?`,
+                            `Record ${m(d.amount)} from ${d.accountName} on ${formatDate(d.postedOn)} as a payment on ${invoiceLabel}?`,
                             { confirmLabel: 'Record payment' },
                           )
                           if (ok) run(() => recordFromDepositAction(firmId, invoiceId, d.lineId, notes), () => {
@@ -100,7 +97,7 @@ export function BankDeposits({
                           })
                         }}
                       >
-                        Record this payment<span className="sr-only"> of {m(d.amount)} on {d.postedOn}</span>
+                        Record this payment<span className="sr-only"> of {m(d.amount)} on {formatDate(d.postedOn)}</span>
                       </Button>
                     </td>
                   </tr>

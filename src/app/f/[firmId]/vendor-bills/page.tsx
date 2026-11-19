@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/domain/format-date'
 import Link from 'next/link'
 import { requireFirmRole } from '@/lib/auth/context'
 import { isIsoDate } from '@/lib/domain/dates'
@@ -152,9 +153,9 @@ export default async function VendorBillsPage({
                   </Link>
                 </td>
                 <td className={td}>{r.vendorName}</td>
-                <td className={td}>{r.billDate}</td>
+                <td className={td}>{formatDate(r.billDate)}</td>
                 <td className={td}>
-                  {r.dueDate}
+                  {formatDate(r.dueDate)}
                   {r.overdue && <span className="ml-2 font-medium text-amber-700 dark:text-amber-400">Overdue</span>}
                 </td>
                 <td className={td}>{m(r.total)}</td>

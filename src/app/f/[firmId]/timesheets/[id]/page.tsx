@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/domain/format-date'
 import { notFound } from 'next/navigation'
 import { requireFirmRole } from '@/lib/auth/context'
 import { sumHours } from '@/lib/domain/hours'
@@ -36,7 +37,7 @@ export default async function TimesheetReviewPage({ params }: { params: Promise<
   return (
     <div className="max-w-6xl">
       <h1 className="text-2xl font-semibold">Timesheet: {t.consultantName}</h1>
-      <h2 className="mt-1 text-lg font-medium">Week of {formatDayLabel(t.weekStart)}</h2>
+      <h2 className="mt-1 text-lg font-medium">Week of {formatDate(t.weekStart)}</h2>
       <p className="mt-2 text-sm">
         Status: <span data-testid="status">{STATUS_LABEL[t.status]}</span>
       </p>

@@ -6,7 +6,7 @@ import type { InvoiceDocumentData } from './view-model'
 const data = (layout: InvoiceDocumentData['layout'], withDetail = false): InvoiceDocumentData => ({
   title: 'Invoice',
   number: 'INV-0001',
-  issueDate: '9 Nov 2026',
+  issueDate: 'Nov 9, 2026',
   dueDate: '9 Dec 2026',
   period: '1 Oct 2026 – 31 Oct 2026',
   subject: 'October work',

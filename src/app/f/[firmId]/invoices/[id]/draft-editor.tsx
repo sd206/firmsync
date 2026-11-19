@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDateRange } from '@/lib/domain/format-date'
 import { askConfirm } from '@/components/confirm-dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -216,7 +217,7 @@ export function DraftEditor({
     <div className="max-w-5xl">
       <h1 className="text-2xl font-semibold">Draft invoice</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        {invoice.clientName}, {invoice.periodStart} to {invoice.periodEnd}
+        {invoice.clientName}, {formatDateRange(invoice.periodStart, invoice.periodEnd)}
       </p>
 
       <HeaderForm firmId={firmId} invoice={invoice} templates={templates} />

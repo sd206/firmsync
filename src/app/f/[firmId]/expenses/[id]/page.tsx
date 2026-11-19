@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/domain/format-date'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireFirmRole } from '@/lib/auth/context'
@@ -38,7 +39,7 @@ export default async function ExpensePage({
         <h1 className="mt-2 text-2xl font-semibold">Expense</h1>
         <dl className="mt-4 grid max-w-md grid-cols-[auto_1fr] gap-x-6 gap-y-1 text-sm">
           <dt>Date</dt>
-          <dd>{e.spentOn}</dd>
+          <dd>{formatDate(e.spentOn)}</dd>
           <dt>Payee</dt>
           <dd>{e.payee}</dd>
           <dt>Category</dt>

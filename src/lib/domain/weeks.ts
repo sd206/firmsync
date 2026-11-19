@@ -30,14 +30,9 @@ export function isFutureWeek(weekStart: string, now: Date = new Date()): boolean
   return weekStart > currentWeekStart(now)
 }
 
-/** e.g. 'Mon 9 Nov' — deterministic: en-GB, UTC. */
+const DAY_LABEL = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' })
+
+/** Short day header for the timesheet grid, e.g. 'Mon, Nov 9' — deterministic: en-US, UTC. */
 export function formatDayLabel(date: string): string {
-  const parts = new Intl.DateTimeFormat('en-GB', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    timeZone: 'UTC',
-  }).formatToParts(toUtc(date))
-  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? ''
-  return `${get('weekday')} ${get('day')} ${get('month')}`
+  return DAY_LABEL.format(toUtc(date))
 }

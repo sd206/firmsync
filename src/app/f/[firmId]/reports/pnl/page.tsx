@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/domain/format-date'
 import { requireFirmRole } from "@/lib/auth/context";
 import { todayIso } from "@/lib/domain/dates";
 import { formatMoney } from "@/lib/domain/money";
@@ -147,7 +148,7 @@ export default async function PnlPage({
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-left text-sm">
               <caption className="sr-only">
-                Profit and loss by {p?.group}, {p?.from} to {p?.to}
+                Profit and loss by {p?.group}, {formatDate(p?.from)} to {formatDate(p?.to)}
               </caption>
               <thead>
                 <tr className="border-b">

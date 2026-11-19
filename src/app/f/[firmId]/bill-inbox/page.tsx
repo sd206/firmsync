@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { requireFirmRole } from '@/lib/auth/context'
+import { formatDateTime } from '@/lib/domain/format-date'
 import { INBOX_TABS, getInboxSettings, listInbox, type InboxRow, type InboxTab } from '@/modules/bill-inbox/data'
 import { inboundDomains } from '@/modules/bill-inbox/route-mail'
 import { InboxActions } from './inbox-actions'
@@ -8,9 +9,7 @@ const th = 'py-2 pr-4 font-medium'
 const td = 'py-2 pr-4 align-top'
 const button = 'inline-flex h-8 items-center rounded-lg px-2.5 text-sm font-medium'
 
-function when(iso: string) {
-  return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
-}
+const when = formatDateTime
 
 function Sender({ row }: { row: InboxRow }) {
   return (

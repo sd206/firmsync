@@ -95,9 +95,9 @@ describe('buildInvoiceDocument', () => {
     expect(d.lines[0].rate).toBe('USD 133.33')
     expect(d.totals.total).toBe('USD 977.31')
     expect(d.totals.taxLabel).toBe('Tax (8.25%)')
-    expect(d.issueDate).toBe('9 Nov 2026')
-    expect(d.dueDate).toBe('9 Dec 2026')
-    expect(d.period).toBe('1 Oct 2026 – 31 Oct 2026')
+    expect(d.issueDate).toBe('Nov 9, 2026')
+    expect(d.dueDate).toBe('Dec 9, 2026')
+    expect(d.period).toBe('Oct 1, 2026 – Oct 31, 2026')
   })
 
   it('hides the rate column when showRate is false', () => {
@@ -117,8 +117,8 @@ describe('buildInvoiceDocument', () => {
   it('includes daily detail in date order only when enabled', () => {
     expect(build().detail).toBeNull()
     const d = build(invoice(), template({ showDailyDetail: true }))
-    expect(d.detail?.map((r) => r.date)).toEqual(['5 Oct 2026', '6 Oct 2026'])
-    expect(d.detail?.[0]).toEqual({ date: '5 Oct 2026', consultant: 'Con Sultant', project: 'Rollout', hours: '3.33', note: 'Discovery' })
+    expect(d.detail?.map((r) => r.date)).toEqual(['Oct 5, 2026', 'Oct 6, 2026'])
+    expect(d.detail?.[0]).toEqual({ date: 'Oct 5, 2026', consultant: 'Con Sultant', project: 'Rollout', hours: '3.33', note: 'Discovery' })
   })
 
   it('has no detail page when daily detail is on but there are no hours', () => {
@@ -134,7 +134,7 @@ describe('buildInvoiceDocument', () => {
   })
 
   it('payment terms fall back to the due date', () => {
-    expect(build().paymentTerms).toBe('Payment due by 9 Dec 2026.')
+    expect(build().paymentTerms).toBe('Payment due by Dec 9, 2026.')
     expect(build(invoice(), template({ paymentTermsText: 'Net 30' })).paymentTerms).toBe('Net 30')
   })
 

@@ -3,6 +3,7 @@
 import Link from 'next/link'
 
 import { askConfirm } from '@/components/confirm-dialog'
+import { formatDate } from '@/lib/domain/format-date'
 import { useState } from 'react'
 import { FileList } from '@/components/attachments/file-list'
 import { FILE_ACCEPT, takeFiles, uploadFiles, type UploadOutcome } from '@/components/attachments/upload-files'
@@ -273,7 +274,7 @@ function PaymentRowView({
   return (
     <>
       <tr className="border-b">
-        <td className={td}>{p.paidOn}</td>
+        <td className={td}>{formatDate(p.paidOn)}</td>
         <td className={td}>{METHOD_LABEL[p.method] ?? p.method}</td>
         <td className={td}>{p.reference}</td>
         <td className={td}>{m}</td>

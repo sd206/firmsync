@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/domain/format-date'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireFirmRole } from '@/lib/auth/context'
@@ -97,7 +98,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ firmId
                   </th>
                   <td className="py-2 pr-4">{money(a.clientRate)}</td>
                   <td className="py-2 pr-4">
-                    {a.effectiveFrom} to {a.effectiveTo ?? 'open'}
+                    {formatDate(a.effectiveFrom)} to {a.effectiveTo ? formatDate(a.effectiveTo) : 'open'}
                   </td>
                   <td className="py-2 pr-4">{a.currentCost !== null ? money(a.currentCost) : '—'}</td>
                   <td className="py-2 pr-4">

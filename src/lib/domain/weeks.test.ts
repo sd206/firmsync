@@ -23,6 +23,6 @@ describe('weeks', () => {
     expect(isFutureWeek('2026-11-09', now)).toBe(false)
   })
   it('formatDayLabel', () => {
-    expect(formatDayLabel('2026-11-09')).toBe('Mon 9 Nov')
+    expect(formatDayLabel('2026-11-09')).toBe('Mon, Nov 9')
   })
 })

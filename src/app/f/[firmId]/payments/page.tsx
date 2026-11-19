@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/domain/format-date'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { requireFirmRole } from '@/lib/auth/context'
@@ -156,7 +157,7 @@ export default async function PaymentsPage({
               <tbody>
                 {list.data.rows.map((r) => (
                   <tr key={r.paymentId} className="border-b">
-                    <td className={td}>{r.paidOn}</td>
+                    <td className={td}>{formatDate(r.paidOn)}</td>
                     <td className={td}>
                       <Link href={`/f/${firmId}/invoices/${r.invoiceId}#payments`} className="underline underline-offset-4">
                         {r.invoiceNumber}

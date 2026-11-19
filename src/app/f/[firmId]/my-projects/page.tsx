@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/domain/format-date'
 import { requireFirmRole } from '@/lib/auth/context'
 import { todayIso } from '@/lib/domain/dates'
 import { listMyProjects } from '@/modules/projects/data'
@@ -48,7 +49,7 @@ export default async function MyProjectsPage({ params }: { params: Promise<{ fir
                 <td className="py-2 pr-4">{a.projectCode ?? ''}</td>
                 <td className="py-2 pr-4">{a.clientName}</td>
                 <td className="py-2">
-                  {a.from} to {a.to ?? 'ongoing'}
+                  {formatDate(a.from)} to {a.to ? formatDate(a.to) : 'ongoing'}
                 </td>
               </tr>
             ))}

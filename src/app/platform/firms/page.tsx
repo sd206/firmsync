@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/domain/format-date'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireUser } from '@/lib/auth/context'
@@ -104,7 +105,7 @@ export default async function PlatformFirmsPage({
                 <tr key={f.id} className="border-b">
                   <td className="py-2 pr-4">{f.name}</td>
                   <td className="py-2 pr-4">{f.admin_emails.join(', ')}</td>
-                  <td className="py-2 pr-4">{new Date(f.created_at).toISOString().slice(0, 10)}</td>
+                  <td className="py-2 pr-4">{formatDate(f.created_at)}</td>
                   <td className="py-2">
                     <div>
                       {formatBytes(Number(f.used_bytes))} of {formatBytes(Number(f.allowance_bytes))}

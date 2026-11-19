@@ -1,3 +1,4 @@
+import { formatDate, formatDateRange } from '@/lib/domain/format-date'
 import { requireFirmRole } from '@/lib/auth/context'
 import { todayIso } from '@/lib/domain/dates'
 import { formatMoney } from '@/lib/domain/money'
@@ -85,7 +86,7 @@ export default async function TransactionsPage({
           <div className="mt-6 overflow-x-auto">
             <table className="w-full text-left text-sm">
               <caption className="sr-only">
-                Transactions from {from} to {to}
+                Transactions from {formatDateRange(from, to)}
               </caption>
               <thead>
                 <tr className="border-b">
@@ -99,7 +100,7 @@ export default async function TransactionsPage({
               <tbody>
                 {result.data.rows.map((r) => (
                   <tr key={`${r.kind}:${r.id}`} className="border-b">
-                    <td className={`${td} whitespace-nowrap`}>{r.date}</td>
+                    <td className={`${td} whitespace-nowrap`}>{formatDate(r.date)}</td>
                     <th scope="row" className={`${td} font-normal`}>{r.transaction}</th>
                     <td className={td}>{r.category}</td>
                     <td className={`${td} text-right whitespace-nowrap`}>{money(r.amount)}</td>
