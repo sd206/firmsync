@@ -88,7 +88,7 @@ export default async function BillPage({
         <tbody>
           {b.lines.map((l) => (
             <tr key={l.id} className="border-b">
-              <td className={td}>{lineType(l)}</td>
+              <td className={td}>{lineType(l, editable)}</td>
               <td className={td}>{l.description}</td>
               <td className={td}>{l.categoryName}</td>
               <td className={td}>{[l.clientName, l.projectName].filter(Boolean).join(' / ')}</td>
@@ -125,7 +125,7 @@ export default async function BillPage({
             {b.contractorCosts.map((c) => (
               <li key={c.lineId} className="rounded-lg border p-3" data-testid="trueup-line">
                 <p className="font-medium">
-                  {costTitle(c)}
+                  {costTitle(c, editable)}
                   {c.mode === 'trueup' && b.periodStart && b.periodEnd ? ` · ${formatDateRange(b.periodStart, b.periodEnd)}` : ''}
                 </p>
                 {b.status === 'void' ? (
@@ -194,14 +194,14 @@ export default async function BillPage({
   )
 }
 
-function lineType(l: BillLineRow): string {
+function lineType(l: BillLineRow, editable: boolean): string {
   if (l.kind === 'expense') return 'Expense'
   if (l.countMode === 'trueup') return `Contractor: ${l.consultantName ?? ''}`
   if (l.countMode === 'full') return 'Contractor: not on timesheets'
-  return 'Contractor (who not chosen)'
+  return editable ? 'Contractor (who not chosen)' : 'Contractor (approved before contractor true-up)'
 }
 
-function costTitle(c: ContractorCost): string {
-  const who = c.mode === 'trueup' ? (c.consultantName ?? 'Consultant') : c.mode === 'full' ? 'Not on timesheets' : 'Who not chosen'
+function costTitle(c: ContractorCost, editable: boolean): string {
+  const who = c.mode === 'trueup' ? (c.consultantName ?? 'Consultant') : c.mode === 'full' ? 'Not on timesheets' : editable ? 'Who not chosen' : 'Approved before contractor true-up'
   return `${c.description} — ${who}`
 }

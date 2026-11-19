@@ -29,6 +29,7 @@ describe('mapDbError', () => {
     ['LAST_ADMIN', { code: 'P0001', message: 'LAST_ADMIN' }, 'A firm needs at least one Admin.'],
     ['BILL_CONTRACTOR_OVERLAP', { code: 'P0001', message: 'BILL_CONTRACTOR_OVERLAP', details: 'B-7' }, 'A contractor line overlaps bill B-7 for the same consultant, period and project.'],
     ['BILL_LINES_OVERLAP', { code: 'P0001', message: 'BILL_LINES_OVERLAP' }, 'Two contractor lines on this bill cover the same consultant, period and project.'],
+    ['BILL_LINE_CLIENT', { code: 'P0001', message: 'BILL_LINE_CLIENT' }, "A contractor line's project belongs to another client. Choose the project's client, or no project."],
     ['BILL_CONTRACTOR_LEGACY', { code: 'P0001', message: 'BILL_CONTRACTOR_LEGACY' }, 'Edit the bill and choose who each contractor line is for, then approve.'],
     ['BILL_PERIOD_REQUIRED', { code: 'P0001', message: 'BILL_PERIOD_REQUIRED' }, 'Enter the service period: contractor lines are matched to approved hours in it.'],
     ['BILL_CONTRACTOR_TARGET', { code: 'P0001', message: 'BILL_CONTRACTOR_TARGET' }, 'Choose a client or project for each contractor line not on timesheets.'],
