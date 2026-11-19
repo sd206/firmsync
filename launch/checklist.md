@@ -34,8 +34,8 @@ Everything that has to be true on launch day: VeriTreo on its own domain, with t
 28. Contractor bill true-up in the P&L — Owner: Developer · Depends: 24 · Status: Waiting on you
    Contractor cost stays counted when time is approved (hours × cost rate). When a contractor's bill is approved, any difference from the approved hours' cost is counted as a "contractor cost adjustment" on the bill date, against its project or client; bill lines for contractors without timesheets count in full on approval. Built and merged locally 2026-11-19 (all gates green, Reviewer clean). Follow-ups merged locally 2026-11-19 (old contractor-check function kept for the deploy gap, backfill checked on existing bills; all gates green, Reviewer clean). Waiting on you: push, plus the production migration (dry run, then your yes); push the code right after the migration. Minor later: voided old bills say "approved before contractor true-up"; a later release drops the old function.
 
-29. Consultant pay rate and "My hours and pay" — Owner: Developer · Depends: 28 · Status: In progress
-   Pay rate (today's cost rate, renamed) and Paid through (Payroll or Their employer) on each consultant; a consultant page with approved hours by period and status, plus own pay rate and gross amount for payroll consultants. No pay-run export or payroll processing. Design for your approval first; Reviewer pass required (money, permissions).
+29. Consultant pay rate and "My hours and pay" — Owner: Developer · Depends: 28 · Status: Waiting on you
+   Pay rate (today's cost rate, renamed) and Paid through (Paid directly or Their employer) on each consultant; a consultant page with approved hours by period and status, plus own pay rate and gross amount for directly paid consultants. No pay-run export or payroll processing. Built and merged locally 2026-11-19 (design approved; all gates green: 396 unit, 548 integration, 127 e2e; Reviewer clean). Waiting on you: push, plus migration 052 on the Test database (dry run, then your yes).
 
 ## Website
 
