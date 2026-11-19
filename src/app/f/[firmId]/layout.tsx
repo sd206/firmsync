@@ -21,6 +21,7 @@ const NAV: (Item | Group)[] = [
     items: [
       { label: 'My timesheet', path: '/timesheet', roles: ALL },
       { label: 'My projects', path: '/my-projects', roles: ALL },
+      { label: 'My hours and pay', path: '/my-pay', roles: ALL },
       { label: 'Timesheet approvals', path: '/timesheets', roles: MANAGERS },
     ],
   },
@@ -94,7 +95,7 @@ export default async function FirmLayout({
 
   return (
     <div className="min-h-screen">
-      <header className="bg-brand px-6 py-3 text-brand-foreground">
+      <header className="bg-brand px-6 print:hidden py-3 text-brand-foreground">
         <div className="flex items-center justify-between">
           <span className="font-semibold">{firmName}</span>
           <AccountMenu email={email} role={role} />

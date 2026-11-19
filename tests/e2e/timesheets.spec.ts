@@ -217,15 +217,15 @@ test.describe('manager timesheet review', () => {
     await expect(wrow).toContainText('7.50')
   })
 
-  test('cost rate missing shows a clear error', async ({ page }) => {
+  test('pay rate missing shows a clear error', async ({ page }) => {
     const f = await newFirm('Review Cost Firm')
     const s = await seed(f, { costFrom: '2026-10-06' })
     const id = await submitWeek(f, s, PAST_WEEK, PAST_WEEK)
     await login(page, f.manager.email)
     await page.goto(`/f/${f.firmId}/timesheets/${id}`)
     await page.getByRole('button', { name: 'Approve' }).click()
-    await expect(page.getByRole('alert').filter({ hasText: 'no cost rate' })).toContainText(
-      'no cost rate for a day worked',
+    await expect(page.getByRole('alert').filter({ hasText: 'no pay rate' })).toContainText(
+      'no pay rate for a day worked',
     )
     await expect(page.getByTestId('status')).toHaveText('Submitted')
   })

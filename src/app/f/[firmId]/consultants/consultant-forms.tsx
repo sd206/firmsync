@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import type { ConsultantType } from '@/lib/db-types'
 import type { FormResult } from '@/lib/form'
 import type { LoginOutcome } from '@/modules/consultants/data'
+import { CONSULTANT_TYPE_LABEL } from '@/modules/pay/labels'
 import {
   addCostRateAction,
   createConsultantAction,
@@ -115,10 +116,13 @@ export function ConsultantForm({
         >
           {TYPES.map((t) => (
             <option key={t} value={t}>
-              {t}
+              {CONSULTANT_TYPE_LABEL[t]}
             </option>
           ))}
         </select>
+        <p className="text-sm text-muted-foreground">
+          Paid through: {type === 'vendor' ? 'their employer (the vendor below)' : 'Paid directly'}
+        </p>
       </div>
       {type === 'vendor' && (
         <div className="flex flex-col gap-1.5">
@@ -144,7 +148,7 @@ export function ConsultantForm({
       {!consultant && (
         <>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="consultant-cost">Initial hourly cost (optional)</Label>
+            <Label htmlFor="consultant-cost">Starting pay rate per hour (optional)</Label>
             <Input
               id="consultant-cost"
               name="initialHourlyCost"
@@ -155,7 +159,7 @@ export function ConsultantForm({
             <FieldError id="consultant-initialHourlyCost-error" message={fe.initialHourlyCost} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="consultant-cost-from">Cost effective from</Label>
+            <Label htmlFor="consultant-cost-from">Pay rate starts on</Label>
             <Input id="consultant-cost-from" name="initialCostFrom" type="date" />
           </div>
         </>
@@ -247,8 +251,13 @@ export function CostRateForm({ firmId, consultantId }: { firmId: string; consult
   const fe = (state && !state.ok ? state.fieldErrors : undefined) ?? {}
   return (
     <form action={action} className="mt-3 flex max-w-md flex-col gap-3">
+      <p className="text-sm text-muted-foreground">
+        What the firm pays per hour for this consultant. For someone paid through their employer, the hourly
+        amount you expect the employer to bill. Used as labour cost in Profit &amp; loss and frozen on each week
+        when it&apos;s approved.
+      </p>
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="rate-cost">Hourly cost</Label>
+        <Label htmlFor="rate-cost">Hourly pay rate</Label>
         <Input
           id="rate-cost"
           name="hourlyCost"
@@ -271,9 +280,9 @@ export function CostRateForm({ firmId, consultantId }: { firmId: string; consult
         />
         <FieldError id="rate-from-error" message={fe.effectiveFrom} />
       </div>
-      <FormMessages state={state} success="Cost rate added." />
+      <FormMessages state={state} success="Pay rate added." />
       <Button type="submit" disabled={pending} className="self-start">
-        {pending ? 'Adding…' : 'Add cost rate'}
+        {pending ? 'Adding…' : 'Add pay rate'}
       </Button>
     </form>
   )
@@ -297,7 +306,7 @@ export function DeleteRateForm({
   return (
     <form action={action} className="flex items-center gap-2">
       <Button type="submit" size="sm" variant="destructive" disabled={pending}>
-        Delete<span className="sr-only"> cost rate {label}</span>
+        Delete<span className="sr-only"> pay rate {label}</span>
       </Button>
       {state && !state.ok && (
         <p role="alert" className="text-sm text-destructive">

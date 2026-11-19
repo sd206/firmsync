@@ -1,6 +1,6 @@
 # VeriTreo
 
-A multi-tenant web app for consulting firms to run their operations: each firm manages its own members, vendors, consultants (with hourly cost rates), clients, projects and consultant assignments (with client rates), and sees margin per hour. A platform owner creates firms and their first Admin. Built with Next.js 15 (App Router) and Supabase (Postgres, Auth, Storage) with row-level security for tenant isolation.
+A multi-tenant web app for consulting firms to run their operations: each firm manages its own members, vendors, consultants (with hourly pay rates), clients, projects and consultant assignments (with client rates), and sees margin per hour. A platform owner creates firms and their first Admin. Built with Next.js 15 (App Router) and Supabase (Postgres, Auth, Storage) with row-level security for tenant isolation.
 
 ## Working with the AI launch team
 
@@ -62,6 +62,12 @@ npm run test:e2e    # Playwright; needs local Supabase running
 - Weeks start on Monday. Time can be entered for the current and past weeks only ("today" is UTC); future weeks are not allowed.
 - Consultants enter and submit their own timesheet at `/f/{firmId}/timesheet`. Admins and Managers review submitted timesheets at `/f/{firmId}/timesheets`, and approve or reject them with a comment. They may approve their own. Managers can also enter time on someone's behalf.
 - Rates are frozen on approval. An approved timesheet can be reopened while none of its hours are invoiced.
+
+## Pay rate and "My hours and pay"
+
+- Each consultant has a **pay rate** (dated, set by an Admin on the consultant's page): what the firm pays per hour. It is the labour cost in Profit & loss and is frozen on each entry when the week is approved. In the database it is still `consultant_cost_rates.hourly_cost` and `time_entries.cost_rate_snapshot`.
+- **Paid through** comes from the consultant's Type: a contractor through a vendor is paid by their employer; employees and independent contractors are paid directly. When a week is approved, the vendor in force is recorded on it (`timesheets.approved_vendor_id`), so changing Type later doesn't change past weeks.
+- **My hours and pay** (`/f/{firmId}/my-pay`, every role with a linked consultant record): one year of timesheets by week with status, and approved hours by month. Consultants paid directly also see the frozen pay rate and gross amount (hours × rate, before tax and deductions); consultants paid by their employer see "Billed by <employer>" and no amounts. It is not a payslip and doesn't track payment. Admins and Managers see the same page for any consultant, read-only, at `/f/{firmId}/hours-and-pay/{consultantId}`.
 - To let an Admin or Manager log their own time, link their login to a consultant record: an Admin opens Consultants, opens the consultant, and chooses "Invite to log in" (this links an existing member or invites the email).
 
 ## Invoicing
@@ -110,7 +116,7 @@ npm run test:e2e    # Playwright; needs local Supabase running
   - **Fees:** manual invoice lines (fees and rebilled costs) on issued, partly paid and paid invoices, counted on the invoice issue date. Voided and draft invoices are ignored.
   - **Discounts:** the discount taken off those invoices, counted on the issue date.
   - **Revenue:** revenue from hours plus fees minus discounts.
-  - **Labour cost:** the same approved hours times the cost rate frozen on each entry.
+  - **Labour cost:** the same approved hours times the pay rate frozen on each entry.
     Contractors supplied by a vendor are counted here too, from their approved hours and cost rate. Contractor
     lines on vendor bills never become expenses, so the same work is never counted twice.
   - **Contractor adj.** (shown only when there is one): the true-up for approved contractor bills, counted on the
