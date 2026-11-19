@@ -34,6 +34,9 @@ Everything that has to be true on launch day: VeriTreo on its own domain, with t
 28. Contractor bill true-up in the P&L — Owner: Developer · Depends: 24 · Status: In progress
    Contractor cost stays counted when time is approved (hours × cost rate). When a contractor's bill is approved, any difference from the approved hours' cost is counted as a "contractor cost adjustment" on the bill date, against its project or client; bill lines for contractors without timesheets count in full on approval. Design for your approval first; Reviewer pass required (P&L).
 
+29. Consultant pay rate and "My hours and pay" — Owner: Developer · Depends: 28 · Status: Not started
+   Pay rate (today's cost rate, renamed) and Paid through (Payroll or Their employer) on each consultant; a consultant page with approved hours by period and status, plus own pay rate and gross amount for payroll consultants. No pay-run export or payroll processing. Design for your approval first; Reviewer pass required (money, permissions).
+
 ## Website
 
 5. Site map and page-by-page copy — Owner: Website & copy writer · Depends: — · Status: Done
