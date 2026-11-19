@@ -56,7 +56,7 @@ async function issue(page: Page) {
   const message = await answerConfirm(page)
   await expect(page.getByTestId('status')).toHaveText('Issued')
   // Drafts are dated today, so no past-date warning.
-  expect(message).toMatch(/^Issue this invoice dated \d{1,2} [A-Z][a-z]{2} \d{4} and due \d{1,2} [A-Z][a-z]{2} \d{4}\? /)
+  expect(message).toMatch(/^Issue this invoice dated [A-Z][a-z]{2} \d{1,2}, \d{4} and due [A-Z][a-z]{2} \d{1,2}, \d{4}\? /)
   expect(message.endsWith(ISSUE_TAIL)).toBe(true)
 }
 
