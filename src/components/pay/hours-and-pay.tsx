@@ -4,7 +4,7 @@ import { formatDate } from '@/lib/domain/format-date'
 import { sumHours } from '@/lib/domain/hours'
 import { formatMoney, sumMoney } from '@/lib/domain/money'
 import type { PayMonth, PayWeek } from '@/modules/pay/data'
-import { PAID_DIRECTLY, PAY_STATUS_LABEL, formatPayRates } from '@/modules/pay/labels'
+import { PAY_STATUS_LABEL, formatPayRates, paidThroughLabel } from '@/modules/pay/labels'
 import { PrintButton } from './print-button'
 
 const MONTH_FMT = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' })
@@ -15,6 +15,8 @@ export type HoursAndPayProps = {
   firmName: string
   currency: string
   consultantType: ConsultantType
+  /** The current employer (vendor) name; null when paid directly. */
+  currentEmployer: string | null
   year: number
   /** Link for a given year (keeps the route; changes ?year=). */
   yearHref: (year: number) => string
@@ -27,9 +29,8 @@ export type HoursAndPayProps = {
 /** "My hours and pay": the same view for the consultant and, read-only, for admins and managers. */
 export function HoursAndPay(p: HoursAndPayProps) {
   // Paid through today follows Type; past weeks follow what was recorded when each was approved.
-  const latestEmployer = p.weeks.find((w) => w.employerName)?.employerName ?? null
   const byEmployer = p.consultantType === 'vendor'
-  const paidThrough = byEmployer ? (latestEmployer ?? 'Their employer') : PAID_DIRECTLY
+  const paidThrough = paidThroughLabel(p.consultantType, p.currentEmployer)
   const directMonths = p.months.filter((m) => m.employerName === null)
   const billedMonths = p.months.filter((m) => m.employerName !== null)
   const anyDirect = directMonths.length > 0 || p.weeks.some((w) => w.gross !== null) || !byEmployer
@@ -158,8 +159,10 @@ export function HoursAndPay(p: HoursAndPayProps) {
             Your hours are billed to {p.firmName} by {e}. Your pay comes from {e}.
           </p>
         ))}
-        {byEmployer && employers.length === 0 && (
-          <p>Your hours are billed to {p.firmName} by your employer. Your pay comes from your employer.</p>
+        {byEmployer && p.currentEmployer && !employers.includes(p.currentEmployer) && (
+          <p>
+            Your hours are billed to {p.firmName} by {p.currentEmployer}. Your pay comes from {p.currentEmployer}.
+          </p>
         )}
       </div>
     </div>

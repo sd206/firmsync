@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import { requireFirmRole } from '@/lib/auth/context'
 import { HoursAndPay } from '@/components/pay/hours-and-pay'
 import { getFirm } from '@/modules/firms/data'
-import { getPayConsultant, getPayMonths, getPayWeeks } from '@/modules/pay/data'
+import { getPaidThrough, getPayConsultant, getPayMonths, getPayWeeks } from '@/modules/pay/data'
 import { parseYear } from '@/modules/pay/labels'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -23,11 +23,13 @@ export default async function ConsultantHoursAndPayPage({
 
   const consultant = await getPayConsultant(db, firmId, consultantId)
   if (!consultant.ok) notFound()
-  const [weeks, months, firm] = await Promise.all([
+  const [weeks, months, firm, employer] = await Promise.all([
     getPayWeeks(db, firmId, consultantId, year),
     getPayMonths(db, firmId, consultantId, year),
     getFirm(db, firmId),
+    getPaidThrough(db, firmId, consultantId),
   ])
+  if (!employer.ok) throw new Error(employer.error)
   if (!weeks.ok) throw new Error(weeks.error)
   if (!months.ok) throw new Error(months.error)
 
@@ -42,6 +44,7 @@ export default async function ConsultantHoursAndPayPage({
         firmName={firmName}
         currency={firm.ok ? firm.data.currency : 'USD'}
         consultantType={consultant.data.type}
+        currentEmployer={employer.data}
         year={year}
         yearHref={(y) => `${base}/hours-and-pay/${consultantId}?year=${y}`}
         weekHref={(w) => `${base}/timesheet?week=${w}&consultant=${consultantId}`}

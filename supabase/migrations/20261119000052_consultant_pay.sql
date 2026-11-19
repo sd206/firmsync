@@ -5,12 +5,15 @@
 -- 2. timesheets.approved_vendor_id records, at approval, the vendor that employed the consultant
 --    (null = paid directly), so a later change of Type never changes how past weeks read.
 --    approve_timesheet sets it, reopen_timesheet clears it.
--- 3. consultant_pay_weeks / consultant_pay_months / my_consultant_id: read functions for the
+-- 3. consultant_pay_weeks / consultant_pay_months / consultant_paid_through / my_consultant_id:
+--    read functions for the
 --    "My hours and pay" page. A consultant reads only their own rows; admins and managers read any
 --    consultant in their firm. Rates and amounts are returned only for approved, directly-paid
 --    weeks, to every caller.
--- Additive and safe on a live database: one nullable column, constraints added NOT VALID then
--- validated, a backfill of approved timesheets, and replaced/new functions.
+-- Additive: one nullable column, two constraints, a backfill of approved timesheets, and
+-- replaced/new functions. `db push` applies the whole file in one transaction, so the NOT VALID +
+-- VALIDATE split below gives no lock benefit; it is kept only to show the order of the steps.
+-- The tables are small, so the brief locks taken are acceptable.
 
 comment on column public.consultant_cost_rates.hourly_cost is
   'The consultant''s pay rate per hour (shown as "Pay rate"); labour cost in the P&L.';
@@ -213,6 +216,31 @@ as $$
 $$;
 revoke execute on function public.my_consultant_id(uuid) from public, anon;
 grant execute on function public.my_consultant_id(uuid) to authenticated;
+
+-- The consultant's current employer (vendor name) for the "Paid through" line; null = paid
+-- directly. Consultants can't read vendors, so this is the only way they see the name.
+create function public.consultant_paid_through(p_firm uuid, p_consultant uuid)
+returns text
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare
+  v_name text;
+begin
+  if not public.can_edit_consultant_time(p_firm, p_consultant) then
+    raise exception 'permission denied' using errcode = '42501';
+  end if;
+  select v.name into v_name
+  from public.consultants c
+  join public.vendors v on v.firm_id = c.firm_id and v.id = c.vendor_id
+  where c.firm_id = p_firm and c.id = p_consultant;
+  return v_name;
+end;
+$$;
+revoke execute on function public.consultant_paid_through(uuid, uuid) from public, anon;
+grant execute on function public.consultant_paid_through(uuid, uuid) to authenticated;
 
 -- One row per timesheet whose week starts in [p_from, p_to], newest first. Rates and gross only
 -- for approved weeks paid directly; employer_name only for approved weeks paid by a vendor.

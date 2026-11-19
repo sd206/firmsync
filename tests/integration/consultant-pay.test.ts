@@ -102,6 +102,53 @@ describe('consultant pay: access', () => {
     expect((await weeks(stranger, f.firmId, fx.consultantId)).error?.code).toBe('42501')
   })
 
+  it('a removed member is denied, and an admin of another firm cannot read months', async () => {
+    const f = await newFirm()
+    const fx = await seedTimesheetFixture(f)
+    await approvedWeek(f, fx.consultantId, fx.projectId, '2026-10-05', [{ d: '2026-10-05', h: '8' }])
+    const g = await newFirm()
+    expect((await months(g.admin, f.firmId, fx.consultantId)).error?.code).toBe('42501')
+    expect((await months(g.admin, g.firmId, fx.consultantId)).error?.code).toBe('42501')
+
+    const { error } = await adminDb()
+      .from('firm_members')
+      .delete()
+      .eq('firm_id', f.firmId)
+      .eq('user_id', f.consultant.id)
+    expect(error).toBeNull()
+    expect((await weeks(f.consultant, f.firmId, fx.consultantId)).error?.code).toBe('42501')
+    expect((await months(f.consultant, f.firmId, fx.consultantId)).error?.code).toBe('42501')
+    const paid = await f.consultant.db.rpc('consultant_paid_through', { p_firm: f.firmId, p_consultant: fx.consultantId })
+    expect(paid.error?.code).toBe('42501')
+    const mine = await f.consultant.db.rpc('my_consultant_id', { p_firm: f.firmId })
+    expect(mine.data).toBeNull()
+  })
+
+  it('consultant_paid_through returns the current vendor name to the consultant, and only to them', async () => {
+    const f = await newFirm()
+    const fx = await seedTimesheetFixture(f)
+    const paid = (u: TestUser, id = fx.consultantId) =>
+      u.db.rpc('consultant_paid_through', { p_firm: f.firmId, p_consultant: id })
+
+    expect((await paid(f.consultant)).data).toBeNull()
+    const first = await mkVendor(f, 'Agency One')
+    await makeVendorConsultant(f, fx.consultantId, first)
+    expect((await paid(f.consultant)).data).toBe('Agency One')
+    const second = await mkVendor(f, 'Agency Two')
+    await makeVendorConsultant(f, fx.consultantId, second)
+    expect((await paid(f.consultant)).data).toBe('Agency Two')
+    expect((await paid(f.manager)).data).toBe('Agency Two')
+
+    const { data: other } = await adminDb()
+      .from('consultants')
+      .insert({ firm_id: f.firmId, name: 'Other', email: `o-${crypto.randomUUID()}@test.local`, type: 'employee' })
+      .select('id')
+      .single()
+    expect((await paid(f.consultant, (other as { id: string }).id)).error?.code).toBe('42501')
+    const g = await newFirm()
+    expect((await g.admin.db.rpc('consultant_paid_through', { p_firm: f.firmId, p_consultant: fx.consultantId })).error?.code).toBe('42501')
+  })
+
   it('admins and managers read any consultant in their firm', async () => {
     const f = await newFirm()
     const fx = await seedTimesheetFixture(f)

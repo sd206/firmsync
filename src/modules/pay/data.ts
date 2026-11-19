@@ -37,6 +37,17 @@ export async function getMyConsultantId(db: SupabaseClient, firmId: string): Pro
   return ok((data as string | null) ?? null)
 }
 
+/** The consultant's current employer (vendor) name, or null when paid directly. */
+export async function getPaidThrough(
+  db: SupabaseClient,
+  firmId: string,
+  consultantId: string,
+): Promise<Result<string | null>> {
+  const { data, error } = await db.rpc('consultant_paid_through', { p_firm: firmId, p_consultant: consultantId })
+  if (error) return fail(mapDbError(error))
+  return ok((data as string | null) ?? null)
+}
+
 export async function getPayWeeks(
   db: SupabaseClient,
   firmId: string,

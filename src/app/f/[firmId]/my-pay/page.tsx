@@ -1,7 +1,7 @@
 import { requireFirmRole } from '@/lib/auth/context'
 import { HoursAndPay } from '@/components/pay/hours-and-pay'
 import { getFirm } from '@/modules/firms/data'
-import { getMyConsultantId, getPayConsultant, getPayMonths, getPayWeeks } from '@/modules/pay/data'
+import { getMyConsultantId, getPaidThrough, getPayConsultant, getPayMonths, getPayWeeks } from '@/modules/pay/data'
 import { parseYear } from '@/modules/pay/labels'
 
 export default async function MyPayPage({
@@ -28,12 +28,14 @@ export default async function MyPayPage({
   }
   const consultantId = mine.data
 
-  const [consultant, weeks, months, firm] = await Promise.all([
+  const [consultant, weeks, months, firm, employer] = await Promise.all([
     getPayConsultant(db, firmId, consultantId),
     getPayWeeks(db, firmId, consultantId, year),
     getPayMonths(db, firmId, consultantId, year),
     getFirm(db, firmId),
+    getPaidThrough(db, firmId, consultantId),
   ])
+  if (!employer.ok) throw new Error(employer.error)
   if (!consultant.ok) throw new Error(consultant.error)
   if (!weeks.ok) throw new Error(weeks.error)
   if (!months.ok) throw new Error(months.error)
@@ -45,6 +47,7 @@ export default async function MyPayPage({
       firmName={firmName}
       currency={firm.ok ? firm.data.currency : 'USD'}
       consultantType={consultant.data.type}
+      currentEmployer={employer.data}
       year={year}
       yearHref={(y) => `${base}/my-pay?year=${y}`}
       weekHref={(w) => `${base}/timesheet?week=${w}`}

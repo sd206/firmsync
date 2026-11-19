@@ -143,6 +143,13 @@ describe('mapDbError', () => {
     expect(mapDbError(fkInsert('invoices_client_fk', 'clients'))).toBe('Client not found.')
   })
 
+  it('explains why a vendor recorded on approved timesheets cannot be deleted', () => {
+    expect(mapDbError(fkDelete('timesheets_approved_vendor_fk', 'vendors'))).toBe(
+      "This vendor has approved timesheets, so it can't be deleted.",
+    )
+    expect(mapDbError(fkInsert('timesheets_approved_vendor_fk', 'vendors'))).toBe('Vendor not found.')
+  })
+
   const expenseCases: [string, string][] = [
     ['EXPENSE_NOT_FOUND', 'Expense not found.'],
     ['EXPENSE_FUTURE', "The expense date can't be in the future."],

@@ -157,6 +157,7 @@ const BY_FK: [string, string, string][] = [
   ['expenses_category_fk', "This category has expenses, so it can't be deleted. Retire it instead.", 'Category not found.'],
   ['expenses_client_fk', "This client has expenses, so it can't be deleted.", 'Client not found.'],
   ['expenses_project_fk', "This project has expenses, so it can't be deleted.", 'Project not found.'],
+  ['timesheets_approved_vendor_fk', "This vendor has approved timesheets, so it can't be deleted.", 'Vendor not found.'],
 ]
 
 export function mapDbError(err: DbError | null): string {

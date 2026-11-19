@@ -1148,6 +1148,9 @@ isOneToOne: false
 "confirm_bank_line_vendor_payment":
 { Args: { "p_bill": string,"p_line": string,"p_notes": string }; Returns: string
                            },
+"consultant_paid_through":
+{ Args: { "p_consultant": string,"p_firm": string }; Returns: string
+                           },
 "consultant_pay_months":
 { Args: { "p_consultant": string,"p_firm": string,"p_from": string,"p_to": string }; Returns: {
               "employer_name": string,"gross": number,"hours": number,"month": string
