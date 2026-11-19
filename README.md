@@ -111,6 +111,11 @@ npm run test:e2e    # Playwright; needs local Supabase running
   - **Discounts:** the discount taken off those invoices, counted on the issue date.
   - **Revenue:** revenue from hours plus fees minus discounts.
   - **Labour cost:** the same approved hours times the cost rate frozen on each entry.
+    Contractors supplied by a vendor are counted here too, from their approved hours and cost rate. That is why
+    **contractor lines on vendor bills never become expenses and are left out of the P&L on purpose**: counting the
+    bill as well would count the same work twice (see the vendor-bills design, 2026-11-15). The bill page's
+    contractor check compares the bill with the expected cost from approved hours; any difference is shown to the
+    approver, not added to the P&L. Only expense lines on a bill become expenses.
   - **Gross profit:** revenue minus labour cost.
   - **Direct expenses:** expenses that have a client or a project, counted on the expense date.
   - **Overhead:** expenses with neither a client nor a project, counted on the expense date.
