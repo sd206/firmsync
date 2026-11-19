@@ -16,7 +16,7 @@ test('consultant role gets 404 on vendors and consultants pages', async ({ page 
   expect((await page.goto(`/f/${f.firmId}/consultants`))?.status()).toBe(404)
 })
 
-test('admin adds a vendor and a vendor consultant with a cost rate', async ({ page }) => {
+test('admin adds a vendor and a vendor consultant with a pay rate', async ({ page }) => {
   const f = await newFirm('People Firm')
   await login(page, f.admin.email)
 
@@ -36,8 +36,8 @@ test('admin adds a vendor and a vendor consultant with a cost rate', async ({ pa
   await page.getByLabel('Email', { exact: true }).fill(email)
   await page.getByLabel('Type').selectOption('vendor')
   await page.getByLabel('Vendor', { exact: true }).selectOption({ label: vendorName })
-  await page.getByLabel('Initial hourly cost (optional)').fill('95')
-  await page.getByLabel('Cost effective from').fill('2026-01-01')
+  await page.getByLabel('Starting pay rate per hour (optional)').fill('95')
+  await page.getByLabel('Pay rate starts on').fill('2026-01-01')
   await page.getByRole('button', { name: 'Add consultant' }).click()
   await expect(page.getByRole('status')).toContainText('Consultant added')
   await expect(page.getByRole('cell', { name: '$95.00' })).toBeVisible()
@@ -48,10 +48,10 @@ test('admin adds a vendor and a vendor consultant with a cost rate', async ({ pa
 
   await page.getByRole('link', { name }).click()
   await expect(page.getByRole('heading', { name })).toBeVisible()
-  await page.getByLabel('Hourly cost').fill('105.5')
+  await page.getByLabel('Hourly pay rate').fill('105.5')
   await page.getByLabel('Effective from').fill('2026-06-01')
-  await page.getByRole('button', { name: 'Add cost rate' }).click()
-  await expect(page.getByRole('status').last()).toContainText('Cost rate added')
+  await page.getByRole('button', { name: 'Add pay rate' }).click()
+  await expect(page.getByRole('status').last()).toContainText('Pay rate added')
   await expect(page.getByRole('cell', { name: '$105.50' })).toBeVisible()
   // The consultant has no login yet, so the admin can invite them.
   await expect(page.getByRole('button', { name: 'Invite to log in' })).toBeVisible()

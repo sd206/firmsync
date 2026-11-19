@@ -10,7 +10,7 @@ const BY_MATCH: [string, string][] = [
   ['consultants_vendor_required_chk', 'Vendor contractors must be linked to a vendor, and other types must not be.'],
   ['consultants_vendor_fk', 'This vendor still has consultants. Reassign or remove them first.'],
   ['consultants_firm_email_key', 'A consultant with that email already exists.'],
-  ['consultant_cost_rates_consultant_from_key', 'A cost rate already starts on that date.'],
+  ['consultant_cost_rates_consultant_from_key', 'A pay rate already starts on that date.'],
   ['vendors_firm_name_key', NAME_IN_USE],
   ['clients_firm_name_key', NAME_IN_USE],
   ['projects_firm_code_key', 'That project code is already in use.'],
@@ -37,7 +37,7 @@ const BY_MATCH: [string, string][] = [
   ['time_entries_hours_chk', 'Enter hours between 0.01 and 24, up to 2 decimal places.'],
   ['time_entries_cell_key', 'That project already has hours on that day.'],
   ['time_entries_note_len_chk', 'Keep notes to 500 characters or fewer.'],
-  ['COST_RATE_MISSING', 'This consultant has no cost rate for a day worked. Add a cost rate starting on or before that day, then approve.'],
+  ['COST_RATE_MISSING', 'This consultant has no pay rate for a day worked. Add a pay rate starting on or before that day, then approve.'],
   ['REJECT_COMMENT_REQUIRED', 'Add a comment saying what needs to change.'],
   ['CONSULTANT_NOT_FOUND', 'Consultant not found.'],
   ['INVOICE_NOT_FOUND', 'Invoice not found.'],
@@ -157,6 +157,7 @@ const BY_FK: [string, string, string][] = [
   ['expenses_category_fk', "This category has expenses, so it can't be deleted. Retire it instead.", 'Category not found.'],
   ['expenses_client_fk', "This client has expenses, so it can't be deleted.", 'Client not found.'],
   ['expenses_project_fk', "This project has expenses, so it can't be deleted.", 'Project not found.'],
+  ['timesheets_approved_vendor_fk', "This vendor has approved timesheets, so it can't be deleted.", 'Vendor not found.'],
 ]
 
 export function mapDbError(err: DbError | null): string {

@@ -37,7 +37,7 @@ describe('mapDbError', () => {
     ['consultants_vendor_required_chk', check('consultants_vendor_required_chk'), 'Vendor contractors must be linked to a vendor, and other types must not be.'],
     ['consultants_vendor_fk', fk('consultants_vendor_fk'), 'This vendor still has consultants. Reassign or remove them first.'],
     ['consultants_firm_email_key', unique('consultants_firm_email_key'), 'A consultant with that email already exists.'],
-    ['consultant_cost_rates_consultant_from_key', unique('consultant_cost_rates_consultant_from_key'), 'A cost rate already starts on that date.'],
+    ['consultant_cost_rates_consultant_from_key', unique('consultant_cost_rates_consultant_from_key'), 'A pay rate already starts on that date.'],
     ['vendors_firm_name_key', unique('vendors_firm_name_key'), 'That name is already in use.'],
     ['clients_firm_name_key', unique('clients_firm_name_key'), 'That name is already in use.'],
     ['projects_firm_code_key', unique('projects_firm_code_key'), 'That project code is already in use.'],
@@ -72,7 +72,7 @@ describe('mapDbError', () => {
     ['time_entries_hours_chk', 'Enter hours between 0.01 and 24, up to 2 decimal places.'],
     ['time_entries_cell_key', 'That project already has hours on that day.'],
     ['time_entries_note_len_chk', 'Keep notes to 500 characters or fewer.'],
-    ['COST_RATE_MISSING', 'This consultant has no cost rate for a day worked. Add a cost rate starting on or before that day, then approve.'],
+    ['COST_RATE_MISSING', 'This consultant has no pay rate for a day worked. Add a pay rate starting on or before that day, then approve.'],
     ['REJECT_COMMENT_REQUIRED', 'Add a comment saying what needs to change.'],
     ['CONSULTANT_NOT_FOUND', 'Consultant not found.'],
   ]
@@ -141,6 +141,13 @@ describe('mapDbError', () => {
     expect(mapDbError(fkInsert('invoices_template_fk', 'invoice_templates'))).toBe('Template not found.')
     expect(mapDbError(fkDelete('invoices_client_fk', 'clients'))).toBe("This client has invoices, so it can't be deleted.")
     expect(mapDbError(fkInsert('invoices_client_fk', 'clients'))).toBe('Client not found.')
+  })
+
+  it('explains why a vendor recorded on approved timesheets cannot be deleted', () => {
+    expect(mapDbError(fkDelete('timesheets_approved_vendor_fk', 'vendors'))).toBe(
+      "This vendor has approved timesheets, so it can't be deleted.",
+    )
+    expect(mapDbError(fkInsert('timesheets_approved_vendor_fk', 'vendors'))).toBe('Vendor not found.')
   })
 
   const expenseCases: [string, string][] = [

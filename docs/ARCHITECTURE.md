@@ -133,9 +133,9 @@ erDiagram
 | Role | Can do |
 |---|---|
 | **Platform owner** (`profiles.is_platform_owner`) | Create firms and invite each firm's first admin. Doesn't see firm data unless also a member. |
-| **Admin** | Everything in the firm, including consultants (cost rates), users, the bill-inbox address and invoice templates. |
+| **Admin** | Everything in the firm, including consultants (pay rates), users, the bill-inbox address and invoice templates. |
 | **Manager** | Clients, projects, timesheet approval, invoices, payments, vendor bills, expenses, bank, reports and settings. |
-| **Consultant** | Their own timesheet and projects only. Never sees rates, invoices, money or reports. |
+| **Consultant** | Their own timesheet, projects and "My hours and pay" only. Sees their own frozen pay rate and gross amount on approved weeks when paid directly; never client rates, invoices, margins, other consultants, vendor amounts or reports. |
 
 Roles are checked twice: in the app (`requireFirmRole`, which also builds the menu) and in the database (row-level security plus `has_role` inside every function, which raises `42501`). Integration tests check that consultants are refused and that one firm can't read another firm's IDs.
 
@@ -156,7 +156,7 @@ The generic trigger `audit_row()` writes before and after JSON, the actor and th
 erDiagram
   firms ||--o{ clients : ""
   firms ||--o{ consultants : ""
-  consultants ||--o{ consultant_cost_rates : "dated cost rates"
+  consultants ||--o{ consultant_cost_rates : "dated pay rates"
   clients ||--o{ projects : ""
   projects ||--o{ project_assignments : "consultant + client rate"
   consultants ||--o{ project_assignments : ""
@@ -214,6 +214,8 @@ flowchart LR
 
 - **Issuing** runs in a single database function with row locks. It takes the next number from the firm's pattern (`{YYYY}`, `{SEQ:n}` …; the sequence never rewinds), copies the firm and client details onto the invoice, and locks the time entries.
 - **The PDF is made after issuing, outside the transaction.** If it fails, the invoice stays issued and "Regenerate PDF" retries. The PDF is built with `@react-pdf/renderer` on the Node runtime; `next.config.ts` ships pdfkit's font files with every route.
+
+**Pay rate and "My hours and pay".** The pay rate is `consultant_cost_rates.hourly_cost` (the UI says "Pay rate"); `approve_timesheet` freezes it into `time_entries.cost_rate_snapshot` and records the consultant's vendor in `timesheets.approved_vendor_id` (null = paid directly); `reopen_timesheet` clears both. Consultants read their pay only through `consultant_pay_weeks` / `consultant_pay_months` (security definer, access rule of `can_edit_consultant_time`: the linked consultant or an Admin/Manager). They return rates and gross only for approved weeks with no recorded vendor, to every caller, and the vendor name otherwise. `my_consultant_id(firm)` finds the caller's own record. Design: `docs/superpowers/specs/2026-11-19-consultant-pay-design.md`.
 
 ### 6.1a Emailing an invoice
 

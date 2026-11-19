@@ -29,6 +29,6 @@ export const consultantCreateSchema = base
   .transform(forceVendor)
 
 export const costRateSchema = z.object({
-  hourlyCost: z.string().trim().min(1, 'Enter an hourly cost.'),
+  hourlyCost: z.string().trim().min(1, 'Enter an hourly pay rate.'),
   effectiveFrom: z.string().trim().min(1, 'Enter a start date.'),
 })

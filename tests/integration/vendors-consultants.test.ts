@@ -190,7 +190,7 @@ describe('consultants', () => {
       initialHourlyCost: '10',
       initialCostFrom: '2026-01-01',
     })
-    expect(res).toEqual({ ok: false, error: 'A cost rate already starts on that date.' })
+    expect(res).toEqual({ ok: false, error: 'A pay rate already starts on that date.' })
     expect(await consultantCount(f.firmId, mail)).toBe(0)
   })
 
@@ -240,7 +240,7 @@ describe('cost rates', () => {
     const first = await addCostRate(f.admin.db, f.firmId, id, { hourlyCost: '50', effectiveFrom: '2026-01-01' })
     expect(first.ok).toBe(true)
     const dup = await addCostRate(f.admin.db, f.firmId, id, { hourlyCost: '60', effectiveFrom: '2026-01-01' })
-    expect(dup).toEqual({ ok: false, error: 'A cost rate already starts on that date.' })
+    expect(dup).toEqual({ ok: false, error: 'A pay rate already starts on that date.' })
     const neg = await addCostRate(f.admin.db, f.firmId, id, { hourlyCost: '-1', effectiveFrom: '2026-02-01' })
     expect(neg.ok).toBe(false)
     const { count } = await adminDb()

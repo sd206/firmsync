@@ -57,7 +57,7 @@ export default async function ConsultantsPage({
                 Vendor
               </th>
               <th scope="col" className="py-2 pr-4 font-medium">
-                Current cost / hour
+                Current pay rate / hour
               </th>
               <th scope="col" className="py-2 font-medium">
                 Login

@@ -791,17 +791,23 @@ isOneToOne: false
                   ]
                 },"timesheets": {
                   Row: {
-                    "consultant_id": string,"created_at": string,"created_by": string | null,"decided_at": string | null,"decided_by": string | null,"decision_comment": string | null,"firm_id": string,"id": string,"status": Database["public"]['Enums']["timesheet_status"],"submitted_at": string | null,"updated_at": string,"week_start": string
+                    "approved_vendor_id": string | null,"consultant_id": string,"created_at": string,"created_by": string | null,"decided_at": string | null,"decided_by": string | null,"decision_comment": string | null,"firm_id": string,"id": string,"status": Database["public"]['Enums']["timesheet_status"],"submitted_at": string | null,"updated_at": string,"week_start": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "consultant_id": string,"created_at"?: string,"created_by"?: string | null,"decided_at"?: string | null,"decided_by"?: string | null,"decision_comment"?: string | null,"firm_id": string,"id"?: string,"status"?: Database["public"]['Enums']["timesheet_status"],"submitted_at"?: string | null,"updated_at"?: string,"week_start": string
+                    "approved_vendor_id"?: string | null,"consultant_id": string,"created_at"?: string,"created_by"?: string | null,"decided_at"?: string | null,"decided_by"?: string | null,"decision_comment"?: string | null,"firm_id": string,"id"?: string,"status"?: Database["public"]['Enums']["timesheet_status"],"submitted_at"?: string | null,"updated_at"?: string,"week_start": string
                   }
                   Update: {
-                    "consultant_id"?: string,"created_at"?: string,"created_by"?: string | null,"decided_at"?: string | null,"decided_by"?: string | null,"decision_comment"?: string | null,"firm_id"?: string,"id"?: string,"status"?: Database["public"]['Enums']["timesheet_status"],"submitted_at"?: string | null,"updated_at"?: string,"week_start"?: string
+                    "approved_vendor_id"?: string | null,"consultant_id"?: string,"created_at"?: string,"created_by"?: string | null,"decided_at"?: string | null,"decided_by"?: string | null,"decision_comment"?: string | null,"firm_id"?: string,"id"?: string,"status"?: Database["public"]['Enums']["timesheet_status"],"submitted_at"?: string | null,"updated_at"?: string,"week_start"?: string
                   }
                   Relationships: [
                     {
+      foreignKeyName: "timesheets_approved_vendor_fk"
+      columns: ["firm_id","approved_vendor_id"]
+isOneToOne: false
+      referencedRelation: "vendors"
+      referencedColumns: ["firm_id","id"]
+    },{
       foreignKeyName: "timesheets_consultant_fk"
       columns: ["firm_id","consultant_id"]
 isOneToOne: false
@@ -1142,6 +1148,19 @@ isOneToOne: false
 "confirm_bank_line_vendor_payment":
 { Args: { "p_bill": string,"p_line": string,"p_notes": string }; Returns: string
                            },
+"consultant_paid_through":
+{ Args: { "p_consultant": string,"p_firm": string }; Returns: string
+                           },
+"consultant_pay_months":
+{ Args: { "p_consultant": string,"p_firm": string,"p_from": string,"p_to": string }; Returns: {
+              "employer_name": string,"gross": number,"hours": number,"month": string
+            }[]
+                           },
+"consultant_pay_weeks":
+{ Args: { "p_consultant": string,"p_firm": string,"p_from": string,"p_to": string }; Returns: {
+              "decision_comment": string,"employer_name": string,"gross": number,"hours": number,"pay_rates": (number)[],"status": string,"week_start": string
+            }[]
+                           },
 "contractor_line_costs":
 { Args: { "p_bill": string,"p_firm": string,"p_from": string,"p_to": string }; Returns: {
               "adjustment": number,"amount": number,"bill_date": string,"bill_id": string,"client_id": string,"consultant_id": string,"count_mode": string,"expected": number,"hours": number,"line_id": string,"project_id": string
@@ -1340,6 +1359,9 @@ isOneToOne: false
 { Args: { "p_firm": string }; Returns: {
               "assignment_id": string,"client_name": string,"effective_from": string,"effective_to": string,"project_code": string,"project_id": string,"project_name": string
             }[]
+                           },
+"my_consultant_id":
+{ Args: { "p_firm": string }; Returns: string
                            },
 "outstanding_summary":
 { Args: { "p_firm": string }; Returns: {

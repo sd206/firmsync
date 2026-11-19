@@ -6,6 +6,7 @@ import { formatMoney } from '@/lib/domain/money'
 import { getConsultant } from '@/modules/consultants/data'
 import { getFirm } from '@/modules/firms/data'
 import { listVendors } from '@/modules/vendors/data'
+import { CONSULTANT_TYPE_LABEL, paidThroughLabel } from '@/modules/pay/labels'
 import { ActiveForm, ConsultantForm, CostRateForm, DeleteRateForm, InviteForm } from '../consultant-forms'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -33,14 +34,17 @@ export default async function ConsultantPage({ params }: { params: Promise<{ fir
       </p>
       <h1 className="mt-2 text-2xl font-semibold">{c.name}</h1>
       <p className="text-sm text-muted-foreground">
-        {c.type}
-        {c.vendorName ? ` · ${c.vendorName}` : ''} · {c.active ? 'Active' : 'Inactive'} ·{' '}
+        {CONSULTANT_TYPE_LABEL[c.type]} · Paid through: {paidThroughLabel(c.type, c.vendorName)} ·{' '}
+        {c.active ? 'Active' : 'Inactive'} ·{' '}
         {c.hasLogin ? 'Can log in' : 'No login yet'}
       </p>
 
       <div className="mt-4 flex flex-wrap gap-4">
         <ActiveForm firmId={firmId} consultantId={c.id} active={c.active} />
         {role === 'admin' && <InviteForm firmId={firmId} consultantId={c.id} hasLogin={c.hasLogin} />}
+        <Link href={`/f/${firmId}/hours-and-pay/${c.id}`} className="self-center text-sm underline underline-offset-4">
+          View hours and pay
+        </Link>
       </div>
 
       <h2 className="mt-8 text-lg font-medium">Details</h2>
@@ -50,19 +54,19 @@ export default async function ConsultantPage({ params }: { params: Promise<{ fir
         consultant={{ id: c.id, name: c.name, email: c.email, type: c.type, vendorId: c.vendorId }}
       />
 
-      <h2 className="mt-8 text-lg font-medium">Cost rates</h2>
+      <h2 className="mt-8 text-lg font-medium">Pay rates</h2>
       {c.costRates.length === 0 ? (
-        <p className="mt-2 text-sm text-muted-foreground">No cost rates yet.</p>
+        <p className="mt-2 text-sm text-muted-foreground">No pay rates yet.</p>
       ) : (
         <table className="mt-2 w-full text-left text-sm">
-          <caption className="sr-only">Cost rates, newest first</caption>
+          <caption className="sr-only">Pay rates, newest first</caption>
           <thead>
             <tr className="border-b">
               <th scope="col" className="py-2 pr-4 font-medium">
                 Effective from
               </th>
               <th scope="col" className="py-2 pr-4 font-medium">
-                Hourly cost
+                Hourly pay rate
               </th>
               <th scope="col" className="py-2 font-medium">
                 Actions
@@ -82,7 +86,7 @@ export default async function ConsultantPage({ params }: { params: Promise<{ fir
           </tbody>
         </table>
       )}
-      <h3 className="mt-6 text-base font-medium">Add a cost rate</h3>
+      <h3 className="mt-6 text-base font-medium">Add a pay rate</h3>
       <CostRateForm firmId={firmId} consultantId={c.id} />
     </div>
   )
