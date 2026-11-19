@@ -91,7 +91,7 @@ test('export CSV link downloads the report', async ({ page }) => {
   expect(res.headers()['content-type']).toContain('text/csv')
   const body = await res.text()
   expect(body).toContain(
-    'Group,Revenue from hours,Fees,Discounts,Revenue,Labour cost,Gross profit,Direct expenses,Overhead,Net profit,Margin %,Invoiced,Collected',
+    'Group,Revenue from hours,Fees,Discounts,Revenue,Labour cost,Contractor cost adjustment,Gross profit,Direct expenses,Overhead,Net profit,Margin %,Invoiced,Collected',
   )
   expect(body).toContain('Total')
   expect(body).toContain('785.00')

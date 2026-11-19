@@ -111,12 +111,19 @@ npm run test:e2e    # Playwright; needs local Supabase running
   - **Discounts:** the discount taken off those invoices, counted on the issue date.
   - **Revenue:** revenue from hours plus fees minus discounts.
   - **Labour cost:** the same approved hours times the cost rate frozen on each entry.
-    Contractors supplied by a vendor are counted here too, from their approved hours and cost rate. That is why
-    **contractor lines on vendor bills never become expenses and are left out of the P&L on purpose**: counting the
-    bill as well would count the same work twice (see the vendor-bills design, 2026-11-15). The bill page's
-    contractor check compares the bill with the expected cost from approved hours; any difference is shown to the
-    approver, not added to the P&L. Only expense lines on a bill become expenses.
-  - **Gross profit:** revenue minus labour cost.
+    Contractors supplied by a vendor are counted here too, from their approved hours and cost rate. Contractor
+    lines on vendor bills never become expenses, so the same work is never counted twice.
+  - **Contractor adj.** (shown only when there is one): the true-up for approved contractor bills, counted on the
+    bill date (see the contractor true-up design, 2026-11-19). Each contractor line says who it is for:
+    - **a vendor's consultant** (the bill needs a service period): the adjustment is the line amount minus that
+      consultant's approved hours in the period × cost rate (on the line's project, or split over all their projects
+      by cost). It is worked out live, so hours approved, reopened or re-approved later keep labour + adjustment equal
+      to the bill.
+    - **Not on timesheets** (a client or project is required): the whole line counts.
+    Contractor lines entered before 2026-11-19 are "legacy": not counted, and a pending bill with one must be edited
+    to choose who before it can be approved. Two lines for the same consultant, overlapping periods and project can't
+    both be approved. Only expense lines on a bill become expenses.
+  - **Gross profit:** revenue minus labour cost minus contractor adj.
   - **Direct expenses:** expenses that have a client or a project, counted on the expense date.
   - **Overhead:** expenses with neither a client nor a project, counted on the expense date.
   - **Net profit:** gross profit minus direct expenses minus overhead.

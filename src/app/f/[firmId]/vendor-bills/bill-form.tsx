@@ -14,6 +14,7 @@ import { createVendorUploadTargetsAction, finalizeVendorUploadsAction, saveBillA
 
 export type Option = { id: string; name: string }
 export type ProjectOption = { id: string; name: string; clientId: string; clientName: string }
+export type ConsultantOption = { id: string; name: string; vendorId: string }
 
 export type LineValue = {
   key: string
@@ -23,6 +24,8 @@ export type LineValue = {
   categoryId: string
   clientId: string
   projectId: string
+  /** Contractor lines: a consultant id, 'none' (not on timesheets) or '' (not chosen). */
+  who: string
 }
 
 export type BillValues = {
@@ -49,6 +52,7 @@ const newLine = (kind: LineValue['kind'] = 'expense'): LineValue => ({
   categoryId: '',
   clientId: '',
   projectId: '',
+  who: '',
 })
 
 function FieldError({ message }: { message?: string }) {
@@ -61,6 +65,7 @@ export function BillForm({
   categories,
   clients,
   projects,
+  consultants,
   bill,
   inboxFile,
 }: {
@@ -69,6 +74,7 @@ export function BillForm({
   categories: Option[]
   clients: Option[]
   projects: ProjectOption[]
+  consultants: ConsultantOption[]
   /** Present when editing a pending or rejected bill. */
   bill?: BillValues
   /** A file from the Bill inbox that becomes this new bill's file once it is saved. */
@@ -79,6 +85,8 @@ export function BillForm({
   const [errors, setErrors] = useState<FieldErrors>({})
   const [error, setError] = useState<string | null>(null)
   const [lines, setLines] = useState<LineValue[]>(bill?.lines ?? [newLine()])
+  const [vendorId, setVendorId] = useState(bill?.vendorId ?? inboxFile?.vendorId ?? '')
+  const vendorConsultants = consultants.filter((c) => c.vendorId === vendorId)
   // A retried create (lost response) must not enter the bill twice: the second save edits the first.
   const savedId = useRef<string | null>(bill?.id ?? null)
 
@@ -102,7 +110,14 @@ export function BillForm({
           JSON.stringify(
             lines.map((l) =>
               l.kind === 'contractor'
-                ? { kind: l.kind, description: l.description, amount: l.amount }
+                ? {
+                    kind: l.kind,
+                    description: l.description,
+                    amount: l.amount,
+                    who: l.who,
+                    clientId: l.who === 'none' ? l.clientId : '',
+                    projectId: l.projectId,
+                  }
                 : {
                     kind: l.kind,
                     description: l.description,
@@ -156,7 +171,19 @@ export function BillForm({
           <select
             id="bill-vendor"
             name="vendorId"
-            defaultValue={bill?.vendorId ?? inboxFile?.vendorId ?? ''}
+            value={vendorId}
+            onChange={(e) => {
+              const next = e.currentTarget.value
+              setVendorId(next)
+              // A consultant belongs to one vendor: clear choices that no longer fit.
+              setLines((ls) =>
+                ls.map((l) =>
+                  l.who && l.who !== 'none' && !consultants.some((c) => c.id === l.who && c.vendorId === next)
+                    ? { ...l, who: '', projectId: '' }
+                    : l,
+                ),
+              )
+            }}
             aria-invalid={!!errors.vendorId}
             className={`${selectClass} max-w-72`}
           >
@@ -209,7 +236,7 @@ export function BillForm({
           <FieldError message={errors.dueDate} />
         </div>
         <div className="flex flex-col gap-1">
-          <Label htmlFor="bill-period-start">Service period from (optional)</Label>
+          <Label htmlFor="bill-period-start">Service period from</Label>
           <Input
             id="bill-period-start"
             name="periodStart"
@@ -221,7 +248,7 @@ export function BillForm({
           <FieldError message={errors.periodStart} />
         </div>
         <div className="flex flex-col gap-1">
-          <Label htmlFor="bill-period-end">Service period to (optional)</Label>
+          <Label htmlFor="bill-period-end">Service period to</Label>
           <Input
             id="bill-period-end"
             name="periodEnd"
@@ -232,7 +259,7 @@ export function BillForm({
             className="max-w-40"
           />
           <p id="bill-period-note" className="text-xs text-muted-foreground">
-            With a period, contractor lines are checked against approved hours.
+            Needed when a contractor line names a consultant: their approved hours in this period are matched to it.
           </p>
           <FieldError message={errors.periodEnd} />
         </div>
@@ -241,8 +268,9 @@ export function BillForm({
       <fieldset className="flex flex-col gap-3">
         <legend className="text-base font-semibold">Lines</legend>
         <p className="text-sm text-muted-foreground">
-          Expense lines become expenses when the bill is approved. Contractor lines pay for hours already in your
-          timesheets, so they are not added as expenses again.
+          Expense lines become expenses when the bill is approved. Contractor lines are matched to the approved hours of
+          the consultant you choose, which already count as labour; when the bill is approved, any difference counts as a
+          contractor cost adjustment. For someone not on timesheets, the whole line counts.
         </p>
         {lines.map((l, i) => {
           const n = i + 1
@@ -296,6 +324,89 @@ export function BillForm({
                   Remove<span className="sr-only"> line {n}</span>
                 </Button>
               </div>
+              {l.kind === 'contractor' && (
+                <>
+                  <div className="flex flex-col gap-1 sm:col-span-2">
+                    <Label htmlFor={id('who')}>Who</Label>
+                    <select
+                      id={id('who')}
+                      aria-label={`Line ${n} who`}
+                      value={l.who}
+                      onChange={(e) => update(l.key, { who: e.currentTarget.value, clientId: '', projectId: '' })}
+                      className={selectClass}
+                    >
+                      <option value="">{vendorId ? 'Choose who' : 'Choose a vendor first'}</option>
+                      {vendorConsultants.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                      <option value="none">Not on timesheets</option>
+                    </select>
+                  </div>
+                  {l.who === 'none' ? (
+                    <>
+                      <div className="flex flex-col gap-1 sm:col-span-2">
+                        <Label htmlFor={id('client')}>Client</Label>
+                        <select
+                          id={id('client')}
+                          aria-label={`Line ${n} client`}
+                          value={l.clientId}
+                          onChange={(e) => update(l.key, { clientId: e.currentTarget.value, projectId: '' })}
+                          className={selectClass}
+                        >
+                          <option value="">Choose a client</option>
+                          {clients.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="flex flex-col gap-1 sm:col-span-2">
+                        <Label htmlFor={id('project')}>Project (optional)</Label>
+                        <select
+                          id={id('project')}
+                          aria-label={`Line ${n} project`}
+                          value={l.projectId}
+                          onChange={(e) => {
+                            const p = projects.find((x) => x.id === e.currentTarget.value)
+                            update(l.key, { projectId: e.currentTarget.value, clientId: p ? p.clientId : l.clientId })
+                          }}
+                          className={selectClass}
+                        >
+                          <option value="">No project</option>
+                          {clientProjects.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {l.clientId ? p.name : `${p.clientName}: ${p.name}`}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </>
+                  ) : (
+                    l.who !== '' && (
+                      <div className="flex flex-col gap-1 sm:col-span-2">
+                        <Label htmlFor={id('project')}>Project</Label>
+                        <select
+                          id={id('project')}
+                          aria-label={`Line ${n} project`}
+                          value={l.projectId}
+                          onChange={(e) => update(l.key, { projectId: e.currentTarget.value })}
+                          className={selectClass}
+                        >
+                          <option value="">All their projects</option>
+                          {projects.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {`${p.clientName}: ${p.name}`}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )
+                  )}
+                </>
+              )}
               {l.kind === 'expense' && (
                 <>
                   <div className="flex flex-col gap-1 sm:col-span-2">

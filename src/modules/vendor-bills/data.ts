@@ -137,7 +137,14 @@ export type BillLineRow = {
   clientName: string | null
   projectId: string | null
   projectName: string | null
+  /** Contractor lines: the consultant named, if any. */
+  consultantId: string | null
+  consultantName: string | null
+  /** Contractor lines: trueup (consultant named), full (not on timesheets) or legacy (entered before true-up). */
+  countMode: ContractorMode | null
 }
+
+export type ContractorMode = 'trueup' | 'full' | 'legacy'
 
 export type VendorPaymentRow = {
   id: string
@@ -150,7 +157,28 @@ export type VendorPaymentRow = {
   files: FileRow[]
 }
 
-export type ContractorCheckRow = { consultantId: string; consultantName: string; hours: string; expected: string }
+export type ContractorCostPart = {
+  clientName: string | null
+  projectName: string | null
+  hours: string
+  expected: string
+  adjustment: string
+}
+
+/** One contractor line against the approved hours it covers (contractor_line_costs), in cents-rounded text. */
+export type ContractorCost = {
+  lineId: string
+  description: string
+  mode: ContractorMode
+  /** The consultant's name, or null for someone not on timesheets / a legacy line. */
+  consultantName: string | null
+  amount: string
+  hours: string
+  expected: string
+  adjustment: string
+  /** Where the adjustment is counted: one part per project (or the line's client), empty for legacy lines. */
+  parts: ContractorCostPart[]
+}
 
 export type BillDetail = {
   id: string
@@ -172,8 +200,8 @@ export type BillDetail = {
   lines: BillLineRow[]
   files: FileRow[]
   payments: VendorPaymentRow[]
-  /** Only when the bill has contractor lines and a service period. */
-  contractorCheck: { rows: ContractorCheckRow[]; contractorTotal: string; expectedTotal: string } | null
+  /** Contractor lines with their expected cost and adjustment, in line order; empty without contractor lines. */
+  contractorCosts: ContractorCost[]
 }
 
 type FileDb = { id: string; file_name: string; mime_type: string; size_bytes: number; created_at: string }
@@ -199,7 +227,7 @@ export async function getBill(db: SupabaseClient, firmId: string, id: string): P
     db
       .from('vendor_bill_lines')
       .select(
-        'id, kind, description, amount::text, category_id, client_id, project_id, expense_categories(name), clients(name), projects(name)',
+        'id, kind, description, amount::text, category_id, client_id, project_id, consultant_id, count_mode, expense_categories(name), clients(name), projects(name), consultants(name)',
       )
       .eq('firm_id', firmId)
       .eq('bill_id', id)
@@ -223,9 +251,12 @@ export async function getBill(db: SupabaseClient, firmId: string, id: string): P
     category_id: string | null
     client_id: string | null
     project_id: string | null
+    consultant_id: string | null
+    count_mode: ContractorMode | null
     expense_categories: { name: string } | null
     clients: { name: string } | null
     projects: { name: string } | null
+    consultants: { name: string } | null
   }
   type PayDb = {
     id: string
@@ -247,6 +278,9 @@ export async function getBill(db: SupabaseClient, firmId: string, id: string): P
     clientName: l.clients?.name ?? null,
     projectId: l.project_id,
     projectName: l.projects?.name ?? null,
+    consultantId: l.consultant_id,
+    consultantName: l.consultants?.name ?? null,
+    countMode: l.count_mode,
   }))
   const payRows = (pays.data ?? []) as unknown as PayDb[]
 
@@ -267,20 +301,8 @@ export async function getBill(db: SupabaseClient, firmId: string, id: string): P
     }
   }
 
-  let contractorCheck: BillDetail['contractorCheck'] = null
-  const contractorLines = lineRows.filter((l) => l.kind === 'contractor')
-  if (contractorLines.length > 0 && b.period_start && b.period_end) {
-    const chk = await db.rpc('vendor_bill_contractor_check', { p_bill: id })
-    if (chk.error) return fail(mapDbError(chk.error))
-    const rows = ((chk.data ?? []) as { consultant_id: string; consultant_name: string; hours: string; expected: string }[]).map(
-      (r) => ({ consultantId: r.consultant_id, consultantName: r.consultant_name, hours: r.hours, expected: r.expected }),
-    )
-    contractorCheck = {
-      rows,
-      contractorTotal: money(contractorLines.reduce((s, l) => s + cents(l.amount), 0)),
-      expectedTotal: money(rows.reduce((s, r) => s + cents(r.expected), 0)),
-    }
-  }
+  const costs = await contractorCosts(db, firmId, id, lineRows)
+  if (!costs.ok) return costs
 
   return ok({
     id: b.id,
@@ -311,8 +333,98 @@ export async function getBill(db: SupabaseClient, firmId: string, id: string): P
       bankAccount: accounts.get(p.id) ?? null,
       files: toFiles(p.attachments),
     })),
-    contractorCheck,
+    contractorCosts: costs.data,
   })
+}
+
+type CostDb = {
+  line_id: string
+  client_id: string | null
+  project_id: string | null
+  hours: number
+  expected: number
+  adjustment: number
+}
+
+/** Exact numeric (as returned, up to 4 places) to 2-decimal text, halves away from zero like Postgres round(). */
+const fixed = (n: number) => money(Math.sign(n) * Math.round(Math.abs(n) * 100 + 1e-7))
+const fixedHours = (n: number) => (Math.round(n * 100) / 100).toFixed(2)
+
+/** Per contractor line: approved hours, expected cost and the adjustment, from contractor_line_costs. */
+async function contractorCosts(
+  db: SupabaseClient,
+  firmId: string,
+  billId: string,
+  lines: BillLineRow[],
+): Promise<Result<ContractorCost[]>> {
+  const contractor = lines.filter((l) => l.kind === 'contractor')
+  if (contractor.length === 0) return ok([])
+  const { data, error } = await db.rpc('contractor_line_costs', { p_firm: firmId, p_from: null, p_to: null, p_bill: billId })
+  if (error) return fail(mapDbError(error))
+  const rows = (data ?? []) as CostDb[]
+
+  // Names for the clients and projects the shares land on.
+  const projectIds = [...new Set(rows.flatMap((r) => (r.project_id ? [r.project_id] : [])))]
+  const clientIds = [...new Set(rows.flatMap((r) => (r.client_id ? [r.client_id] : [])))]
+  const [projects, clients] = await Promise.all([
+    projectIds.length > 0
+      ? db.from('projects').select('id, name').eq('firm_id', firmId).in('id', projectIds)
+      : Promise.resolve({ data: [], error: null }),
+    clientIds.length > 0
+      ? db.from('clients').select('id, name').eq('firm_id', firmId).in('id', clientIds)
+      : Promise.resolve({ data: [], error: null }),
+  ])
+  if (projects.error) return fail(mapDbError(projects.error))
+  if (clients.error) return fail(mapDbError(clients.error))
+  const pName = new Map(((projects.data ?? []) as { id: string; name: string }[]).map((p) => [p.id, p.name]))
+  const cName = new Map(((clients.data ?? []) as { id: string; name: string }[]).map((c) => [c.id, c.name]))
+
+  return ok(
+    contractor.map((l) => {
+      const mine = rows.filter((r) => r.line_id === l.id)
+      const sum = (f: (r: CostDb) => number) => mine.reduce((s, r) => s + Number(f(r)), 0)
+      const mode: ContractorMode = l.countMode ?? 'legacy'
+      return {
+        lineId: l.id,
+        description: l.description,
+        mode,
+        consultantName: mode === 'trueup' ? l.consultantName : null,
+        amount: l.amount,
+        hours: fixedHours(sum((r) => r.hours)),
+        expected: fixed(sum((r) => r.expected)),
+        // Legacy lines have no rows: nothing is counted.
+        adjustment: fixed(sum((r) => r.adjustment)),
+        parts: mine.map((r) => ({
+          clientName: r.client_id ? (cName.get(r.client_id) ?? null) : null,
+          projectName: r.project_id ? (pName.get(r.project_id) ?? null) : null,
+          hours: fixedHours(Number(r.hours)),
+          expected: fixed(Number(r.expected)),
+          adjustment: fixed(Number(r.adjustment)),
+        })),
+      }
+    }),
+  )
+}
+
+export type VendorConsultantOption = { id: string; name: string; vendorId: string }
+
+/** Vendor contractors for the bill form's "Who" choice (inactive ones marked). */
+export async function listVendorConsultants(db: SupabaseClient, firmId: string): Promise<Result<VendorConsultantOption[]>> {
+  const { data, error } = await db
+    .from('consultants')
+    .select('id, name, vendor_id, active')
+    .eq('firm_id', firmId)
+    .eq('type', 'vendor')
+    .order('name')
+    .limit(1000)
+  if (error) return fail(mapDbError(error))
+  return ok(
+    ((data ?? []) as { id: string; name: string; vendor_id: string; active: boolean }[]).map((c) => ({
+      id: c.id,
+      name: c.active ? c.name : `${c.name} (inactive)`,
+      vendorId: c.vendor_id,
+    })),
+  )
 }
 
 /** Bill-scoped RPCs take only the row id, so confirm it belongs to firmId first. */

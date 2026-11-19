@@ -70,6 +70,10 @@ invoices.
 
 ## Contractor check
 
+> **Superseded 2026-11-19** by `2026-11-19-contractor-trueup-design.md`: each contractor line now
+> names its consultant (or "Not on timesheets"), and the difference from approved hours is counted in
+> the P&L as a contractor cost adjustment on the bill date. The section below is the original design.
+
 For a bill with contractor lines and a service period, the bill page shows:
 
 > Expected from approved hours: **$12,600.00** (Dana Brooks 70 h × $180)

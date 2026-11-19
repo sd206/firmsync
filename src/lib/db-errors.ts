@@ -91,6 +91,11 @@ const BY_MATCH: [string, string][] = [
   ['BILL_STATE', "This bill can't be changed in its current state."],
   ['BILL_STATUS', "A bill's status changes only by approving, rejecting, paying or voiding it."],
   ['BILL_CONSULTANT', 'Contractor lines can only name consultants supplied by this vendor.'],
+  ['BILL_LINES_OVERLAP', 'Two contractor lines on this bill cover the same consultant, period and project.'],
+  ['BILL_CONTRACTOR_LEGACY', 'Edit the bill and choose who each contractor line is for, then approve.'],
+  ['BILL_PERIOD_REQUIRED', 'Enter the service period: contractor lines are matched to approved hours in it.'],
+  ['BILL_CONTRACTOR_TARGET', 'Choose a client or project for each contractor line not on timesheets.'],
+  ['vendor_bill_lines_contractor_chk', 'Choose who each contractor line is for, and a client or project for someone not on timesheets.'],
   ['BILL_EXPENSE', 'This expense came from a vendor bill. Change it through the bill (void it and enter a corrected one).'],
   ['LINE_MOVE', "A bill line can't be moved to another bill."],
   ['INBOX_STATE', 'This email has already been handled. The page has been refreshed.'],
@@ -159,6 +164,13 @@ export function mapDbError(err: DbError | null): string {
   const text = `${err.message ?? ''} ${err.details ?? ''}`
   for (const [needle, onDelete, missing] of BY_FK) {
     if (text.includes(needle)) return text.includes('is still referenced') ? onDelete : missing
+  }
+  if (text.includes('BILL_CONTRACTOR_OVERLAP')) {
+    // The function puts the other bill's number in the details.
+    const other = err.details?.trim()
+    return other
+      ? `A contractor line overlaps bill ${other} for the same consultant, period and project.`
+      : 'A contractor line overlaps another approved bill for the same consultant, period and project.'
   }
   for (const [needle, message] of BY_MATCH) {
     if (text.includes(needle)) return message

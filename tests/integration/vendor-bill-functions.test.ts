@@ -33,7 +33,7 @@ describe('vendor bill functions', () => {
     expect((await f.admin.db.rpc('approve_vendor_bill', { p_bill: id })).error).toBeNull()
     const again = await f.manager.db.rpc('save_vendor_bill', {
       p_bill: id, p_firm: f.firmId, p_vendor: vendor, p_number: 'B-1', p_bill_date: '2026-11-01', p_due_date: '2026-11-30',
-      p_period_start: null, p_period_end: null, p_notes: null, p_lines: [{ kind: 'contractor', description: 'X', amount: '1.00' }],
+      p_period_start: null, p_period_end: null, p_notes: null, p_lines: [{ kind: 'expense', description: 'X', amount: '1.00', category_id: software }],
     })
     expect(again.error?.message).toContain('BILL_LOCKED')
     const empty = await f.manager.db.rpc('save_vendor_bill', {
@@ -68,7 +68,7 @@ describe('vendor bill functions', () => {
     expect(await bill(id)).toMatchObject({ status: 'rejected', rejected_reason: 'Wrong rate' })
     const resave = await f.manager.db.rpc('save_vendor_bill', {
       p_bill: id, p_firm: f.firmId, p_vendor: vendor, p_number: 'B-3', p_bill_date: '2026-11-01', p_due_date: '2026-11-30',
-      p_period_start: null, p_period_end: null, p_notes: 'fixed', p_lines: [{ kind: 'contractor', description: 'Hours', amount: '45.00' }],
+      p_period_start: null, p_period_end: null, p_notes: 'fixed', p_lines: [{ kind: 'expense', description: 'Hours', amount: '45.00', category_id: software }],
     })
     expect(resave.error).toBeNull()
     expect(await bill(id)).toMatchObject({ status: 'pending_approval', rejected_reason: null, total: 45 })
@@ -105,10 +105,10 @@ describe('vendor bill functions', () => {
     expect(count).toBe(0)
   })
 
-  it('compares contractor lines with approved hours x cost rate', async () => {
+  it('shows each contractor line against the approved hours it covers', async () => {
     const g = await newFirm('Bills Check Firm')
     const v = await mkVendor(g, 'Talent Co')
-    await seedApprovedHours(g, {
+    const ids = await seedApprovedHours(g, {
       consultantName: 'Dana Vendor',
       costRate: '90',
       entries: [
@@ -120,13 +120,13 @@ describe('vendor bill functions', () => {
         if (error) throw new Error(error.message)
       },
     })
-    const id = await saveBill(g, v, 'TC-10', [{ kind: 'contractor', description: 'October', amount: '950.00' }], {
+    const id = await saveBill(g, v, 'TC-10', [{ kind: 'contractor', description: 'October', amount: '950.00', consultant_id: ids.consultantId }], {
       periodStart: '2026-10-01',
       periodEnd: '2026-10-31',
     })
-    const r = await g.manager.db.rpc('vendor_bill_contractor_check', { p_bill: id })
+    const r = await g.manager.db.rpc('contractor_line_costs', { p_firm: g.firmId, p_from: null, p_to: null, p_bill: id })
     expect(r.error).toBeNull()
-    expect(r.data).toEqual([expect.objectContaining({ consultant_name: 'Dana Vendor', hours: '10.00', expected: '900.00' })])
+    expect(r.data).toEqual([expect.objectContaining({ consultant_id: ids.consultantId, hours: 10, expected: 900, adjustment: 50 })])
   })
 
   it('refuses everything to a consultant', async () => {
@@ -136,7 +136,7 @@ describe('vendor bill functions', () => {
       c.rpc('approve_vendor_bill', { p_bill: id }),
       c.rpc('reject_vendor_bill', { p_bill: id, p_reason: 'x' }),
       c.rpc('record_vendor_payment', { p_bill: id, p_amount: '1.00', p_paid_on: '2026-11-05', p_method: 'check', p_reference: null, p_notes: null }),
-      c.rpc('vendor_bill_contractor_check', { p_bill: id }),
+      c.rpc('contractor_line_costs', { p_firm: f.firmId, p_from: null, p_to: null, p_bill: id }),
       c.rpc('save_vendor_bill', {
         p_bill: null, p_firm: f.firmId, p_vendor: vendor, p_number: 'C-1', p_bill_date: '2026-11-01', p_due_date: '2026-11-30',
         p_period_start: null, p_period_end: null, p_notes: null, p_lines: [{ kind: 'contractor', description: 'X', amount: '1.00' }],

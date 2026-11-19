@@ -11,11 +11,15 @@ describe('vendor bills schema', () => {
   let vendor: string
   let software: string
 
+  let client: string
+
   beforeAll(async () => {
     f = await newFirm('Bills Schema Firm')
     other = await newFirm('Bills Schema Other')
     vendor = await mkVendor(f, 'Acme Staffing')
     software = await categoryId(f.firmId, 'Software')
+    const c = await adminDb().from('clients').insert({ firm_id: f.firmId, name: 'Schema Client' }).select('id').single()
+    client = c.data!.id as string
   })
 
   const bill = (number: string, over: Record<string, unknown> = {}) => ({
@@ -33,7 +37,7 @@ describe('vendor bills schema', () => {
     expect(b.data!.status).toBe('pending_approval')
     const lines = await f.manager.db.from('vendor_bill_lines').insert([
       { firm_id: f.firmId, bill_id: b.data!.id, position: 1, kind: 'expense', description: 'Licences', amount: '300.00', category_id: software },
-      { firm_id: f.firmId, bill_id: b.data!.id, position: 2, kind: 'contractor', description: 'October hours', amount: '900.00' },
+      { firm_id: f.firmId, bill_id: b.data!.id, position: 2, kind: 'contractor', description: 'October hours', amount: '900.00', client_id: client },
     ])
     expect(lines.error).toBeNull()
     for (const db of [f.consultant.db, other.manager.db]) {

@@ -38,6 +38,7 @@ export default async function EditBillPage({ params }: { params: Promise<{ firmI
         categories={opts.categories}
         clients={opts.clients}
         projects={opts.projects}
+        consultants={opts.consultants}
         bill={{
           id: b.id,
           vendorId: b.vendorId,
@@ -55,6 +56,8 @@ export default async function EditBillPage({ params }: { params: Promise<{ firmI
             categoryId: l.categoryId ?? '',
             clientId: l.clientId ?? '',
             projectId: l.projectId ?? '',
+            // Legacy lines (entered before contractor true-up) start with Who unchosen.
+            who: l.countMode === 'trueup' ? (l.consultantId ?? '') : l.countMode === 'full' ? 'none' : '',
           })),
         }}
       />

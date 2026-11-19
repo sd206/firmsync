@@ -18,7 +18,31 @@ export type LineInput = {
   consultant_id?: string | null
 }
 
-/** Saves a new bill through save_vendor_bill as the firm's manager; returns its id. */
+const fixtureClients = new Map<string, Promise<string>>()
+
+/** One client per firm for contractor lines that don't care where their cost lands. */
+function fixtureClient(firmId: string): Promise<string> {
+  let p = fixtureClients.get(firmId)
+  if (!p) {
+    p = (async () => {
+      const { data, error } = await adminDb()
+        .from('clients')
+        .insert({ firm_id: firmId, name: `Bill fixture client ${crypto.randomUUID().slice(0, 8)}` })
+        .select('id')
+        .single()
+      if (error || !data) throw new Error(`client insert failed: ${error?.message}`)
+      return data.id as string
+    })()
+    fixtureClients.set(firmId, p)
+  }
+  return p
+}
+
+/**
+ * Saves a new bill through save_vendor_bill as the firm's manager; returns its id.
+ * A contractor line with no consultant, client or project ("not on timesheets" needs one)
+ * is given a fixture client for the firm.
+ */
 export async function saveBill(
   f: Firm,
   vendorId: string,
@@ -26,6 +50,11 @@ export async function saveBill(
   lines: LineInput[],
   over: { billDate?: string; dueDate?: string; periodStart?: string | null; periodEnd?: string | null } = {},
 ): Promise<string> {
+  const needsClient = lines.some((l) => l.kind === 'contractor' && !l.consultant_id && !l.client_id && !l.project_id)
+  const clientId = needsClient ? await fixtureClient(f.firmId) : null
+  const withTargets = lines.map((l) =>
+    l.kind === 'contractor' && !l.consultant_id && !l.client_id && !l.project_id ? { ...l, client_id: clientId } : l,
+  )
   const { data, error } = await f.manager.db.rpc('save_vendor_bill', {
     p_bill: null,
     p_firm: f.firmId,
@@ -36,7 +65,7 @@ export async function saveBill(
     p_period_start: over.periodStart ?? null,
     p_period_end: over.periodEnd ?? null,
     p_notes: null,
-    p_lines: lines,
+    p_lines: withTargets,
   })
   if (error || !data) throw new Error(`save_vendor_bill failed: ${error?.message}`)
   return data as string

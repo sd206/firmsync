@@ -823,14 +823,14 @@ isOneToOne: false
                   ]
                 },"vendor_bill_lines": {
                   Row: {
-                    "amount": number,"bill_id": string,"category_id": string | null,"client_id": string | null,"consultant_id": string | null,"created_at": string,"description": string,"firm_id": string,"id": string,"kind": string,"position": number,"project_id": string | null
+                    "amount": number,"bill_id": string,"category_id": string | null,"client_id": string | null,"consultant_id": string | null,"count_mode": string | null,"created_at": string,"description": string,"firm_id": string,"id": string,"kind": string,"position": number,"project_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "amount": number,"bill_id": string,"category_id"?: string | null,"client_id"?: string | null,"consultant_id"?: string | null,"created_at"?: string,"description": string,"firm_id": string,"id"?: string,"kind": string,"position"?: number,"project_id"?: string | null
+                    "amount": number,"bill_id": string,"category_id"?: string | null,"client_id"?: string | null,"consultant_id"?: string | null,"count_mode"?: string | null,"created_at"?: string,"description": string,"firm_id": string,"id"?: string,"kind": string,"position"?: number,"project_id"?: string | null
                   }
                   Update: {
-                    "amount"?: number,"bill_id"?: string,"category_id"?: string | null,"client_id"?: string | null,"consultant_id"?: string | null,"created_at"?: string,"description"?: string,"firm_id"?: string,"id"?: string,"kind"?: string,"position"?: number,"project_id"?: string | null
+                    "amount"?: number,"bill_id"?: string,"category_id"?: string | null,"client_id"?: string | null,"consultant_id"?: string | null,"count_mode"?: string | null,"created_at"?: string,"description"?: string,"firm_id"?: string,"id"?: string,"kind"?: string,"position"?: number,"project_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -1142,6 +1142,11 @@ isOneToOne: false
 "confirm_bank_line_vendor_payment":
 { Args: { "p_bill": string,"p_line": string,"p_notes": string }; Returns: string
                            },
+"contractor_line_costs":
+{ Args: { "p_bill": string,"p_firm": string,"p_from": string,"p_to": string }; Returns: {
+              "adjustment": number,"amount": number,"bill_date": string,"bill_id": string,"client_id": string,"consultant_id": string,"count_mode": string,"expected": number,"hours": number,"line_id": string,"project_id": string
+            }[]
+                           },
 "create_firm_with_admin":
 { Args: { "p_admin": string,"p_name": string }; Returns: string
                            },
@@ -1391,7 +1396,7 @@ isOneToOne: false
                            },
 "pnl_breakdown":
 { Args: { "p_clients": (string)[],"p_firm": string,"p_from": string,"p_group": string,"p_projects": (string)[],"p_split_project": boolean,"p_to": string }; Returns: {
-              "client_id": string,"client_label": string,"collected": string,"direct_expenses": string,"discounts": string,"fees": string,"gross": string,"group_key": string,"invoiced": string,"labour": string,"margin": string,"net": string,"overhead": string,"project_id": string,"project_label": string,"revenue": string,"revenue_hours": string,"sort_key": string
+              "client_id": string,"client_label": string,"collected": string,"contractor_adj": string,"direct_expenses": string,"discounts": string,"fees": string,"gross": string,"group_key": string,"invoiced": string,"labour": string,"margin": string,"net": string,"overhead": string,"project_id": string,"project_label": string,"revenue": string,"revenue_hours": string,"sort_key": string
             }[]
                            },
 "pnl_facts":
@@ -1401,7 +1406,7 @@ isOneToOne: false
                            },
 "pnl_report":
 { Args: { "p_clients": (string)[],"p_firm": string,"p_from": string,"p_group": string,"p_projects": (string)[],"p_to": string }; Returns: {
-              "client_label": string,"collected": string,"direct_expenses": string,"discounts": string,"fees": string,"gross": string,"group_key": string,"invoiced": string,"label": string,"labour": string,"margin": string,"net": string,"overhead": string,"project_label": string,"revenue": string,"revenue_hours": string,"row_kind": string,"sort_key": string
+              "client_label": string,"collected": string,"contractor_adj": string,"direct_expenses": string,"discounts": string,"fees": string,"gross": string,"group_key": string,"invoiced": string,"label": string,"labour": string,"margin": string,"net": string,"overhead": string,"project_label": string,"revenue": string,"revenue_hours": string,"row_kind": string,"sort_key": string
             }[]
                            },
 "receivables_invoices":
@@ -1513,10 +1518,8 @@ isOneToOne: false
 "vendor_bill_apply_payments":
 { Args: { "p_bill": string }; Returns: undefined
                            },
-"vendor_bill_contractor_check":
-{ Args: { "p_bill": string }; Returns: {
-              "consultant_id": string,"consultant_name": string,"expected": string,"hours": string
-            }[]
+"vendor_bill_contractor_overlap":
+{ Args: { "p_bill": string,"p_other_bills": boolean }; Returns: string
                            },
 "vendor_bill_internal":
 { Args: Record<PropertyKey, never>; Returns: boolean

@@ -26,6 +26,7 @@ const MONEY_FIELDS = [
   "discounts",
   "revenue",
   "labour",
+  "contractorAdj",
   "gross",
   "directExpenses",
   "overhead",
@@ -104,6 +105,8 @@ export default async function PnlPage({
       ? result.error
       : null;
   const rows = result && result.ok ? result.data : null;
+  // Firms without contractor bills never see the column.
+  const showAdj = !!rows && rows.some((r) => Number(r.contractorAdj) !== 0);
 
   const money = (v: string) => (
     <span
@@ -163,6 +166,7 @@ export default async function PnlPage({
                         ]),
                     "Revenue",
                     "Labour cost",
+                    ...(showAdj ? ["Contractor adj."] : []),
                     "Gross profit",
                     "Direct expenses",
                     "Overhead",
@@ -226,6 +230,9 @@ export default async function PnlPage({
                         {money(r.revenue)}
                       </td>
                       <td className={td}>{money(r.labour)}</td>
+                      {showAdj && (
+                        <td className={td}>{money(r.contractorAdj)}</td>
+                      )}
                       <td className={td}>{money(r.gross)}</td>
                       <td className={td}>
                         {r.kind === "overhead" ? "—" : money(r.directExpenses)}
@@ -255,6 +262,13 @@ export default async function PnlPage({
             hours only); fees and discounts when invoiced. Invoiced and
             Collected exclude tax.
           </p>
+          {showAdj && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              Contractor adj. is the difference between approved contractor
+              bills and the approved hours they cover at cost, counted on the
+              bill date.
+            </p>
+          )}
         </>
       )}
     </div>
