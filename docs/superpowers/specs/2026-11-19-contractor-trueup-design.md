@@ -1,6 +1,6 @@
 # Contractor bill true-up in the P&L: design
 
-Status: draft for the owner's review, 2026-11-19. Checklist item 28.
+Status: approved by the owner, 2026-11-19 ("Approve all six"). Checklist item 28.
 Owner's decision: `launch/decisions.md`, 2026-11-19 "Contractor cost: count on approved time, true up on the bill".
 
 ## Why
@@ -302,6 +302,19 @@ then the owner's yes, per the charter.
 - The vendor-bills design's "Contractor check" and "Reports" sections point to this design.
 
 ## Decisions for the owner
+
+**Owner's answers, 2026-11-19 ("Approve all six"), relayed by the launch manager:** all six
+recommendations below are approved as written.
+1. Computed live (approach A).
+2. No retroactive adjustments: existing contractor lines become `legacy`; pending bills need "Who"
+   chosen before approval.
+3. Overlapping contractor lines are refused.
+4. "Not on timesheets" lines must name a client or project.
+5. A separate "Contractor adj." column next to Labour, included in gross, hidden on screen when every
+   row is zero (always in the CSV).
+6. The CPA check is the owner's; no design change.
+
+The recommendations as originally put:
 
 1. **Adjustment computed live, not frozen at approval.** Recommended: live (approach A). Total cost
    always equals the bill. *If wrong:* a closed month's contractor adj. can move when hours for that
