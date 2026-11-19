@@ -1518,6 +1518,11 @@ isOneToOne: false
 "vendor_bill_apply_payments":
 { Args: { "p_bill": string }; Returns: undefined
                            },
+"vendor_bill_contractor_check":
+{ Args: { "p_bill": string }; Returns: {
+              "consultant_id": string,"consultant_name": string,"expected": string,"hours": string
+            }[]
+                           },
 "vendor_bill_contractor_overlap":
 { Args: { "p_bill": string,"p_other_bills": boolean }; Returns: string
                            },

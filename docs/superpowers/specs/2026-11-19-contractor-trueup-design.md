@@ -305,7 +305,13 @@ then the owner's yes, per the charter.
 - `count_mode` is set by the line trigger from whether a consultant is named; callers can't choose
   it, and only the migration could set `legacy`.
 - `vendor_bill_contractor_check` is replaced by `contractor_line_costs`, which the bill page and the
-  P&L both use.
+  P&L both use. The old function stays, marked deprecated, so the app version live before this
+  release keeps working between `db push` and the deploy; a later migration drops it.
+- A "Not on timesheets" line naming both a client and a project of another client is refused
+  (`BILL_LINE_CLIENT`) rather than silently moved to the project's client.
+- The migration's backfill was checked on pre-existing rows with `scripts/check-trueup-backfill.sh`
+  (local only): lines become `legacy`; bill totals, `updated_at`, bill audit rows and the P&L are
+  unchanged.
 
 ## 10. Also to update when built
 

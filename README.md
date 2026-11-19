@@ -120,7 +120,7 @@ npm run test:e2e    # Playwright; needs local Supabase running
       by cost). It is worked out live, so hours approved, reopened or re-approved later keep labour + adjustment equal
       to the bill.
     - **Not on timesheets** (a client or project is required): the whole line counts.
-    Contractor lines entered before 2026-11-19 are "legacy": not counted, and a pending bill with one must be edited
+    Contractor lines entered before this release was deployed are "legacy": not counted, and a pending bill with one must be edited
     to choose who before it can be approved. Two lines for the same consultant, overlapping periods and project can't
     both be approved. Only expense lines on a bill become expenses.
   - **Gross profit:** revenue minus labour cost minus contractor adj.

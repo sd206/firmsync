@@ -22,7 +22,10 @@
 -- 3. contractor_line_costs: expected cost and adjustment per line and project share.
 -- 4. pnl_facts gains measure contractor_adjustment; pnl_report and pnl_breakdown gain
 --    contractor_adj (after labour) and subtract it in gross, net and margin.
--- 5. vendor_bill_contractor_check is replaced by contractor_line_costs.
+-- 5. vendor_bill_contractor_check is replaced by contractor_line_costs but kept, deprecated, so the
+--    app version live before this release keeps working between db push and the deploy. A later
+--    migration drops it.
+-- Also: a not-on-timesheets line whose client isn't its project's client is refused (BILL_LINE_CLIENT).
 
 -- ---------------------------------------------------------------------------
 -- 1. Lines
@@ -30,7 +33,8 @@
 alter table public.vendor_bill_lines add column count_mode text;
 
 -- Existing contractor lines can't be matched to hours (no consultant was ever recorded): legacy.
--- Totals don't change, so the total trigger is off for the backfill (no bill rewrites or audit noise).
+-- Totals don't change, so the total trigger is off for the backfill: bills aren't rewritten (no
+-- updated_at bump, no bill audit rows). Each line's own change is still audited, once per line.
 alter table public.vendor_bill_lines disable trigger vendor_bill_lines_total;
 do $$
 begin
@@ -71,6 +75,7 @@ set search_path = ''
 as $$
 declare
   v_status public.vendor_bill_status;
+  v_client uuid;
 begin
   if not public.vendor_bill_internal() then
     if tg_op = 'UPDATE' and (new.bill_id is distinct from old.bill_id or new.firm_id is distinct from old.firm_id) then
@@ -105,7 +110,12 @@ begin
     end if;
     if new.kind = 'contractor' then
       if new.project_id is not null then
-        new.client_id := (select p.client_id from public.projects p where p.firm_id = new.firm_id and p.id = new.project_id);
+        v_client := (select p.client_id from public.projects p where p.firm_id = new.firm_id and p.id = new.project_id);
+        -- Someone not on timesheets names the client and project together: they must agree.
+        if new.consultant_id is null and new.client_id is not null and new.client_id is distinct from v_client then
+          raise exception 'BILL_LINE_CLIENT' using errcode = 'P0001';
+        end if;
+        new.client_id := v_client;
       elsif new.consultant_id is not null then
         new.client_id := null;
       end if;
@@ -401,7 +411,11 @@ $$;
 revoke execute on function public.contractor_line_costs(uuid, date, date, uuid) from public, anon;
 grant execute on function public.contractor_line_costs(uuid, date, date, uuid) to authenticated;
 
-drop function public.vendor_bill_contractor_check(uuid);
+-- vendor_bill_contractor_check (20261115000041) stays, unchanged and DEPRECATED: the app no longer
+-- calls it, but the previous app version does until the deploy that follows this migration.
+-- Drop it in a later migration, once this release is deployed.
+comment on function public.vendor_bill_contractor_check(uuid) is
+  'DEPRECATED (20261119000051): use contractor_line_costs. Kept for the app version live before that release; drop in a later migration.';
 
 -- ---------------------------------------------------------------------------
 -- 4. P&L
