@@ -36,6 +36,8 @@ export type PnlRow = {
   discounts: string
   revenue: string
   labour: string
+  /** Approved contractor bills minus the approved hours they cover, on the bill date. */
+  contractorAdj: string
   gross: string
   directExpenses: string
   overhead: string
@@ -110,6 +112,7 @@ type Measures = Pick<
   | 'discounts'
   | 'revenue'
   | 'labour'
+  | 'contractorAdj'
   | 'gross'
   | 'directExpenses'
   | 'overhead'
@@ -125,6 +128,7 @@ type MeasuresDb = {
   discounts: string
   revenue: string
   labour: string
+  contractor_adj: string
   gross: string
   direct_expenses: string
   overhead: string
@@ -141,6 +145,7 @@ function measures(r: MeasuresDb): Measures {
     discounts: r.discounts,
     revenue: r.revenue,
     labour: r.labour,
+    contractorAdj: r.contractor_adj,
     gross: r.gross,
     directExpenses: r.direct_expenses,
     overhead: r.overhead,

@@ -21,6 +21,7 @@ function mk(over: Partial<PnlRow> = {}): PnlRow {
     discounts: '0.00',
     revenue: '2300.00',
     labour: '1380.00',
+    contractorAdj: '0.00',
     gross: '920.00',
     directExpenses: '180.00',
     overhead: '0.00',
@@ -43,10 +44,18 @@ describe('buildPnlCsv', () => {
     expect(body.endsWith('\r\n')).toBe(true)
     const l = lines(body)
     expect(l[0]).toBe(
-      'Group,Revenue from hours,Fees,Discounts,Revenue,Labour cost,Gross profit,Direct expenses,Overhead,Net profit,Margin %,Invoiced,Collected',
+      'Group,Revenue from hours,Fees,Discounts,Revenue,Labour cost,Contractor cost adjustment,Gross profit,Direct expenses,Overhead,Net profit,Margin %,Invoiced,Collected',
     )
-    expect(l[1]).toBe('Mar 2026,2300.00,0.00,0.00,2300.00,1380.00,920.00,180.00,0.00,740.00,32.2,0.00,0.00')
+    expect(l[1]).toBe('Mar 2026,2300.00,0.00,0.00,2300.00,1380.00,0.00,920.00,180.00,0.00,740.00,32.2,0.00,0.00')
     expect(l[2]).toBe('')
+  })
+
+  it('puts the contractor cost adjustment right after labour', () => {
+    const l = lines(buildPnlCsv([mk({ contractorAdj: '300.00', gross: '620.00' })], params).body)
+    const cells = l[1].split(',')
+    expect(cells[5]).toBe('1380.00')
+    expect(cells[6]).toBe('300.00')
+    expect(cells[7]).toBe('620.00')
   })
 
   it('quotes commas and doubles quotes', () => {
@@ -74,12 +83,12 @@ describe('buildPnlCsv', () => {
   it('prefixes a leading dash in text but not in numbers', () => {
     const l = lines(buildPnlCsv([mk({ label: '-Odd', net: '-75.00' })], params).body)
     expect(l[1].startsWith("'-Odd,")).toBe(true)
-    expect(l[1].split(',')[9]).toBe('-75.00')
+    expect(l[1].split(',')[10]).toBe('-75.00')
   })
 
   it('emits an empty cell for null margin', () => {
     const l = lines(buildPnlCsv([mk({ margin: null })], params).body)
-    expect(l[1].split(',')[10]).toBe('')
+    expect(l[1].split(',')[11]).toBe('')
   })
 
   it('labels overhead and total rows fixedly', () => {
@@ -105,7 +114,7 @@ describe('buildPnlCsv', () => {
 
   describe('breakdown columns', () => {
     const HEAD_REST =
-      'Revenue from hours,Fees,Discounts,Revenue,Labour cost,Gross profit,Direct expenses,Overhead,Net profit,Margin %,Invoiced,Collected'
+      'Revenue from hours,Fees,Discounts,Revenue,Labour cost,Contractor cost adjustment,Gross profit,Direct expenses,Overhead,Net profit,Margin %,Invoiced,Collected'
     const monthClient: PnlParams = { ...params, split: { client: true, project: false } }
 
     it('adds a Client column after Group for a client split, with details then the subtotal', () => {
@@ -128,7 +137,7 @@ describe('buildPnlCsv', () => {
         'Total,',
       ])
       expect(l[1].split(',')[5]).toBe('1500.00')
-      expect(l[1].split(',')).toHaveLength(14)
+      expect(l[1].split(',')).toHaveLength(15)
     })
 
     it('adds Client and Project columns for a project split', () => {
