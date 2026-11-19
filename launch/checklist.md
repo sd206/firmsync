@@ -28,8 +28,8 @@ Everything that has to be true on launch day: VeriTreo on its own domain, with t
 
 26. Test site on `test.veritreo.com` — Owner: You + Launch manager · Depends: 4, 10 · Status: Waiting on you
    Today's Vercel project and `consult-flow` (renamed `veritreo-test`) become Test: add `test.veritreo.com`, Supabase auth URLs and VeriTreo templates, `NEXT_PUBLIC_SITE_URL`, its own Resend sender. Fictional data only.
-27. "TEST SITE" bar on the Test app — Owner: Developer · Depends: — · Status: In progress
-   A visible bar on every page when the app runs as Test, driven by one setting, so Test and Prod can't be confused.
+27. "TEST SITE" bar on the Test app — Owner: Developer · Depends: — · Status: Done
+   Built and merged locally 2026-11-19. Turn it on by setting `NEXT_PUBLIC_APP_ENV=test` on the Test Vercel project (then redeploy); leave it unset on Prod.
 
 ## Website
 
