@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/domain/format-date'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { requireFirmRole } from '@/lib/auth/context'
@@ -169,11 +170,19 @@ export default async function ExpensesPage({
                   const cat = categoryById.get(r.categoryId)
                   return (
                     <tr key={r.id} className="border-b">
-                      <td className={td}>{r.spentOn}</td>
+                      <td className={td}>{formatDate(r.spentOn)}</td>
                       <td className={td}>
                         <Link href={`${base}/${r.id}`} className="underline underline-offset-4">
                           {r.payee}
                         </Link>
+                        {r.vendorBillId && (
+                          <Link
+                            href={`/f/${firmId}/vendor-bills/${r.vendorBillId}`}
+                            className="ml-2 inline-flex rounded border px-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+                          >
+                            From bill
+                          </Link>
+                        )}
                       </td>
                       <td className={td}>
                         {r.categoryName}

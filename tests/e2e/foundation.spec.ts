@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 import { adminDb, newFirm, TEST_PASSWORD } from '../integration/helpers'
+import { seedApprovedHours } from '../integration/invoice-fixtures'
 
 async function login(page: Page, email: string, password = TEST_PASSWORD) {
   await page.goto('/login')
@@ -70,6 +71,18 @@ test.describe('dashboard', () => {
     await expect(page.getByRole('link', { name: 'Add your firm logo' })).toHaveAttribute('href', `/f/${f.firmId}/settings`)
     await expect(page.getByRole('link', { name: 'Add a client' })).toHaveAttribute('href', `/f/${f.firmId}/clients`)
     await expect(page.getByText('Not done').first()).toBeVisible()
+  })
+
+  test('the finish-setup checklist is hidden once all four steps are done', async ({ page }) => {
+    const f = await newFirm('Dash Done Firm')
+    // Adds a client, a project and an assigned consultant.
+    await seedApprovedHours(f, { entries: [{ workDate: '2026-10-05', hours: '1' }] })
+    const { error } = await adminDb().from('firms').update({ logo_path: `firms/${f.firmId}/logo/logo.png` }).eq('id', f.firmId)
+    expect(error).toBeNull()
+    await login(page, f.admin.email)
+    await page.goto(`/f/${f.firmId}`)
+    await expect(page.getByText('Active consultants')).toBeVisible()
+    await expect(page.getByText('Finish setup')).toHaveCount(0)
   })
 
   test('manager sees the finish-setup checklist with a settings link', async ({ page }) => {

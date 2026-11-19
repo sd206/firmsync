@@ -254,7 +254,7 @@ test('record an invoice payment from an imported deposit', async ({ page }) => {
   await expect(panel.getByRole('row', { name: /AWS EMEA/ })).toHaveCount(0)
   await panel.getByLabel('Notes for the payment (optional)').fill('Paid by ACH')
   await deposit.getByRole('button', { name: /^Record this payment/ }).click()
-  expect(await answerConfirm(page)).toMatch(/^Record \$1,500\.00 from Main checking on 2 Nov as a payment on /)
+  expect(await answerConfirm(page)).toMatch(/^Record \$1,500\.00 from Main checking on Nov 2, 2026 as a payment on /)
   // Back on the invoice, now paid, with no Record payment button.
   await expect(page.getByTestId('status-badge')).toHaveText('Paid')
   await expect(page.getByRole('link', { name: 'Record payment', exact: true })).toHaveCount(0)

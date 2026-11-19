@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/domain/format-date'
 import Link from 'next/link'
 import { requireFirmRole } from '@/lib/auth/context'
 import { AGE_BUCKET_LABELS, overdueLabel } from '@/lib/domain/ageing'
@@ -111,9 +112,9 @@ export default async function UnpaidInvoicesPage({
                     </Link>
                   </td>
                   <td className={td}>{r.clientName}</td>
-                  <td className={td}>{r.issueDate}</td>
+                  <td className={td}>{formatDate(r.issueDate)}</td>
                   <td className={td}>
-                    {r.dueDate}
+                    {formatDate(r.dueDate)}
                     {late && <span className="ml-2 font-medium text-red-700">{late}</span>}
                   </td>
                   <td className={td}>{formatMoney(r.total, currency)}</td>
@@ -121,7 +122,10 @@ export default async function UnpaidInvoicesPage({
                   <td className={td}>{formatMoney(r.balanceDue, currency)}</td>
                   <td className={td}>{Number(r.amountPaid) > 0 ? 'Partly paid' : 'Issued'}</td>
                   <td className={td}>
-                    <Link href={`${base}/${r.invoiceId}#payments`} className="underline underline-offset-4">
+                    <Link
+                      href={`/f/${firmId}/payments/record?invoice=${r.invoiceId}`}
+                      className="underline underline-offset-4"
+                    >
                       Record payment
                     </Link>
                   </td>

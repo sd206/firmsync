@@ -18,6 +18,7 @@ import {
 import { createUploadTargets, finalizeUploads, ownerFolder } from '@/modules/attachments/storage'
 import { adminDb, newFirm } from './helpers'
 import { categoryId, insertClient, insertProject } from './expense-fixtures'
+import { mkVendor, saveBill } from './vendor-bill-fixtures'
 
 type Firm = Awaited<ReturnType<typeof newFirm>>
 
@@ -101,6 +102,38 @@ describe('expenses data module', () => {
     expect(r.rows[0].clientName).not.toBeNull()
     r = await run({})
     expect(r.rows.find((x) => x.id === e1)?.receiptCount).toBe(1)
+  })
+
+  it("bill-created expenses count the bill's files as receipts", async () => {
+    const g = await newFirm('Expenses Bill Receipts Firm')
+    const cat = await categoryId(g.firmId, 'Software')
+    const vendor = await mkVendor(g, 'Demo Software Co')
+    const withFile = await saveBill(g, vendor, 'BR-1', [{ kind: 'expense', description: 'Licences', amount: '50.00', category_id: cat }])
+    const noFile = await saveBill(g, vendor, 'BR-2', [{ kind: 'expense', description: 'Hosting', amount: '20.00', category_id: cat }])
+    const add = await g.manager.db.rpc('add_vendor_attachment', {
+      p_owner_kind: 'bill', p_owner: withFile, p_storage_path: `firms/${g.firmId}/attachments/vendor-bills/${withFile}/${crypto.randomUUID()}.pdf`,
+      p_file_name: 'bill.pdf', p_mime: 'application/pdf', p_size: 10,
+    })
+    expect(add.error).toBeNull()
+    for (const b of [withFile, noFile]) expect((await g.admin.db.rpc('approve_vendor_bill', { p_bill: b })).error).toBeNull()
+    const own = must(await createExpense(g.manager.db, g.firmId, input({ categoryId: cat, amount: '5.00' }))).id
+
+    const all = must(await listExpenses(g.manager.db, g.firmId, NONE))
+    const byAmount = (a: string) => all.rows.find((r) => r.amount === a)!
+    expect(byAmount('50.00')).toMatchObject({ receiptCount: 1, vendorBillId: withFile })
+    expect(byAmount('20.00')).toMatchObject({ receiptCount: 0, vendorBillId: noFile })
+    expect(byAmount('5.00')).toMatchObject({ receiptCount: 0, vendorBillId: null })
+
+    const missing = must(await listExpenses(g.manager.db, g.firmId, { ...NONE, missingReceipt: true }))
+    expect(missing.rows.map((r) => r.amount).sort()).toEqual(['20.00', '5.00'])
+    expect(missing).toMatchObject({ total: '25.00', count: 2 })
+
+    // A bill-created expense with its own receipt too counts both.
+    const billExpense = byAmount('50.00').id
+    await attachReceipt(g, billExpense)
+    const again = must(await listExpenses(g.manager.db, g.firmId, NONE))
+    expect(again.rows.find((r) => r.id === billExpense)?.receiptCount).toBe(2)
+    expect(again.rows.find((r) => r.id === own)?.receiptCount).toBe(0)
   })
 
   it('pages 50 at a time with a total over all rows', async () => {

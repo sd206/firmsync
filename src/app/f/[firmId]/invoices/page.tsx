@@ -1,3 +1,4 @@
+import { formatDate, formatDateRange } from '@/lib/domain/format-date'
 import Link from 'next/link'
 import { requireFirmRole } from '@/lib/auth/context'
 import type { InvoiceStatus } from '@/lib/db-types'
@@ -92,10 +93,10 @@ export default async function InvoicesPage({
                 </td>
                 <td className={td}>{r.clientName}</td>
                 <td className={td}>
-                  {r.periodStart} to {r.periodEnd}
+                  {formatDateRange(r.periodStart, r.periodEnd)}
                 </td>
-                <td className={td}>{r.issueDate}</td>
-                <td className={td}>{r.dueDate}</td>
+                <td className={td}>{formatDate(r.issueDate)}</td>
+                <td className={td}>{formatDate(r.dueDate)}</td>
                 <td className={td}>{formatMoney(r.total, r.currency)}</td>
                 <td className={td}>
                   {INVOICE_STATUS_LABEL[r.status]}

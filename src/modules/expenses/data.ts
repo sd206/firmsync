@@ -27,9 +27,11 @@ export type ExpenseRow = {
   projectId: string | null
   projectName: string | null
   receiptCount: number
+  /** Set when approving a vendor bill created this expense; the bill's files count as its receipts. */
+  vendorBillId: string | null
 }
 
-export type ExpenseDetail = ExpenseRow & {
+export type ExpenseDetail = Omit<ExpenseRow, 'vendorBillId'> & {
   notes: string | null
   attachments: { id: string; fileName: string; mimeType: string; sizeBytes: number }[]
 }
@@ -56,6 +58,7 @@ type ListDb = {
   project_id: string | null
   project_name: string | null
   receipt_count: number
+  vendor_bill_id: string | null
 }
 
 type DetailDb = {
@@ -116,6 +119,7 @@ export async function listExpenses(
     projectId: r.project_id,
     projectName: r.project_name,
     receiptCount: r.receipt_count,
+    vendorBillId: r.vendor_bill_id,
   }))
   return ok({ rows, total: t.total, count: t.expense_count, pages: Math.max(1, Math.ceil(t.expense_count / PAGE_SIZE)) })
 }

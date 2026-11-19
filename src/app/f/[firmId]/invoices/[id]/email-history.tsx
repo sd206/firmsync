@@ -1,19 +1,12 @@
+import { formatDateTime } from '@/lib/domain/format-date'
 import type { InvoiceEmailRow } from '@/modules/invoice-emails/data'
 import { historyStatus } from '@/modules/invoice-emails/history'
 
 const th = 'py-2 pr-4 font-medium'
 const td = 'py-2 pr-4 align-top'
 
-const WHEN = new Intl.DateTimeFormat('en-GB', {
-  day: 'numeric',
-  month: 'short',
-  year: 'numeric',
-  hour: '2-digit',
-  minute: '2-digit',
-  timeZone: 'UTC',
-})
-
-export const formatWhen = (iso: string): string => `${WHEN.format(new Date(iso)).replace('Sept', 'Sep')} UTC`
+/** e.g. 'Nov 16, 2026, 3:04 PM UTC'. */
+export const formatWhen = formatDateTime
 
 const STATUS_NOTE: Record<string, string> = {
   Failed: 'Not delivered.',

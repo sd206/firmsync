@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDate } from '@/lib/domain/format-date'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
@@ -138,7 +139,7 @@ export function FileTable({ firmId, rows, canDelete }: { firmId: string; rows: F
                 </td>
                 <td className={td}>{r.type}</td>
                 <td className={`${td} text-right whitespace-nowrap`}>{formatBytes(r.size)}</td>
-                <td className={`${td} whitespace-nowrap`}>{r.date}</td>
+                <td className={`${td} whitespace-nowrap`}>{formatDate(r.date)}</td>
                 <td className={td}>
                   {r.recordHref ? (
                     <Link href={r.recordHref} className="underline underline-offset-2">

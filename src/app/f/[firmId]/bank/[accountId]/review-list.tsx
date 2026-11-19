@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDate } from '@/lib/domain/format-date'
 import { Fragment, useState } from 'react'
 import { askConfirm } from '@/components/confirm-dialog'
 import { Button } from '@/components/ui/button'
@@ -375,7 +376,7 @@ export function ReviewList({
               />
             </td>
           )}
-          <td className={`${td} whitespace-nowrap`}>{l.postedOn}</td>
+          <td className={`${td} whitespace-nowrap`}>{formatDate(l.postedOn)}</td>
           <th scope="row" className={`${td} font-normal`}>
             {l.description}
           </th>

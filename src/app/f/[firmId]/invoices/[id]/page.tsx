@@ -1,3 +1,4 @@
+import { formatDate, formatDateRange } from '@/lib/domain/format-date'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireFirmRole } from '@/lib/auth/context'
@@ -122,7 +123,8 @@ export default async function InvoicePage({ params }: { params: Promise<{ firmId
       )}
       {inv.subject && <p className="mt-1 text-sm">{inv.subject}</p>}
       <p className="mt-1 text-sm text-muted-foreground">
-        Period {inv.periodStart} to {inv.periodEnd}. Issued {inv.issueDate}, due {inv.dueDate}.
+        Period {formatDateRange(inv.periodStart, inv.periodEnd)}. Issued {formatDate(inv.issueDate)}, due{' '}
+        {formatDate(inv.dueDate)}.
       </p>
 
       {inv.status !== 'void' && !inv.pdfPath && (

@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test'
 import { goTo } from './nav'
 import { addDays, currentWeekStart, formatDayLabel } from '../../src/lib/domain/weeks'
+import { formatDate } from '../../src/lib/domain/format-date'
 import { adminDb, newFirm, TEST_PASSWORD } from '../integration/helpers'
 import { PAST_WEEK, seedTimesheetFixture } from '../integration/timesheet-fixtures'
 
@@ -32,7 +33,7 @@ test.describe('weekly timesheet grid', () => {
     await login(page, f.consultant.email)
     await page.goto(`/f/${f.firmId}`)
     await goTo(page, 'Work', 'My timesheet')
-    await expect(page.getByRole('heading', { name: `Week of ${formatDayLabel(mon)}` })).toBeVisible()
+    await expect(page.getByRole('heading', { name: `Week of ${formatDate(mon)}` })).toBeVisible()
 
     await hours(page, mon).fill('8')
     await note(page, mon).fill('Kickoff')
@@ -84,7 +85,7 @@ test.describe('weekly timesheet grid', () => {
     await expect(page.getByRole('link', { name: 'Previous week' })).toBeVisible()
     await expect(page.getByRole('link', { name: 'Next week' })).toHaveCount(0)
     await page.goto(`/f/${f.firmId}/timesheet?week=${addDays(mon, 7)}`)
-    await expect(page.getByRole('heading', { name: `Week of ${formatDayLabel(mon)}` })).toBeVisible()
+    await expect(page.getByRole('heading', { name: `Week of ${formatDate(mon)}` })).toBeVisible()
   })
 
   test('unlinked user sees the not-linked message', async ({ page }) => {

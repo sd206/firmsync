@@ -259,8 +259,8 @@ describe('invoice document detail entries', () => {
     const draft = must(await loadInvoiceDocument(f.manager.db, f.firmId, id))
     expect(draft.title).toBe('Draft invoice')
     expect(draft.detail?.map((d) => [d.date, d.hours, d.note])).toEqual([
-      ['5 Oct 2026', '8.00', 'Discovery'],
-      ['6 Oct 2026', '7.50', 'Workshop'],
+      ['Oct 5, 2026', '8.00', 'Discovery'],
+      ['Oct 6, 2026', '7.50', 'Workshop'],
     ])
     must(await issueInvoice(f.manager.db, f.firmId, id))
     const issued = must(await loadInvoiceDocument(f.manager.db, f.firmId, id))

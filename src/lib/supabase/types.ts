@@ -1163,6 +1163,9 @@ isOneToOne: false
 "delete_vendor_payment":
 { Args: { "p_payment": string }; Returns: string[]
                            },
+"expense_receipt_count":
+{ Args: { "p_bill_line": string,"p_expense": string,"p_firm": string }; Returns: number
+                           },
 "expense_totals":
 { Args: { "p_category": string,"p_client": string,"p_firm": string,"p_from": string,"p_missing_receipt": boolean,"p_project": string,"p_to": string }; Returns: {
               "expense_count": number,"total": string
@@ -1315,7 +1318,7 @@ isOneToOne: false
                            },
 "list_expenses":
 { Args: { "p_category": string,"p_client": string,"p_firm": string,"p_from": string,"p_limit": number,"p_missing_receipt": boolean,"p_offset": number,"p_project": string,"p_to": string }; Returns: {
-              "amount": string,"category_id": string,"category_name": string,"client_id": string,"client_name": string,"id": string,"payee": string,"project_id": string,"project_name": string,"receipt_count": number,"spent_on": string
+              "amount": string,"category_id": string,"category_name": string,"client_id": string,"client_name": string,"id": string,"payee": string,"project_id": string,"project_name": string,"receipt_count": number,"spent_on": string,"vendor_bill_id": string
             }[]
                            },
 "list_payments":

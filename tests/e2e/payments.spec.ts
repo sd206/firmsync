@@ -209,6 +209,11 @@ test('unpaid invoices page shows ageing and filters by client', async ({ page })
   await expect(page).toHaveURL(new RegExp(`client=${other.clientId}`))
   await expect(page.getByText('Overdue by 45 days')).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'Record payment' })).toHaveCount(1)
+
+  // One click opens the record-payment form for that invoice.
+  await page.getByRole('link', { name: 'Record payment' }).click()
+  await expect(page).toHaveURL(new RegExp(`/payments/record\\?invoice=${other.invoiceId}$`))
+  await expect(page.getByTestId('record-balance-due')).toHaveText('$222.22')
 })
 
 test('manager dashboard shows outstanding total', async ({ page }) => {

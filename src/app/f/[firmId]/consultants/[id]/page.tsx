@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/domain/format-date'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireFirmRole } from '@/lib/auth/context'
@@ -71,10 +72,10 @@ export default async function ConsultantPage({ params }: { params: Promise<{ fir
           <tbody>
             {c.costRates.map((r) => (
               <tr key={r.id} className="border-b">
-                <td className="py-2 pr-4">{r.effectiveFrom}</td>
+                <td className="py-2 pr-4">{formatDate(r.effectiveFrom)}</td>
                 <td className="py-2 pr-4">{formatMoney(r.hourlyCost, currency)}</td>
                 <td className="py-2">
-                  <DeleteRateForm firmId={firmId} consultantId={c.id} rateId={r.id} label={r.effectiveFrom} />
+                  <DeleteRateForm firmId={firmId} consultantId={c.id} rateId={r.id} label={formatDate(r.effectiveFrom)} />
                 </td>
               </tr>
             ))}

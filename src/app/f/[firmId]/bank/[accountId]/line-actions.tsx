@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDate } from '@/lib/domain/format-date'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -220,7 +221,7 @@ export function LineActions({
               <select id={`bill-${line.id}`} name="billId" className={select} defaultValue={cand.bills[0].id}>
                 {cand.bills.map((b) => (
                   <option key={b.id} value={b.id}>
-                    {b.bill_number} · {b.vendor_name} · {formatMoney(b.balance_due, currency)} due {b.due_date}
+                    {b.bill_number} · {b.vendor_name} · {formatMoney(b.balance_due, currency)} due {formatDate(b.due_date)}
                     {Number(b.balance_due) === Number(absAmount) ? ' (exact match)' : ''}
                   </option>
                 ))}
@@ -249,7 +250,7 @@ export function LineActions({
                 ? cand.payments.map((p) => (
                     <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-card p-2">
                       <span>
-                        {p.paid_on} · {p.invoice_number} · {p.client_name} · {formatMoney(p.amount, currency)}
+                        {formatDate(p.paid_on)} · {p.invoice_number} · {p.client_name} · {formatMoney(p.amount, currency)}
                       </span>
                       <Button type="button" size="sm" disabled={pending} onClick={() => run(() => linkLineAction(firmId, accountId, line.id, { paymentId: p.id }), onDone)}>
                         Match
@@ -260,7 +261,7 @@ export function LineActions({
                     ...cand.expenses.map((x) => (
                       <li key={x.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-card p-2">
                         <span>
-                          {x.spent_on} · {x.payee} · {formatMoney(x.amount, currency)}
+                          {formatDate(x.spent_on)} · {x.payee} · {formatMoney(x.amount, currency)}
                         </span>
                         <Button type="button" size="sm" disabled={pending} onClick={() => run(() => linkLineAction(firmId, accountId, line.id, { expenseId: x.id }), onDone)}>
                           Match
@@ -270,7 +271,7 @@ export function LineActions({
                     ...cand.vendor_payments.map((v) => (
                       <li key={v.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-card p-2">
                         <span>
-                          {v.paid_on} · Bill #{v.bill_number} · {v.vendor_name} · {formatMoney(v.amount, currency)}
+                          {formatDate(v.paid_on)} · Bill #{v.bill_number} · {v.vendor_name} · {formatMoney(v.amount, currency)}
                         </span>
                         <Button
                           type="button"

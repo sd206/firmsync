@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/domain/format-date'
 import Link from 'next/link'
 import { requireFirmRole } from '@/lib/auth/context'
 import { overdueLabel } from '@/lib/domain/ageing'
@@ -222,8 +223,8 @@ export default async function PayablesPage({
                             </Link>
                           </th>
                           <td className={td}>{BILL_STATUS_LABEL[b.status]}</td>
-                          <td className={`${td} whitespace-nowrap`}>{b.billDate}</td>
-                          <td className={`${td} whitespace-nowrap`}>{b.dueDate}</td>
+                          <td className={`${td} whitespace-nowrap`}>{formatDate(b.billDate)}</td>
+                          <td className={`${td} whitespace-nowrap`}>{formatDate(b.dueDate)}</td>
                           <td className={num}>{money(b.total)}</td>
                           <td className={num}>{money(b.amountPaid)}</td>
                           <td className={`${num} font-medium`}>{money(b.balance)}</td>

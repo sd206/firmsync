@@ -1,8 +1,9 @@
+import { formatDate } from '@/lib/domain/format-date'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { requireFirmRole } from '@/lib/auth/context'
 import { isIsoDate } from '@/lib/domain/dates'
-import { addDays, currentWeekStart, formatDayLabel, isFutureWeek, weekStartOf } from '@/lib/domain/weeks'
+import { addDays, currentWeekStart, isFutureWeek, weekStartOf } from '@/lib/domain/weeks'
 import { getMyConsultant, getTimesheetWeek } from '@/modules/timesheets/data'
 import { STATUS_LABEL } from './status-label'
 import { WeekGrid } from './week-grid'
@@ -60,7 +61,7 @@ export default async function TimesheetPage({
   return (
     <div className="max-w-6xl">
       <h1 className="text-2xl font-semibold">{heading}</h1>
-      <h2 className="mt-1 text-lg font-medium">Week of {formatDayLabel(weekStart)}</h2>
+      <h2 className="mt-1 text-lg font-medium">Week of {formatDate(weekStart)}</h2>
       <p className="mt-2 flex gap-4 text-sm">
         <Link href={qs(addDays(weekStart, -7))} className="underline underline-offset-4">
           Previous week

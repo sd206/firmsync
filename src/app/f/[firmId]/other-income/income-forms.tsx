@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDate } from '@/lib/domain/format-date'
 import { useState } from 'react'
 import { askConfirm } from '@/components/confirm-dialog'
 import { Button } from '@/components/ui/button'
@@ -132,7 +133,7 @@ export function IncomeTableRow({
   }
   return (
     <tr className="border-b">
-      <td className={`${td} whitespace-nowrap`}>{row.receivedOn}</td>
+      <td className={`${td} whitespace-nowrap`}>{formatDate(row.receivedOn)}</td>
       <th scope="row" className={`${td} font-normal`}>
         {row.source}
         {row.fromBank && <span className="ml-2 rounded border px-1 text-xs text-muted-foreground">from bank</span>}

@@ -56,7 +56,7 @@ async function issue(page: Page) {
   const message = await answerConfirm(page)
   await expect(page.getByTestId('status')).toHaveText('Issued')
   // Drafts are dated today, so no past-date warning.
-  expect(message).toMatch(/^Issue this invoice dated \d{1,2} [A-Z][a-z]{2} \d{4} and due \d{1,2} [A-Z][a-z]{2} \d{4}\? /)
+  expect(message).toMatch(/^Issue this invoice dated [A-Z][a-z]{2} \d{1,2}, \d{4} and due [A-Z][a-z]{2} \d{1,2}, \d{4}\? /)
   expect(message.endsWith(ISSUE_TAIL)).toBe(true)
 }
 
@@ -162,7 +162,7 @@ test('issuing warns about an issue date in the past', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Issue invoice' }).click()
   const message = await answerConfirm(page, false)
-  expect(message).toBe(`The issue date is in the past. Issue this invoice dated 5 Jan 2026 and due 4 Feb 2026? ${ISSUE_TAIL}`)
+  expect(message).toBe(`The issue date is in the past. Issue this invoice dated Jan 5, 2026 and due Feb 4, 2026? ${ISSUE_TAIL}`)
   await expect(page.getByRole('heading', { name: 'Draft invoice' })).toBeVisible()
 })
 

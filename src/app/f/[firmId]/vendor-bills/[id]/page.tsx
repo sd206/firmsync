@@ -1,3 +1,4 @@
+import { formatDate, formatDateRange } from '@/lib/domain/format-date'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireFirmRole } from '@/lib/auth/context'
@@ -51,8 +52,8 @@ export default async function BillPage({
         {b.overdue && <span className="ml-2 font-medium text-amber-700 dark:text-amber-400">Overdue</span>}
       </p>
       <p className="mt-1 text-sm text-muted-foreground">
-        Bill date {b.billDate}, due {b.dueDate}
-        {b.periodStart && b.periodEnd ? `. Service period ${b.periodStart} to ${b.periodEnd}` : ''}.
+        Bill date {formatDate(b.billDate)}, due {formatDate(b.dueDate)}
+        {b.periodStart && b.periodEnd ? `. Service period ${formatDateRange(b.periodStart, b.periodEnd)}` : ''}.
       </p>
       {b.notes && <p className="mt-1 whitespace-pre-line text-sm">{b.notes}</p>}
       {b.status === 'rejected' && b.rejectedReason && (
