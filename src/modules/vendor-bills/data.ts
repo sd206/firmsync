@@ -346,8 +346,8 @@ type CostDb = {
   adjustment: number
 }
 
-/** Exact numeric (as returned) to 2-decimal text. */
-const fixed = (n: number) => money(Math.round(n * 100))
+/** Exact numeric (as returned, up to 4 places) to 2-decimal text, halves away from zero like Postgres round(). */
+const fixed = (n: number) => money(Math.sign(n) * Math.round(Math.abs(n) * 100 + 1e-7))
 const fixedHours = (n: number) => (Math.round(n * 100) / 100).toFixed(2)
 
 /** Per contractor line: approved hours, expected cost and the adjustment, from contractor_line_costs. */

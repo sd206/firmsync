@@ -245,6 +245,44 @@ describe('contractor true-up: rules', () => {
     expect((await approve(f, pending)).error?.message).toContain('BILL_CONTRACTOR_LEGACY')
   })
 
+  it('a legacy line edited to name the consultant can then be approved and trued up', async () => {
+    const f = await newFirm('Trueup Legacy Edit')
+    const c = await vendorContractor(f)
+    await approvedWeek(f, c, '2026-11-02', [{ project: 'Website', workDate: '2026-11-02', hours: '10' }])
+    const bill = await saveBill(f, c.vendorId, 'LE-1', [{ kind: 'contractor', description: 'Old', amount: '900.00', client_id: c.clientId }], NOV)
+    await adminDb().from('vendor_bill_lines').update({ count_mode: 'legacy', client_id: null }).eq('bill_id', bill)
+    expect((await approve(f, bill)).error?.message).toContain('BILL_CONTRACTOR_LEGACY')
+
+    const edit = await f.manager.db.rpc('save_vendor_bill', {
+      p_bill: bill, p_firm: f.firmId, p_vendor: c.vendorId, p_number: 'LE-1', p_bill_date: NOV.billDate, p_due_date: NOV.dueDate,
+      p_period_start: NOV.periodStart, p_period_end: NOV.periodEnd, p_notes: null,
+      p_lines: [{ kind: 'contractor', description: 'November', amount: '900.00', consultant_id: c.consultantId }],
+    })
+    expect(edit.error).toBeNull()
+    await approveOk(f, bill)
+    expect(sumAdj(await costs(f))).toBe(100)
+  })
+
+  it('rejected and pending bills count nothing', async () => {
+    const f = await newFirm('Trueup Rejected')
+    const c = await vendorContractor(f)
+    const bill = await saveBill(f, c.vendorId, 'RJ-1', [{ kind: 'contractor', description: 'X', amount: '500.00', project_id: c.projects.Website }])
+    expect(await costs(f)).toEqual([])
+    expect((await f.admin.db.rpc('reject_vendor_bill', { p_bill: bill, p_reason: 'Wrong amount' })).error).toBeNull()
+    expect(await costs(f)).toEqual([])
+  })
+
+  it('follows a project moved to another client', async () => {
+    const f = await newFirm('Trueup Moved Project')
+    const c = await vendorContractor(f)
+    const bill = await saveBill(f, c.vendorId, 'MV-1', [{ kind: 'contractor', description: 'Design', amount: '2000.00', project_id: c.projects.Website }])
+    await approveOk(f, bill)
+    const other = await adminDb().from('clients').insert({ firm_id: f.firmId, name: 'Globex' }).select('id').single()
+    const moved = await adminDb().from('projects').update({ client_id: other.data!.id }).eq('id', c.projects.Website)
+    expect(moved.error).toBeNull()
+    expect(await costs(f)).toEqual([expect.objectContaining({ project_id: c.projects.Website, client_id: other.data!.id, adjustment: 2000 })])
+  })
+
   it('a manager writing lines directly cannot choose the mode', async () => {
     const f = await newFirm('Trueup Direct')
     const c = await vendorContractor(f)

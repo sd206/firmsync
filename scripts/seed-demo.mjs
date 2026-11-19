@@ -215,7 +215,7 @@ const bank = await seedDemoBank(maya, firmId)
 
 // ---------------------------------------------------------------- vendor bills
 const owner = await signIn('owner@local.test', 'owner-password-123') // local seed user (supabase/seed.sql)
-await seedDemoBills({ maya, owner, firmId, vendorId: vendor.id, checkingId: bank.checking, categories: cats })
+await seedDemoBills({ maya, owner, firmId, vendorId: vendor.id, leeId: lee.id, checkingId: bank.checking, categories: cats })
 
 console.log(`Demo Consulting ready (firm ${firmId}).`)
 console.log(`Invoices issued: ${i1.number} (paid), plus an overdue one and a part-paid one; one draft.`)

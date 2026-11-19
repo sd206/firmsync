@@ -13,7 +13,7 @@ const clean = (s) => s.toUpperCase().replace(/\s+/g, ' ').trim().slice(0, 80)
  * Adds an approved, unpaid contractor bill (with a matching money-out line in Main checking)
  * and a bill waiting for approval.
  */
-export async function seedDemoBills({ maya, owner, firmId, vendorId, checkingId, categories }) {
+export async function seedDemoBills({ maya, owner, firmId, vendorId, leeId, checkingId, categories }) {
   const save = async (number, fields, lines) =>
     must(
       await maya.rpc('save_vendor_bill', {
@@ -31,11 +31,12 @@ export async function seedDemoBills({ maya, owner, firmId, vendorId, checkingId,
       `bill ${number}`,
     )
 
-  // October contractor hours for Lee Chen: 4 weeks x 24 h at $110 = $10,560 — the hours check matches.
+  // October contractor hours for Lee Chen: 4 weeks x 24 h at $110 = $10,560 — matches the approved
+  // hours, so the contractor cost adjustment is $0.00.
   const october = await save(
     'NW-1042',
     { billDate: '2026-11-02', dueDate: '2026-11-30', periodStart: '2026-10-01', periodEnd: '2026-10-31' },
-    [{ kind: 'contractor', description: 'Lee Chen — October hours (96 h)', amount: '10560.00' }],
+    [{ kind: 'contractor', description: 'Lee Chen — October hours (96 h)', amount: '10560.00', consultant_id: leeId }],
   )
   must(await owner.rpc('approve_vendor_bill', { p_bill: october }), 'approve NW-1042')
 

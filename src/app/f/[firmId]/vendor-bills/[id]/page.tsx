@@ -119,8 +119,7 @@ export default async function BillPage({
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Approved hours already count as labour at cost. The difference between each contractor line and those hours
-            {counted ? ' is' : ' will be'} counted as a contractor cost adjustment on the bill date
-            {b.status === 'void' ? ' (not for a void bill)' : ''}.
+            {counted ? ' is' : ' will be'} counted as a contractor cost adjustment on the bill date.
           </p>
           <ul className="mt-2 flex flex-col gap-3 text-sm">
             {b.contractorCosts.map((c) => (
@@ -129,7 +128,9 @@ export default async function BillPage({
                   {costTitle(c)}
                   {c.mode === 'trueup' && b.periodStart && b.periodEnd ? ` · ${formatDateRange(b.periodStart, b.periodEnd)}` : ''}
                 </p>
-                {c.mode === 'legacy' ? (
+                {b.status === 'void' ? (
+                  <p className="mt-1">Void bill: not counted.</p>
+                ) : c.mode === 'legacy' ? (
                   <p className="mt-1">
                     {b.status === 'pending_approval' || b.status === 'rejected'
                       ? 'Edit the bill and choose who this line is for before it can be approved.'

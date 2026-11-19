@@ -30,6 +30,8 @@
 alter table public.vendor_bill_lines add column count_mode text;
 
 -- Existing contractor lines can't be matched to hours (no consultant was ever recorded): legacy.
+-- Totals don't change, so the total trigger is off for the backfill (no bill rewrites or audit noise).
+alter table public.vendor_bill_lines disable trigger vendor_bill_lines_total;
 do $$
 begin
   perform set_config('app.vendor_bill_internal', 'on', true);
@@ -37,6 +39,7 @@ begin
   perform set_config('app.vendor_bill_internal', 'off', true);
 end;
 $$;
+alter table public.vendor_bill_lines enable trigger vendor_bill_lines_total;
 
 alter table public.vendor_bill_lines
   drop constraint vendor_bill_lines_contractor_chk,
@@ -57,7 +60,9 @@ create index vendor_bill_lines_consultant_idx on public.vendor_bill_lines (firm_
   where kind = 'contractor' and consultant_id is not null;
 
 -- As before (20261115000044), plus: count_mode is derived, and a contractor line's client follows
--- its project (a named consultant's line has no client of its own without a project).
+-- its project (a named consultant's line has no client of its own without a project). The bill
+-- row is read with a lock, so a direct line write waits for an approval in flight and then sees
+-- the bill as approved (locked), instead of slipping an unchecked line onto it.
 create or replace function public.vendor_bill_lines_guard()
 returns trigger
 language plpgsql
@@ -69,20 +74,20 @@ declare
 begin
   if not public.vendor_bill_internal() then
     if tg_op = 'UPDATE' and (new.bill_id is distinct from old.bill_id or new.firm_id is distinct from old.firm_id) then
-      select b.status into v_status from public.vendor_bills b where b.firm_id = old.firm_id and b.id = old.bill_id;
+      select b.status into v_status from public.vendor_bills b where b.firm_id = old.firm_id and b.id = old.bill_id for no key update;
       if found and v_status not in ('pending_approval', 'rejected') then
         raise exception 'BILL_LOCKED' using errcode = 'P0001';
       end if;
       raise exception 'LINE_MOVE' using errcode = 'P0001';
     end if;
     if tg_op <> 'INSERT' then
-      select b.status into v_status from public.vendor_bills b where b.firm_id = old.firm_id and b.id = old.bill_id;
+      select b.status into v_status from public.vendor_bills b where b.firm_id = old.firm_id and b.id = old.bill_id for no key update;
       if found and v_status not in ('pending_approval', 'rejected') then
         raise exception 'BILL_LOCKED' using errcode = 'P0001';
       end if;
     end if;
     if tg_op <> 'DELETE' then
-      select b.status into v_status from public.vendor_bills b where b.firm_id = new.firm_id and b.id = new.bill_id;
+      select b.status into v_status from public.vendor_bills b where b.firm_id = new.firm_id and b.id = new.bill_id for no key update;
       if found and v_status not in ('pending_approval', 'rejected') then
         raise exception 'BILL_LOCKED' using errcode = 'P0001';
       end if;
@@ -258,11 +263,12 @@ begin
       raise exception 'BILL_CONSULTANT' using errcode = 'P0001';
     end if;
     -- Serialise approvals that could overlap: lock the named consultants, in id order.
+    -- (no key update: enough to serialise approvals without blocking foreign-key checks.)
     perform 1 from public.consultants c
     where c.firm_id = v.firm_id
       and c.id in (select l.consultant_id from public.vendor_bill_lines l where l.bill_id = v.id and l.count_mode = 'trueup')
     order by c.id
-    for update;
+    for no key update;
     if public.vendor_bill_contractor_overlap(v.id, false) is not null then
       raise exception 'BILL_LINES_OVERLAP' using errcode = 'P0001';
     end if;
@@ -326,10 +332,14 @@ begin
 
   return query
   with ln as (
-    select l.id, l.bill_id, b.bill_date, l.count_mode, l.consultant_id, l.client_id, l.project_id,
+    -- A line's client is its project's client now (projects can move between clients), as for
+    -- hours; the stored client matters only for a client-only line.
+    select l.id, l.bill_id, b.bill_date, l.count_mode, l.consultant_id,
+           coalesce(lp.client_id, l.client_id) as client_id, l.project_id,
            l.amount::numeric as amount, b.period_start, b.period_end
     from public.vendor_bill_lines l
     join public.vendor_bills b on b.firm_id = l.firm_id and b.id = l.bill_id
+    left join public.projects lp on lp.firm_id = l.firm_id and lp.id = l.project_id
     where l.firm_id = p_firm
       and l.kind = 'contractor'
       and l.count_mode in ('trueup', 'full')
