@@ -27,15 +27,15 @@ Everything that has to be true on launch day: VeriTreo on its own domain, with t
    Dashboard quick actions, wider layout and clickable cards; status pills and tabs with counts; ageing cards as filters; invoice toolbar (PDF, Email, Void); timesheet placeholders, week navigation, today highlight, one-click Approve; drag-and-drop uploads and a copy button for the bill-inbox address; Billing menu grouped; filters on one row; consistent "Export CSV" labels; "Categorize"; P&L "hide empty months"; Transactions labelled cash only. Styling and convenience only.
 
 26. Test site on `test.veritreo.com` — Owner: You + Launch manager · Depends: 4, 10 · Status: Waiting on you
-   Today's Vercel project and `consult-flow` (renamed `veritreo-test`) become Test: add `test.veritreo.com`, Supabase auth URLs and VeriTreo templates, `NEXT_PUBLIC_SITE_URL`, its own Resend sender. Fictional data only.
+   Today's Vercel project and `consult-flow` (renamed `veritreo-test`) become Test: add `test.veritreo.com`, Supabase auth URLs and VeriTreo templates, `NEXT_PUBLIC_SITE_URL`, its own Resend sender. Fictional data only. Live on `test.veritreo.com` since 2026-11-19 (domain and CNAME, Supabase redirect URLs and Site URL, `NEXT_PUBLIC_SITE_URL` as Config, redeployed; existing test logins work). Left for you: rename `consult-flow` to `veritreo-test`, VeriTreo auth email templates, and its own Resend sender (needs 11).
 27. "TEST SITE" bar on the Test app — Owner: Developer · Depends: — · Status: Done
    Built and merged locally 2026-11-19. Turn it on by setting `NEXT_PUBLIC_APP_ENV=test` on the Test Vercel project (then redeploy); leave it unset on Prod.
 
-28. Contractor bill true-up in the P&L — Owner: Developer · Depends: 24 · Status: Waiting on you
-   Contractor cost stays counted when time is approved (hours × cost rate). When a contractor's bill is approved, any difference from the approved hours' cost is counted as a "contractor cost adjustment" on the bill date, against its project or client; bill lines for contractors without timesheets count in full on approval. Built and merged locally 2026-11-19 (all gates green, Reviewer clean). Follow-ups merged locally 2026-11-19 (old contractor-check function kept for the deploy gap, backfill checked on existing bills; all gates green, Reviewer clean). Waiting on you: push, plus the production migration (dry run, then your yes); push the code right after the migration. Minor later: voided old bills say "approved before contractor true-up"; a later release drops the old function.
+28. Contractor bill true-up in the P&L — Owner: Developer · Depends: 24 · Status: Done
+   Contractor cost stays counted when time is approved (hours × cost rate). When a contractor's bill is approved, any difference from the approved hours' cost is counted as a "contractor cost adjustment" on the bill date, against its project or client; bill lines for contractors without timesheets count in full on approval. Built and merged locally 2026-11-19 (all gates green, Reviewer clean). Follow-ups merged locally 2026-11-19 (old contractor-check function kept for the deploy gap, backfill checked on existing bills; all gates green, Reviewer clean). Live on Test since 2026-11-19 (migration 051 applied, code pushed). Minor later: voided old bills say "approved before contractor true-up"; a later release drops the old function.
 
-29. Consultant pay rate and "My hours and pay" — Owner: Developer · Depends: 28 · Status: Waiting on you
-   Pay rate (today's cost rate, renamed) and Paid through (Paid directly or Their employer) on each consultant; a consultant page with approved hours by period and status, plus own pay rate and gross amount for directly paid consultants. No pay-run export or payroll processing. Built and merged locally 2026-11-19 (design approved; all gates green: 396 unit, 548 integration, 127 e2e; Reviewer clean). Waiting on you: push, plus migration 052 on the Test database (dry run, then your yes).
+29. Consultant pay rate and "My hours and pay" — Owner: Developer · Depends: 28 · Status: Done
+   Pay rate (today's cost rate, renamed) and Paid through (Paid directly or Their employer) on each consultant; a consultant page with approved hours by period and status, plus own pay rate and gross amount for directly paid consultants. No pay-run export or payroll processing. Built and merged locally 2026-11-19 (design approved; all gates green: 396 unit, 548 integration, 127 e2e; Reviewer clean). Live on Test since 2026-11-19 (migration 052 applied, code pushed).
 
 ## Website
 
@@ -53,7 +53,7 @@ Everything that has to be true on launch day: VeriTreo on its own domain, with t
 ## Accounts and setup
 
 10. Domain: point `veritreo.com` at Framer and `app.veritreo.com` at the app — Owner: You · Depends: — · Status: Waiting on you
-    Bought: `veritreo.com` (main) and `veritreo.app` (redirects to `.com`). The launch manager gives step-by-step DNS instructions; the website part waits on item 6.
+    Bought: `veritreo.com` (main) and `veritreo.app` (redirects to `.com`). The launch manager gives step-by-step DNS instructions; the website part waits on item 6. `test.veritreo.com` CNAME done 2026-11-19 (item 26); `app.veritreo.com` and the website still to do.
 11. Email on the domain — Owner: You · Depends: 10 · Status: Waiting on you
     `support@` mailbox (e.g. Google Workspace); sending domain verified in Resend (SPF/DKIM); Supabase SMTP; `NOTIFY_FROM`; move `INVOICE_EMAIL_FROM` off the temporary domain (item 22).
 12. Stripe account, Stripe Tax decision, live mode at launch — Owner: You · Depends: — · Status: Waiting on you
